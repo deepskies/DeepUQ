@@ -1,10 +1,7 @@
-This template is designed to give a framework for public distributions of "science" projects. 
-It is a guideline, showing the minimum things recommended to include with your public repository, 
-to make your results easily replicable. 
-It is not exhaustive by any means, nor is everything here strictly required in all cases! 
-Please consider this as a loose list of things considered "nice to have", and as reference material above all. 
+# DeepUQ
 
-# DeepSkies Science Repo Template 
+
+## DeepSkies Science Repo Template 
 Include status links to different outside resources, such as build info, paper info, license, etc. 
 You can select your license from the [choose a license page.](https://choosealicense.com/licenses/), and then change the name of the license in the badge and link included. 
 For workflows, change the name of the repo listed in the img.shields link to point to your repo and workflows.
@@ -18,25 +15,8 @@ For workflows, change the name of the repo listed in the img.shields link to poi
 Your overview should contain a brief summary of the project, and figures and examples showing input and output. 
 
 ## Installation 
-Information about install. 
-We recommend publishing to pypi using a poetry package management system (described below) but we also provide instructions for using python virtual environments and showyourwork with conda integration. 
-
-Example of what your installation instructions should look like: 
-
-To install with pip: 
-> pip install git+https://github.com/DeepSkies/science_template.git
->
-This will set up a virtual environment, which can b  e run with on mac or linux
-> source venv/bin/activate
->
-Or on windows with 
-> venv\Scripts\activate.bat
-
-Verify installation is functional is all tests are passing
-> pytest
-
-Additionally, include how to install from source (via git clone) and associated setup. 
-
+Eventually, the installation instructions will include pypi instructions. For now, follow the poetry instructions to install using the lock file but then also install deepbench using pip:
+` pip install deepbench==0.2.01 `
 ### poetry 
 Poetry is our recommended method of handling a package environment as publishing and building is handled by a toml file that handles all possibly conflicting dependencies. 
 Full docs can be found [here](https://python-poetry.org/docs/basic-usage/).
