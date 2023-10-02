@@ -1,18 +1,23 @@
 [tool.poetry]
-name = "deepuq"
+name = "DeepUQ"
 version = "0.1.0"
 description = ""
 authors = ["beckynevin <beckynevin@gmail.com>"]
 readme = "README.md"
+packages = [{include = "DeepUQ"}]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
 numpyro = "^0.13.2"
 jupyter = "^1.0.0"
-numpy = "^1.26.0"
-scikit-learn = "^1.3.1"
+matplotlib = "^3.7.1"
+arviz = "^0.15.1"
+corner = "^2.2.2"
+scikit-learn = "^1.3.0"
+graphviz = "^0.20.1"
 seaborn = "^0.12.2"
 torch = "^2.0.1"
+sbi = "^0.21.0"
 
 
 [build-system]
