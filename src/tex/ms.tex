@@ -108,107 +108,11 @@ If you work with the DeepSkies research group; please include the following text
 \newpage
 \appendix
 \section{Appendix}
-You may include an appendix, it contains extra tables not required to understand the main body, but helpful references.
 
-\subsection{Figure References}
-\begin{figure}[h]
-    \centering
-    \includegraphics[scale=.1]
-  {figures/frog.jpg}
-    \caption{
-        This is a figure (containing a cute, although not colorblind friendly, frog) with a single graphic.
-        Because the original image is very large, it is resized with a smaller scale.
-        }
-    \label{fig:single_graphic_figure}
-\end{figure}
-
-
-\begin{figure}[h]
-    \begin{center}
-    \begin{minipage}{.35\linewidth}
-        \includegraphics[width=\linewidth]{figures/frog2.jpg}
-
-        \caption{An example of using minipage to caption each image in a combined figure separately.}
-    \end{minipage}\hfill
-
-    \begin{minipage}{.35\linewidth}
-        \includegraphics[width=\linewidth]{figures/frog3.jpg}
-
-        \caption{This frog has it's own caption, so they can be referred to separately If you were heartless enough to separate them.}
-    \end{minipage}
-    \label{multifigAB}
-
-    \end{center}
-
-\end{figure}
 
 % Todo Example of running show your work function within the tex to produce table
 
 \subsection{Table References}
-
-\begin{figure}[h]
-    \centering
-    \mbox{\subfigure{\includegraphics[width=.35\linewidth]{figures/frog2.jpg}}\quad
-        \subfigure{\includegraphics[width=.35\linewidth]{figures/frog3.jpg} }}
-    \caption{An example showing two images with a shared caption using subfigure. Now the frogs cannot be separated.}
-    \label{fig:multifigC}
-\end{figure}
-
-\begin{table}[h]
-    \centering
-    \caption{Sample table with two columns and a header, with the caption placed on top.}
-    \label{tab:two_column}
-    \vspace{.2in}
-    \begin{tabular}{c | c}
-        \toprule
-        Header 1     & Header 2 \\
-        \midrule
-        Entry 1      &  0  $\pm$ 0.001  \\
-        Entry 2      &  1  $\pm$ 0.001  \\
-        Entry 3      &  2  $\pm$ 0.001 \\
-        \bottomrule
-    \end{tabular}
-\end{table}
-
-\begin{table}[h]
-    \centering
-    \caption{A Table displaying multi-rows. Horizontal lines can be removed, but tend to lead to confusing tables.}
-    \vspace{.2in}
-    \label{tab:multirow}
-    \begin{tabular}{c|c|c}
-
-        \toprule
-        Header 1 & Header 2 & Header 3 \\
-        \midrule
-
-        \multirow{2}*{Multi-Row}
-            & Row 1 & Row 1 \\
-            \cline{2-3} % \cline{n_rows-n_columns}
-            & Row 2 & Row 2 \\
-
-
-        \hline
-        Single-Row & Row 3  & Row 3\\
-        \bottomrule
-    \end{tabular}
-
-\end{table}
-
-\begin{table}[h]
-    \centering
-    \caption{A Table with multiple columns.}
-    \label{tab:multicol}
-    \vspace{.2in}
-
-        \begin{tabular}{c|c|c}
-            \toprule
-            \multicolumn{2}{c|}{Multi-Column}   & Column 3 \\
-            \midrule
-                        Column 1 & Column 2     & Column 3 \\
-                        Column 1 & Column 2     & Column 3 \\
-            \bottomrule
-        \end{tabular}
-\end{table}
 
 % Todo: Show your work table drawing results from a function
 
