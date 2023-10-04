@@ -18,6 +18,7 @@ graphviz = "^0.20.1"
 seaborn = "^0.12.2"
 torch = "^2.0.1"
 sbi = "^0.21.0"
+showyourwork = "^0.4.3"
 
 
 [build-system]
