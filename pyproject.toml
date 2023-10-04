@@ -19,6 +19,7 @@ seaborn = "^0.12.2"
 torch = "^2.0.1"
 sbi = "^0.21.0"
 showyourwork = "^0.4.3"
+pytest = "^7.4.2"
 
 
 [build-system]
