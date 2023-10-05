@@ -4,7 +4,7 @@ version = "0.1.0"
 description = ""
 authors = ["beckynevin <beckynevin@gmail.com>"]
 readme = "README.md"
-packages = [{include = "DeepUQ"}]
+license = "MIT"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
@@ -18,6 +18,7 @@ graphviz = "^0.20.1"
 seaborn = "^0.12.2"
 torch = "^2.0.1"
 sbi = "^0.21.0"
+pytest-cov = "^4.1.0"
 
 
 [build-system]
