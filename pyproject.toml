@@ -18,6 +18,7 @@ graphviz = "^0.20.1"
 seaborn = "^0.12.2"
 torch = "^2.0.1"
 sbi = "^0.21.0"
+pytest-cov = "^4.1.0"
 
 
 [build-system]
