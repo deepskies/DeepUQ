@@ -29,83 +29,44 @@
 
 \begin{document}
 
-\title{DeepSkies - Template} % Define the title itself, so it may be used in headers
+\title{DeepUQ} % Define the title itself, so it may be used in headers
 
-\author{Author 1 \thanks{Corresponding Author, email@domain.com}}
+\author{Author 1 \thanks{Becky Nevin, rnevin@fnal.gov}}
 
 
 \begin{abstract}
-    This document is meant to be used as a lose guide.
-    It includes useful and basic packages and formatting tips to keep you from hunting for formatting code while writing.
-    Please use this as a reference, and especially while writing without a specific journal already in mind.
-    This will not be the format all journals accept, so please use their defined style guides when work on your draft.
-    % Additionally, it's very nice to keep all your sentences on different lines.
-    % It makes editing a lot easier.
+    This project aims to create a framework for calibrating uncertainty expectations in various ML and statistical models.
+    It builds on DeepBench's pendulum module, controlling error injection, calculating an analytic expectation for the error impact on the final confidence intervals, and comparing this expectation to that produced by various uncertainty-aware ML and statistical techniques.
+    Here, we pursue the following modeling techniques: hierarchical and non-hierarchical Hamiltonian Monte Carlo sampling (\texttt{numpyro}), hierarchical and non-hierarchical simulation-based inference (\texttt{mackelab}), and deep ensembles.
+    We inject aleatoric error on the pendulum parameters individually ($L$, $\theta_0$, and $a_g$) at a variety of levels (1\%, 10\%, and 50\%).
+    We compare this to expectations of aleatoric and epistemic error from the various ML techniques and explore the bias and confidence of the models compared to our analytic expectation.
 \end{abstract}
 
-\section{Basic Format and Style}
+\section{Introduction}
+Cite other UQ techniques, mostly Caldeira \& Nord.
 
-\subsection{Format}
+\section{Methods}
+\subsection{Uncertainty definition and injection}
+\subsection{Modeling techniques}
+\subsubsection{HMC Sampling}
+\subsubsection{SBI}
+\subsubsection{DE}
 
-The specific format of the paper if between you and your journal and your editors.
-However, it is a good idea to include the basic sections of "Introduction, Methods, Conclusions".
-
-\subsection{Style}
-
-Names of coding packages denoted with: \texttt{Package}.
-
-
-
-\editor{Here is an quick comment that may appear, indicating an addition by an editor.}
-
-\subsubsection{Tables}
-
-Tables should act as summaries, and include error bars when applicable. Captions should draw attention to the main takeaway and can provide analysis, but not necessary give a full summary.
-Please view sample table formats in the appendix ~\ref{tab:two_column}
+\section{Analysis}
+\subsection{}
 
 
+%\editor{Here is an quick comment that may appear, indicating an addition by an editor.}
 
 
-\subsubsection{Plots and other graphics}
+%\subsubsection{Equations}
 
-When making graphics, please keep accessibility in mind.
-All plots should be understandable in both black and white and color.
-This requires things like using color blind friendly color packages (matplotlib's virdis for example), and changing line and marker styles for different elements of a graph.
-Plots also must be clearly labeled and include legends where applicable.
-Captions should both describe what the figure contains and its significance.
+%Large equations should be numbered and included in an equation block such that
+%\begin{align}
+%    E=mc^2 \label{eq:1} \\
+%    F=ma \label{eq:2}
+%\end{align}
 
-When referencing a figure in the main text, please refer to it with \verb|~\ref{figure label}|.
-Please view different figure layouts in the appendix ~\ref{fig:single_graphic_figure}.
-
-
-
-\subsubsection{Equations}
-
-Large equations should be numbered and included in an equation block such that
-\begin{align}
-    E=mc^2 \label{eq:1} \\
-    F=ma \label{eq:2}
-\end{align}
-
-
-Intermediate steps can not include numbers such that
-\begin{align*}
-    A = \pi r^2
-\end{align*}
-
-Or by using:
-
-\begin{align}
-    A
-        &=B         \label{eq:3}\\
-        &=B         \notag\\
-    A
-        &=BCD       \label{eq:4}\\
-        &=B         \notag
-\end{align}
-
-
-Labels are used so that they can be referenced later on using the command \verb|~\ref{eq:equation label}|.  Singular symbols can be added into the middle of sentences using \verb|$\symbol$|, such that \verb|\pi| becomes $\pi$.
 
 \section {Acknowledgements}
 
@@ -114,7 +75,7 @@ Make sure to cite \cite{harris2020array} all of your sources \cite{Hunter:2007}.
 
 You can also optionally provide contributions by person:
 
-\paragraph{Author 1}
+\paragraph{Becky Nevin}
 Author 1 contributed X Y and Z
 
 \paragraph{Author 2}
@@ -147,107 +108,11 @@ If you work with the DeepSkies research group; please include the following text
 \newpage
 \appendix
 \section{Appendix}
-You may include an appendix, it contains extra tables not required to understand the main body, but helpful references.
 
-\subsection{Figure References}
-\begin{figure}[h]
-    \centering
-    \includegraphics[scale=.1]
-  {figures/frog.jpg}
-    \caption{
-        This is a figure (containing a cute, although not colorblind friendly, frog) with a single graphic.
-        Because the original image is very large, it is resized with a smaller scale.
-        }
-    \label{fig:single_graphic_figure}
-\end{figure}
-
-
-\begin{figure}[h]
-    \begin{center}
-    \begin{minipage}{.35\linewidth}
-        \includegraphics[width=\linewidth]{figures/frog2.jpg}
-
-        \caption{An example of using minipage to caption each image in a combined figure separately.}
-    \end{minipage}\hfill
-
-    \begin{minipage}{.35\linewidth}
-        \includegraphics[width=\linewidth]{figures/frog3.jpg}
-
-        \caption{This frog has it's own caption, so they can be referred to separately If you were heartless enough to separate them.}
-    \end{minipage}
-    \label{multifigAB}
-
-    \end{center}
-
-\end{figure}
 
 % Todo Example of running show your work function within the tex to produce table
 
 \subsection{Table References}
-
-\begin{figure}[h]
-    \centering
-    \mbox{\subfigure{\includegraphics[width=.35\linewidth]{figures/frog2.jpg}}\quad
-        \subfigure{\includegraphics[width=.35\linewidth]{figures/frog3.jpg} }}
-    \caption{An example showing two images with a shared caption using subfigure. Now the frogs cannot be separated.}
-    \label{fig:multifigC}
-\end{figure}
-
-\begin{table}[h]
-    \centering
-    \caption{Sample table with two columns and a header, with the caption placed on top.}
-    \label{tab:two_column}
-    \vspace{.2in}
-    \begin{tabular}{c | c}
-        \toprule
-        Header 1     & Header 2 \\
-        \midrule
-        Entry 1      &  0  $\pm$ 0.001  \\
-        Entry 2      &  1  $\pm$ 0.001  \\
-        Entry 3      &  2  $\pm$ 0.001 \\
-        \bottomrule
-    \end{tabular}
-\end{table}
-
-\begin{table}[h]
-    \centering
-    \caption{A Table displaying multi-rows. Horizontal lines can be removed, but tend to lead to confusing tables.}
-    \vspace{.2in}
-    \label{tab:multirow}
-    \begin{tabular}{c|c|c}
-
-        \toprule
-        Header 1 & Header 2 & Header 3 \\
-        \midrule
-
-        \multirow{2}*{Multi-Row}
-            & Row 1 & Row 1 \\
-            \cline{2-3} % \cline{n_rows-n_columns}
-            & Row 2 & Row 2 \\
-
-
-        \hline
-        Single-Row & Row 3  & Row 3\\
-        \bottomrule
-    \end{tabular}
-
-\end{table}
-
-\begin{table}[h]
-    \centering
-    \caption{A Table with multiple columns.}
-    \label{tab:multicol}
-    \vspace{.2in}
-
-        \begin{tabular}{c|c|c}
-            \toprule
-            \multicolumn{2}{c|}{Multi-Column}   & Column 3 \\
-            \midrule
-                        Column 1 & Column 2     & Column 3 \\
-                        Column 1 & Column 2     & Column 3 \\
-            \bottomrule
-        \end{tabular}
-\end{table}
 
 % Todo: Show your work table drawing results from a function
 
