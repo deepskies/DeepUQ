@@ -39,11 +39,11 @@ def hierarchical_model(planet_code,
     
 
     #μ_a_g = numpyro.sample("μ_a_g", dist.LogUniform(5.0,15.0))
-    μ_a_g = numpyro.sample("μ_a_g", dist.TruncatedNormal(12.5, 2, low=0.01))
+    μ_a_g = numpyro.sample("μ_a_g", dist.TruncatedNormal(12.5, 5, low=0.01))
     # scale parameters should be log uniform so that they don't go negative 
     # and so that they're not uniform
     # 1 / x in linear space
-    σ_a_g = numpyro.sample("σ_a_g", dist.TruncatedNormal(2, 0.5, low=0.01))
+    σ_a_g = numpyro.sample("σ_a_g", dist.TruncatedNormal(0.1, 0.01, low=0.01))
     n_planets = len(np.unique(planet_code))
     n_pendulums = len(np.unique(pendulum_code))
 
@@ -60,7 +60,7 @@ def hierarchical_model(planet_code,
     ## we also wish to model L and theta for each pendulum independently
     ## here we draw from an uniform distribution
     with numpyro.plate("pend_i", n_pendulums):
-        L = 5#numpyro.sample("L", dist.TruncatedNormal(5, 2, low = 0.01))
+        L = numpyro.sample("L", dist.TruncatedNormal(5, 2, low=0.01))
         theta = numpyro.sample("theta", dist.TruncatedNormal(jnp.pi/100,
                                                              jnp.pi/500,
                                                              low=0.00001))
@@ -76,7 +76,7 @@ def hierarchical_model(planet_code,
     ## the moments in time are not independent, so we do not place the following in a plate
     ## instead, the brackets segment the model by pendulum and by planet,
     ## telling us how to conduct the inference
-    modelx = L * jnp.sin(theta[pendulum_code] * jnp.cos(jnp.sqrt(a_g[planet_code] / L) * times))
+    modelx = L[pendulum_code] * jnp.sin(theta[pendulum_code] * jnp.cos(jnp.sqrt(a_g[planet_code] / L[pendulum_code]) * times))
     ## don't forget to use jnp instead of np so jax knows what to do
     ## A BIG QUESTION I STILL HAVE IS WHAT IS THE LIKELIHOOD? IS IT JUST SAMPLED FROM?
     ## again, for each pendulum we compare the observed to the modeled position:
@@ -92,15 +92,15 @@ def unpooled_model(planet_code,
     n_planets = len(np.unique(planet_code))
     n_pendulums = len(np.unique(pendulum_code))
     with numpyro.plate("planet_i", n_planets):
-        a_g = numpyro.sample("a_g", dist.TruncatedNormal(10, 5,
+        a_g = numpyro.sample("a_g", dist.TruncatedNormal(12.5, 5,
                                                          low=0, high=25))
     with numpyro.plate("pend_i", n_pendulums):
-        L = 5#numpyro.sample("L", dist.TruncatedNormal(5, 2, low = 0.01))
+        L = numpyro.sample("L", dist.TruncatedNormal(5, 2, low = 0.01))
         theta = numpyro.sample("theta", dist.TruncatedNormal(jnp.pi/100,
                                                              jnp.pi/500,
                                                              low=0.00001))
     σ = numpyro.sample("σ", dist.Exponential(exponential))
-    modelx = L * jnp.sin(theta[pendulum_code] *
-                         jnp.cos(jnp.sqrt(a_g[planet_code] / L) * times))
+    modelx = L[pendulum_code] * jnp.sin(theta[pendulum_code] *
+                         jnp.cos(jnp.sqrt(a_g[planet_code] / L[pendulum_code]) * times))
     with numpyro.plate("data", len(pendulum_code)):
         pos = numpyro.sample("obs", dist.Normal(modelx, σ), obs=pos_obs)

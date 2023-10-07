@@ -1,9 +1,101 @@
-# how should this error propagate?
+import matplotlib.pyplot as plt
+import numpy as np
+import arviz as az
+import corner
+import graphviz
+import matplotlib.pyplot as plt
+
+def plot_df(df):
+    plt.clf()
+    plt.scatter(df[df['planet_code']==0]['theta'].values, df[df['planet_code']==0]['pos'].values,
+                color = '#FF220C', label = 'planet 0')
+    plt.errorbar(df[df['planet_code']==0]['theta'].values, df[df['planet_code']==0]['pos'].values,
+                yerr = df[df['planet_code']==0]['pos_err'].values, linestyle = 'None',
+                color = '#FF220C')
+    plt.scatter(df[df['planet_code']==1]['theta'].values, df[df['planet_code']==1]['pos'].values,
+                color = '#9B7874', label = 'planet 1')
+    plt.errorbar(df[df['planet_code']==1]['theta'].values, df[df['planet_code']==1]['pos'].values,
+                yerr = df[df['planet_code']==1]['pos_err'].values, linestyle = 'None',
+                color = '#9B7874')
+    plt.xlabel(r'$\theta_0$')
+    plt.ylabel('x pos')
+    plt.legend()
+    plt.show()
+
+    plt.clf()
+    plt.scatter(df[df['planet_code']==0]['length'].values, df[df['planet_code']==0]['pos'].values,
+                color = '#FF220C', label = 'planet 0')
+    plt.errorbar(df[df['planet_code']==0]['length'].values, df[df['planet_code']==0]['pos'].values,
+                yerr = df[df['planet_code']==0]['pos_err'].values, linestyle = 'None',
+                color = '#FF220C')
+    plt.scatter(df[df['planet_code']==1]['length'].values, df[df['planet_code']==1]['pos'].values,
+                color = '#9B7874', label = 'planet 1')
+    plt.errorbar(df[df['planet_code']==1]['length'].values, df[df['planet_code']==1]['pos'].values,
+                yerr = df[df['planet_code']==1]['pos_err'].values, linestyle = 'None',
+                color = '#9B7874')
+    plt.xlabel(r'length')
+    plt.ylabel('x pos')
+    plt.legend()
+    plt.show()
+
+    plt.clf()
+    plt.scatter(df[df['planet_code']==0]['a_g'].values, df[df['planet_code']==0]['pos'].values,
+                color = '#FF220C', label = 'planet 0')
+    plt.errorbar(df[df['planet_code']==0]['a_g'].values, df[df['planet_code']==0]['pos'].values,
+                yerr = df[df['planet_code']==0]['pos_err'].values, linestyle = 'None',
+                color = '#FF220C')
+    plt.scatter(df[df['planet_code']==1]['a_g'].values, df[df['planet_code']==1]['pos'].values,
+                color = '#9B7874', label = 'planet 1')
+    plt.errorbar(df[df['planet_code']==1]['a_g'].values, df[df['planet_code']==1]['pos'].values,
+                yerr = df[df['planet_code']==1]['pos_err'].values, linestyle = 'None',
+                color = '#9B7874')
+    plt.xlabel(r'$a_g$')
+    plt.ylabel('x pos')
+    plt.legend()
+    plt.show()
+
+def compare_corner(posterior_samples_hierarchical,
+                   posterior_samples_unpooled):
+    data = az.from_dict(
+            posterior={"ag0": posterior_samples_hierarchical["a_g"][:,0], "ag1": posterior_samples_hierarchical["a_g"][:,1],
+                       #"L2": posterior["L"][:,2], "L3": posterior["L"][:,3],
+                       #"L4": posterior["L"][:,4], "L5": posterior["L"][:,5],
+                       #"L6": posterior["L"][:,6], "L7": posterior["L"][:,7],
+                       },
+            #sample_stats={"diverging": posterior["L"][:,0] < 9.0},
+    )
+    plt.clf()
+    figure = corner.corner(data, truths = [data_params['a_g'][0], data_params['a_g'][-1]], truth_color = '#D84797')
+    plt.show()
+
+    data = az.from_dict(
+                posterior={"ag0": posterior_samples_unpooled["a_g"][:,0], "ag1": posterior_samples_unpooled["a_g"][:,1],
+                        #"L2": posterior["L"][:,2], "L3": posterior["L"][:,3],
+                        #"L4": posterior["L"][:,4], "L5": posterior["L"][:,5],
+                        #"L6": posterior["L"][:,6], "L7": posterior["L"][:,7],
+                        },
+                #sample_stats={"diverging": posterior["L"][:,0] < 9.0},
+    )
+    plt.clf()
+    figure = corner.corner(data, truths = [data_params['a_g'][0], data_params['a_g'][-1]], truth_color = '#D84797')
+    plt.show()
+
+def az_trace(data):
+    plt.clf()
+    az.plot_trace(data, compact=True, figsize=(15, 25), legend=True)
+    plt.show()
+
+def sampling_summary_table(mcmc):
+    ## the arviz tools allows us to investigate the chain performance
+    inf_data = az.from_numpyro(mcmc)
+    ## zero divergence means energy is conserved
+    print(f'divergences: {inf_data.sample_stats.diverging.values.sum()}')
+    return az.summary(inf_data), inf_data
 
 def calc_error_prop(true_L, true_theta, true_a, dthing, time = 0.5, wrt = 'theta_0'):
     if wrt == 'theta_0':
-        dx_dthing = true_L * np.cos(true_theta * np.cos(np.sqrt(true_a / true_L) * one_time)) * \
-              np.cos(np.sqrt(true_a / true_L) * one_time) * dthing
+        dx_dthing = true_L * np.cos(true_theta * np.cos(np.sqrt(true_a / true_L) * time)) * \
+              np.cos(np.sqrt(true_a / true_L) * time) * dthing
     if wrt == 'L':
 
         dx_dthing = (0.5 * true_theta * time * np.sqrt(true_a / true_L) * np.sin(time * np.sqrt(true_a / true_L)) * \
@@ -48,7 +140,12 @@ def display_pendulum_data(df):
     plt.title('pendulums color-coded by planet')
     plt.show()
     
-def plot_prior_predictive(prior_pred, variable_model, variable_df, n_steps=10, title = None):
+def plot_prior_predictive(prior_pred,
+                          df,
+                          variable_model,
+                          variable_df,
+                          n_steps=10,
+                          title = None):
     ## plot the prior predictive histograms for parameters in the model
     label = "prior samples"
     plt.hist(
