@@ -3,9 +3,56 @@ import numpyro.distributions as dist
 import numpy as np
 import jax
 import jax.numpy as jnp # yes i know this is confusing
+import torch.nn as nn
+
+# tensorflow sucks
+# build a similar thing in pytorch
 
 
+class de_no_var(nn.Module):
+    def __init__(self):
+        super().__init__()
+        drop_percent = 0.1
+        self.ln_1 = nn.Linear(3, 100)
+        self.act1 = nn.ReLU()
+        self.drop1 = nn.Dropout(drop_percent)
+        self.ln_2 = nn.Linear(100, 100)
+        self.act2 = nn.ReLU()
+        self.drop2 = nn.Dropout(drop_percent)
+        self.ln_3 = nn.Linear(100, 100)
+        self.act3 = nn.ReLU()
+        self.drop3 = nn.Dropout(drop_percent)
+        self.ln_4 = nn.Linear(100,1) # needs to be 2 if using the GaussianNLLoss
 
+    def forward(self, x):
+        x = self.drop1(self.act1(self.ln_1(x)))
+        x = self.drop2(self.act2(self.ln_2(x)))
+        x = self.drop3(self.act3(self.ln_3(x)))
+        x = self.ln_4(x)
+        return x
+
+
+class de_var(nn.Module):
+    def __init__(self):
+        super().__init__()
+        drop_percent = 0.1
+        self.ln_1 = nn.Linear(3, 100)
+        self.act1 = nn.ReLU()
+        self.drop1 = nn.Dropout(drop_percent)
+        self.ln_2 = nn.Linear(100, 100)
+        self.act2 = nn.ReLU()
+        self.drop2 = nn.Dropout(drop_percent)
+        self.ln_3 = nn.Linear(100, 100)
+        self.act3 = nn.ReLU()
+        self.drop3 = nn.Dropout(drop_percent)
+        self.ln_4 = nn.Linear(100,2) # needs to be 2 if using the GaussianNLLoss
+
+    def forward(self, x):
+        x = self.drop1(self.act1(self.ln_1(x)))
+        x = self.drop2(self.act2(self.ln_2(x)))
+        x = self.drop3(self.act3(self.ln_3(x)))
+        x = self.ln_4(x)
+        return x
 
 ## in numpyro, you must specify number of sampling chains you will use upfront
 
