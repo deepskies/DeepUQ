@@ -45,6 +45,31 @@
 \section{Introduction}
 Cite other UQ techniques, mostly Caldeira \& Nord.
 
+\subsection{Error injection, (post-hoc) calibration, reliability}
+Historically, aleatoric uncertainty is represented as $\epsilon$ in linear regression.
+It is an additive uncertainty, not necessarily associated with a certain parameter.
+This type of uncertainty can be homoskedastic or heteroskedastic.
+If $\epsilon$ is a multiplicative term modifying an input parameter, the uncertainty is considered to be heteroskedastic, since it is tied to the parameter value.
+In a linear regression setting, epistemic uncertainty is accounted for by the error on the $\beta$, or slope coefficient (\citealt{Nagl2022}).
+
+Many methods focus on creating software that will produce an uncertainty prediction.
+However, a critical missed step is to calibrate this uncertainty prediction, testing its reliability against an expectation.
+Several authors have investigated this, focusing on the calibration of classification problems, including Guao et al. 2017, Wegner et al. 2020, and Zhang et al. 2020.
+
+\begin{itemize}
+    \item Guo et al. 2017; this is the paper that presents temperature scaling as a method to quantify calibration of deep neural networks.
+    They also find that while neural networks today are more accurate than they were a decade ago, they are no longer well-calibrated, meaning that the confidence is substantially higher than accuracy.
+    So here, we are comparing confidence, which is a measurement of probabilities associate with the predicted labels, with the accuracy, both of which you get from the output.
+    So they are not propagating an error expecation to; they are instead comparing output to output. 
+    \item Wegner et al. 2020
+    \item Zhang et al. 2020.
+\end{itemize}
+
+To read:
+\begin{itemize}
+    \item Ghanem et al. 2017 is a handbook on UQ
+\end{itemize}
+
 \section{Methods}
 \subsection{Uncertainty definition and injection}
 \subsection{Modeling techniques}
