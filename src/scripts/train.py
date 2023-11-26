@@ -127,19 +127,27 @@ def train_DE(trainDataLoader,
                         if i == 0:
                             if loss_type == 'no_var_loss':
                                 plt.scatter(y, pred.flatten().detach().numpy(),
-                                        color = '#F45866', edgecolor = 'black', zorder = 100)
+                                            color='#F45866',
+                                            edgecolor='black',
+                                            zorder=100)
                             else:
-                                plt.errorbar(y, pred[:,0].flatten().detach().numpy(),
-                                            yerr = abs(pred[:,1].flatten().detach().numpy()),
-                                            linestyle='None',
-                                            color = '#F45866', zorder = 100)
-                                plt.scatter(y, pred[:,0].flatten().detach().numpy(),
-                                            color = '#F45866', edgecolor = 'black', zorder = 100)
+                                plt.errorbar(y,
+                                             pred[:, 0].flatten().detach().numpy(),
+                                             yerr=abs(pred[:, 1].flatten().detach().numpy()),
+                                             linestyle='None',
+                                             color='#F45866',
+                                             zorder=100)
+                                plt.scatter(y,
+                                            pred[:, 0].flatten().detach().numpy(),
+                                            color='#F45866',
+                                            edgecolor='black',
+                                            zorder=100)
                         else:
                             if loss_type == 'no_var_loss':
                                 plt.scatter(y, pred.flatten().detach().numpy())
                             else:
-                                plt.scatter(y, pred[:,0].flatten().detach().numpy())
+                                plt.scatter(y,
+                                            pred[:, 0].flatten().detach().numpy())
                             
                 loss_this_epoch.append(loss.item())
 
@@ -156,8 +164,6 @@ def train_DE(trainDataLoader,
                 if e % 5 == 0:    
                     plt.ylabel('prediction')
                     plt.xlabel('true value')
-                    #plt.xlim([-1,1])
-                    #plt.ylim([-1,1])
                     plt.title('Epoch '+str(e))
                     plt.show()   
             loss_all_epochs.append(loss_this_epoch)
@@ -168,6 +174,7 @@ def train_DE(trainDataLoader,
             model.eval()
             y_pred = model(torch.Tensor(x_val))
             
+            '''
             print(np.shape(x_val))
             if plot == True:
                 if e % 5 == 0:
@@ -187,8 +194,8 @@ def train_DE(trainDataLoader,
                         
 
                     plt.legend()
-                    ax.set_xlabel('length')
-                    ax.set_ylabel('x pos')
+                    ax.set_xlabel('input x dimension 0')
+                    ax.set_ylabel('prediction')
                     
                     ax = fig.add_subplot(132)
                     ax.scatter(x_val[:,1], y_val, label = 'actual', color = '#4E937A', s = 10, zorder = 100)
@@ -202,8 +209,8 @@ def train_DE(trainDataLoader,
                                     label = 'predicted', color = '#C7F2A7', linestyle = 'None')
 
                     plt.legend()
-                    ax.set_xlabel('theta')
-                    ax.set_ylabel('x pos')
+                    ax.set_xlabel('input x dimension 1')
+                    ax.set_ylabel('prediction')
                     
                     ax = fig.add_subplot(133)
                     ax.scatter(x_val[:,2], y_val, label = 'actual', color = '#4E937A', s = 10, zorder = 100)
@@ -216,9 +223,10 @@ def train_DE(trainDataLoader,
                                     yerr = abs(y_pred[:,1].detach().numpy()),
                                     label = 'predicted', color = '#C7F2A7', ls = 'None')
                     plt.legend()
-                    ax.set_xlabel('a_g')
-                    ax.set_ylabel('x pos')
+                    ax.set_xlabel('input x dimension 2')
+                    ax.set_ylabel('precition')
                     plt.show()
+            '''
             #print(y_pred.flatten().size(), torch.Tensor(y_valid).size())
             if loss_type == 'no_var_loss':
                 mse = lossFn(y_pred.flatten(), torch.Tensor(y_val)).item()
