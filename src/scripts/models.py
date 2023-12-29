@@ -13,7 +13,7 @@ class de_no_var(nn.Module):
     def __init__(self):
         super().__init__()
         drop_percent = 0.1
-        self.ln_1 = nn.Linear(4, 100)
+        self.ln_1 = nn.Linear(3, 100)
         self.act1 = nn.ReLU()
         self.drop1 = nn.Dropout(drop_percent)
         self.ln_2 = nn.Linear(100, 100)
@@ -36,7 +36,7 @@ class de_var(nn.Module):
     def __init__(self):
         super().__init__()
         drop_percent = 0.1
-        self.ln_1 = nn.Linear(4, 100)
+        self.ln_1 = nn.Linear(3, 100)
         self.act1 = nn.ReLU()
         self.drop1 = nn.Dropout(drop_percent)
         self.ln_2 = nn.Linear(100, 100)
