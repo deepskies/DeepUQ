@@ -1,5 +1,5 @@
 # DeepUQ
-
+Link to <href="https://docs.google.com/document/d/1bsDFtSTqheKUe8RCGDqq_sb-xUJlNOt9-jiVqliP-QM/edit?usp=sharing">google doc writeup</a>
 
 ## DeepSkies Science Repo Template 
 Include status links to different outside resources, such as build info, paper info, license, etc. 
