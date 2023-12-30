@@ -1,5 +1,5 @@
 # DeepUQ
-Link to <href="https://docs.google.com/document/d/1bsDFtSTqheKUe8RCGDqq_sb-xUJlNOt9-jiVqliP-QM/edit?usp=sharing">google doc writeup</a>
+Link to <a href="https://docs.google.com/document/d/1bsDFtSTqheKUe8RCGDqq_sb-xUJlNOt9-jiVqliP-QM/edit?usp=sharing">google doc writeup</a>
 
 ## Installation
 To install, clone the repo and use the environment manager poetry to install the pyproject file. Follow the below instructions for how to install poetry.
