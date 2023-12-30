@@ -1,6 +1,34 @@
 # DeepUQ
 Link to <href="https://docs.google.com/document/d/1bsDFtSTqheKUe8RCGDqq_sb-xUJlNOt9-jiVqliP-QM/edit?usp=sharing">google doc writeup</a>
 
+## Installation
+To install, clone the repo and use the environment manager poetry to install the pyproject file. Follow the below instructions for how to install poetry.
+
+### poetry
+Poetry is our recommended method of handling a package environment as publishing and building is handled by a toml file that handles all possibly conflicting dependencies.
+Full docs can be found [here](https://python-poetry.org/docs/basic-usage/).
+
+Install instructions:
+
+Add poetry to your python install
+> pip install poetry
+
+Install the pyproject file (run this from within this repo)
+> poetry install
+
+To add another package to your environment
+> poetry add (package name)
+
+To run within your environment
+>poetry run (file).py
+
+If you wish to start from scratch:
+> pip install poetry
+> poetry init
+
+
+
+All that follows is a placeholder for later, please ignore:
 ## DeepSkies Science Repo Template 
 Include status links to different outside resources, such as build info, paper info, license, etc. 
 You can select your license from the [choose a license page.](https://choosealicense.com/licenses/), and then change the name of the license in the badge and link included. 
