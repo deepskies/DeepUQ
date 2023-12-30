@@ -22,10 +22,9 @@ To add another package to your environment
 To run within your environment
 >poetry run (file).py
 
-If you wish to start from scratch:
-> pip install poetry
-> poetry init
-
+I prefer to initialize the poetry shell and then run scripts within that environment
+>poetry shell
+> python src/scripts/run_a_thing.py
 
 
 All that follows is a placeholder for later, please ignore:
