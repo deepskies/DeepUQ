@@ -23,7 +23,8 @@ To run within your environment
 >poetry run (file).py
 
 I prefer to initialize the poetry shell and then run scripts within that environment
->poetry shell
+> poetry shell
+
 > python src/scripts/run_a_thing.py
 
 
