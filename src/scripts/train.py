@@ -97,6 +97,8 @@ def train_DER(trainDataLoader,
     loss_fct = functools.partial(lossFn, coeff=COEFF)
     opt = torch.optim.Adam(model.parameters(), lr=INIT_LR)
 
+
+
     # loop over our epochs
     for e in range(0, EPOCHS):
         epoch = int(start_epoch + e)
@@ -120,7 +122,9 @@ def train_DER(trainDataLoader,
             # perform a forward pass and calculate the training loss
 
             pred = model(x)
-            print('shapes train', np.shape(pred), np.shape(y))
+            #print('shapes train', np.shape(pred), np.shape(y))
+            #print('x', x)
+            #print('y', y)
         
             loss = lossFn(pred, y, COEFF)
             if plot == True:
@@ -169,11 +173,12 @@ def train_DER(trainDataLoader,
         #print('training loss', np.mean(loss_this_epoch))
 
         # this code from Rohan:
-        #now, once an epoch is done:
+        # now, once an epoch is done:
         model.eval()
+        #print('x val', x_val)
+        #print('y val', y_val)
         y_pred = model(torch.Tensor(x_val))
-        print('shapes val', np.shape(y_pred), np.shape(y))
-        NIGloss_val = lossFn(y_pred, y, COEFF).item()
+        NIGloss_val = lossFn(y_pred, torch.Tensor(y_val), COEFF).item()
 
         loss_validation.append(NIGloss_val)
         if NIGloss_val < best_loss:
@@ -189,7 +194,7 @@ def train_DER(trainDataLoader,
                 'model_state_dict': model.state_dict(),
                 'optimizer_state_dict': opt.state_dict(),
                 'train_loss': np.mean(loss_this_epoch),
-                'valid_loss': mse
+                'valid_loss': NIGloss_val
                 }, "/home/rnevin/deepskieslab/rnevin/TinyCNN/models/TinyCNN_MSE_"+str(epoch)+".pt")
     endTime = time.time()
     print('start at', startTime, 'end at', endTime)
