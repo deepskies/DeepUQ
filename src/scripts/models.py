@@ -5,6 +5,7 @@ import jax
 import jax.numpy as jnp # yes i know this is confusing
 import torch.nn as nn
 import torch
+import math
 
 # tensorflow sucks
 # build a similar thing in pytorch
@@ -161,7 +162,7 @@ class Model(nn.Module):
     def __init__(self, n_output, n_hidden=64):
         super().__init__()
         self.model = nn.Sequential(
-            nn.Linear(1, n_hidden),
+            nn.Linear(3, n_hidden),
             nn.ReLU(),
             nn.Linear(n_hidden, n_hidden),
             nn.ReLU(),
