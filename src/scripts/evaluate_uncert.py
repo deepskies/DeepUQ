@@ -86,3 +86,9 @@ class SpearmanRankCalculator:
         """
         spearman_rank, _ = spearmanr(y_true, y_pred)
         return spearman_rank
+
+    def visualize_spearman_rank(y_true, y_pred):
+        plt.hist(y_true)
+        plt.hist(y_pred)
+        plt.legend()
+        plt.show()
