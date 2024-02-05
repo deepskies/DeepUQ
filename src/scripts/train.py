@@ -4,13 +4,12 @@ Can leave a default data source, or specify that 'load data' loads the dataset u
 """
 import argparse
 import torch
-import sbi
 import time
 import glob
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
-from src.scripts import models
+from scripts import models
 import functools
 
 
@@ -426,27 +425,6 @@ def train_DE(trainDataLoader,
 
     return model_ensemble
 
-
-
-def train_SBI_hierarchical(thetas, xs, prior):
-    # Now let's put them in a tensor form that SBI can read.
-    theta = torch.tensor(thetas, dtype=torch.float32)
-    x = torch.tensor(xs, dtype=torch.float32)
-
-    # instantiate the neural density estimator
-    neural_posterior = sbi.utils.posterior_nn(model='maf')#,
-                                  #embedding_net=embedding_net,
-                                  #hidden_features=hidden_features,
-                                  #num_transforms=num_transforms)
-    # setup the inference procedure with the SNPE-C procedure
-    inference = sbi.inference.SNPE(prior=prior,
-                                   density_estimator=neural_posterior,
-                                   device="cpu")
-
-    # now that we have both the simulated images and
-    # parameters defined properly, we can train the SBI.
-    density_estimator = inference.append_simulations(theta, x).train()
-    return inference.build_posterior(density_estimator)
 
 
 if __name__ == "__main__":
