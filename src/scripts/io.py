@@ -3,9 +3,82 @@
 
 import pandas as pd
 import numpy as np
+import pickle
+import sbi
 
 
-class DatasetPreparation:
+class ModelLoader:
+    def save_model_pkl(self, path, model_name, posterior):
+        """
+        Save the pkl'ed saved posterior model
+
+        :param path: Location to save the model
+        :param model_name: Name of the model
+        :param posterior: Model object to be saved
+        """
+        file_name = path + model_name + ".pkl"
+        with open(file_name, "wb") as file:
+            pickle.dump(posterior, file)
+
+    def load_model_pkl(self, path, model_name):
+        """
+        Load the pkl'ed saved posterior model
+
+        :param path: Location to load the model from
+        :param model_name: Name of the model
+        :return: Loaded model object that can be used with the predict function
+        """
+        print(path)
+        with open(path + model_name + ".pkl", "rb") as file:
+            posterior = pickle.load(file)
+        return posterior
+
+    def infer_sbi(self, posterior, n_samples, y_true):
+        return posterior.sample((n_samples,), x=y_true)
+
+    def predict(input, model):
+        """
+
+        :param input: loaded object used for inference
+        :param model: loaded model
+        :return: Prediction
+        """
+        return 0
+
+
+class DataLoader:
+    def save_data_pkl(self,
+                      data_name,
+                      data,
+                      path='../saveddata/'):
+        """
+        Save and load the pkl'ed training/test set
+
+        :param path: Location to save the model
+        :param model_name: Name of the model
+        :param posterior: Model object to be saved
+        """
+        file_name = path + data_name + ".pkl"
+        with open(file_name, "wb") as file:
+            pickle.dump(data, file)
+
+    def load_data_pkl(self,
+                      data_name,
+                      path='../saveddata/'):
+        """
+        Load the pkl'ed saved posterior model
+
+        :param path: Location to load the model from
+        :param model_name: Name of the model
+        :return: Loaded model object that can be used with the predict function
+        """
+        print(path)
+        with open(path + data_name + ".pkl", "rb") as file:
+            data = pickle.load(file)
+        return data
+
+
+class DataPreparation:
      """
     A class for loading, preprocessing, and simulating datasets.
 
@@ -31,35 +104,40 @@ class DatasetPreparation:
 
     Note: Replace 'your_dataset.csv' with the actual dataset file path.
     """
-    def __init__(self, file_path):
-        self.file_path = file_path
+    def __init__(self):
         self.data = None
 
-    def load_data(self):
-        try:
-            self.data = pd.read_csv(self.file_path)
-            print("Data loaded successfully.")
-        except FileNotFoundError:
-            print(f"Error: File not found at {self.file_path}")
+    def simulate_data(self,
+                      thetas,
+                      sigma,
+                      simulation_name,
+                      x=np.linspace(0, 100, 101),
+                      ):
+        if simulation_name == 'linear_homogeneous':
+            # convert to numpy array (if tensor):
+            thetas = np.atleast_2d(thetas)
+            # Check if the input has the correct shape
+            if thetas.shape[1] != 2:
+                raise ValueError("Input tensor must have shape (n, 2) where n is the number of parameter sets.")
 
-    def preprocess_data(self):
-        if self.data is not None:
-            # Example: Dropping missing values for simplicity
-            self.data = self.data.dropna()
-            print("Data preprocessed successfully.")
-        else:
-            print("Error: No data loaded. Please use load_data() first.")
-
-    def simulate_data(self, x, parameters, simulation_name):
-        if simulation_name == 'linear':
-            # Example linear simulation
-            m, b, sigma = parameters
-            #x = np.linspace(0, 100, 101)
-            rs = np.random.RandomState()#2147483648)# 
-            ε = rs.normal(loc=0, scale=sigma, size = len(x)) 
-            y =  m * x + b + ε
-            #x = np.linspace(0, 10, num_samples)
-            #y = 2 * x + 1 + np.random.normal(0, 1, num_samples)
+            # Unpack the parameters
+            if thetas.shape[0] == 1:
+                # If there's only one set of parameters, extract them directly
+                m, b = thetas[0, 0], thetas[0, 1]
+            else:
+                # If there are multiple sets of parameters, extract them for each row
+                m, b = thetas[:, 0], thetas[:, 1]
+            rs = np.random.RandomState(seed)#2147483648)# 
+            # I'm thinking sigma could actually be a function of x
+            # if we want to get fancy down the road
+            # Generate random noise (epsilon) based on a normal distribution with mean 0 and standard deviation sigma
+            ε = rs.normal(loc=0, scale=sigma, size=(len(x), thetas.shape[0]))
+            
+            # Initialize an empty array to store the results for each set of parameters
+            y = np.zeros((len(x), thetas.shape[0]))
+            for i in range(thetas.shape[0]):
+                m, b = thetas[i, 0], thetas[i, 1]
+                y[:, i] = m * x + b + ε[:, i]
             simulated_data = pd.DataFrame({'Feature': x, 'Target': y})
             print("Linear simulation data generated.")
         elif simulation_name == 'quadratic':
@@ -71,56 +149,21 @@ class DatasetPreparation:
         else:
             print(f"Error: Unknown simulation name '{simulation_name}'. No data generated.")
             return
-
+        self.input = x
+        self.output = torch.Tensor(y.T)
+        self.output_err = ε[:, i]
         self.data = simulated_data
 
-    def save_data(self, output_file='output_data.csv'):
-        if self.data is not None:
-            self.data.to_csv(output_file, index=False)
-            print(f"Data saved to {output_file} successfully.")
-        else:
-            print("Error: No data available to save. Please load, preprocess, or simulate data first.")
-
+    def sample_params_from_prior(self, n_samples):
+        low_bounds = torch.tensor([0, -10])
+        high_bounds = torch.tensor([10, 10])
+        prior = sbi.utils.BoxUniform(low = low_bounds, high = high_bounds)
+        params = prior.sample((n_samples,))
+        self.params = params
+    
     def get_data(self):
         return self.data
 
-
-class ParameterSampler:
-    """
-    A class for randomly generating and saving parameter values.
-
-    Methods:
-    - random_parameters(num_samples=5): Generate random parameter values.
-    - save_parameters(output_file='parameter_values.csv'): Save generated parameter values to a CSV file.
-
-    Example Usage:
-    ```
-    param_sampler = ParameterSampler()
-    param_sampler.random_parameters(num_samples=10)
-    param_sampler.save_parameters('random_parameters.csv')
-    ```
-
-    Note: Adjust the parameter generation logic in the `random_parameters` method based on specific requirements.
-    """
-    def __init__(self):
-        self.parameter_values = None
-
-    def random_parameters(self, num_samples=1):
-        # Example: Randomly generate parameter values
-        parameter_values = {
-            'param1': np.random.uniform(0, 1, num_samples),
-            'param2': np.random.normal(0, 1, num_samples),
-            'param3': np.random.choice(['A', 'B', 'C'], size=num_samples)
-        }
-        self.parameter_values = pd.DataFrame(parameter_values)
-        print(f"Random parameter values generated for {num_samples} samples.")
-
-    def save_parameters(self, output_file='parameter_values.csv'):
-        if self.parameter_values is not None:
-            self.parameter_values.to_csv(output_file, index=False)
-            print(f"Parameter values saved to {output_file} successfully.")
-        else:
-            print("Error: No parameter values available to save. Please generate random parameters first.")
 
 # Example usage:
 if __name__ == "__main__":
