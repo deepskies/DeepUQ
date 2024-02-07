@@ -22,10 +22,10 @@ Getting a little more specific:
 
 ### Clone this repo
 First, cd to where you'd like to put this repo and type:
-> git clone https://github.com/deepskies/DeepDiagnostics.git
+> git clone https://github.com/deepskies/DeepUQ.git
 
 Then, cd into the repo:
-> cd DeepDiagnostics
+> cd DeepUQ
 
 ### Install and use poetry to set up the environment
 Poetry is our recommended method of handling a package environment as publishing and building is handled by a toml file that handles all possibly conflicting dependencies. 
@@ -36,7 +36,7 @@ Install instructions:
 Add poetry to your python install 
 > pip install poetry
 
-Then, from within the DeepDiagnostics repo, run the following:
+Then, from within the DeepUQ repo, run the following:
 
 Install the pyproject file
 > poetry install 
