@@ -4,7 +4,8 @@
 import pandas as pd
 import numpy as np
 import pickle
-import sbi
+from torch.distributions import Uniform
+import torch
 
 
 class ModelLoader:
@@ -32,9 +33,6 @@ class ModelLoader:
         with open(path + model_name + ".pkl", "rb") as file:
             posterior = pickle.load(file)
         return posterior
-
-    def infer_sbi(self, posterior, n_samples, y_true):
-        return posterior.sample((n_samples,), x=y_true)
 
     def predict(input, model):
         """
@@ -77,9 +75,40 @@ class DataLoader:
             data = pickle.load(file)
         return data
 
+    def save_data_h5(self, data_name, data, path="../saveddata/"):
+        """
+        Save data to an h5 file.
+
+        :param path: Location to save the data
+        :param data_name: Name of the data
+        :param data: Data to be saved
+        """
+        data_arrays = {key: np.asarray(value) for key, value in data.items()}
+
+        file_name = path + data_name + ".h5"
+        with h5py.File(file_name, "w") as file:
+            # Save each array as a dataset in the HDF5 file
+            for key, value in data_arrays.items():
+                file.create_dataset(key, data=value)
+
+    def load_data_h5(self, data_name, path="../saveddata/"):
+        """
+        Load data from an h5 file.
+
+        :param path: Location to load the data from
+        :param data_name: Name of the data
+        :return: Loaded data
+        """
+        file_name = path + data_name + ".h5"
+        loaded_data = {}
+        with h5py.File(file_name, "r") as file:
+            for key in file.keys():
+                loaded_data[key] = torch.Tensor(file[key][...])
+        return loaded_data
+
 
 class DataPreparation:
-     """
+    """
     A class for loading, preprocessing, and simulating datasets.
 
     Parameters:
@@ -112,7 +141,7 @@ class DataPreparation:
                       sigma,
                       simulation_name,
                       x=np.linspace(0, 100, 101),
-                      ):
+                      seed=13):
         if simulation_name == 'linear_homogeneous':
             # convert to numpy array (if tensor):
             thetas = np.atleast_2d(thetas)
@@ -138,7 +167,7 @@ class DataPreparation:
             for i in range(thetas.shape[0]):
                 m, b = thetas[i, 0], thetas[i, 1]
                 y[:, i] = m * x + b + ε[:, i]
-            simulated_data = pd.DataFrame({'Feature': x, 'Target': y})
+            #simulated_data = pd.DataFrame({'Feature': x, 'Target': y})
             print("Linear simulation data generated.")
         elif simulation_name == 'quadratic':
             # Example quadratic simulation
@@ -152,12 +181,12 @@ class DataPreparation:
         self.input = x
         self.output = torch.Tensor(y.T)
         self.output_err = ε[:, i]
-        self.data = simulated_data
+        #self.data = simulated_data
 
     def sample_params_from_prior(self, n_samples):
-        low_bounds = torch.tensor([0, -10])
-        high_bounds = torch.tensor([10, 10])
-        prior = sbi.utils.BoxUniform(low = low_bounds, high = high_bounds)
+        low_bounds = torch.tensor([0, -10], dtype=torch.float32)
+        high_bounds = torch.tensor([10, 10], dtype=torch.float32)
+        prior = Uniform(low=low_bounds, high=high_bounds)
         params = prior.sample((n_samples,))
         self.params = params
     
