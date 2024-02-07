@@ -19,6 +19,8 @@ seaborn = "^0.12.2"
 torch = "^2.0.1"
 pytest-cov = "^4.1.0"
 deepbench = "^0.2.2"
+sbi = "^0.22.0"
+h5py = "^3.10.0"
 
 
 [build-system]
