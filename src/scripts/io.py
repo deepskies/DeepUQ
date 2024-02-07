@@ -6,6 +6,7 @@ import numpy as np
 import pickle
 from torch.distributions import Uniform
 import torch
+import h5py
 
 
 class ModelLoader:
@@ -48,7 +49,7 @@ class DataLoader:
     def save_data_pkl(self,
                       data_name,
                       data,
-                      path='../saveddata/'):
+                      path='../data/'):
         """
         Save and load the pkl'ed training/test set
 
@@ -62,7 +63,7 @@ class DataLoader:
 
     def load_data_pkl(self,
                       data_name,
-                      path='../saveddata/'):
+                      path='../data/'):
         """
         Load the pkl'ed saved posterior model
 
@@ -75,7 +76,10 @@ class DataLoader:
             data = pickle.load(file)
         return data
 
-    def save_data_h5(self, data_name, data, path="../saveddata/"):
+    def save_data_h5(self,
+                     data_name,
+                     data,
+                     path="../data/"):
         """
         Save data to an h5 file.
 
@@ -91,7 +95,7 @@ class DataLoader:
             for key, value in data_arrays.items():
                 file.create_dataset(key, data=value)
 
-    def load_data_h5(self, data_name, path="../saveddata/"):
+    def load_data_h5(self, data_name, path="../data/"):
         """
         Load data from an h5 file.
 
@@ -189,6 +193,16 @@ class DataPreparation:
         prior = Uniform(low=low_bounds, high=high_bounds)
         params = prior.sample((n_samples,))
         self.params = params
+
+    def get_dict(self):
+        data_dict = {
+                    'params': self.params,
+                    'inputs': self.input,
+                    'output': self.output,
+                    'output_err': self.output_err
+                    }
+        return data_dict
+
     
     def get_data(self):
         return self.data
