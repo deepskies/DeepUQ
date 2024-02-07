@@ -16,7 +16,7 @@ DeepUQ is a package for injecting and measuring different types of uncertainty i
 
 Getting a little more specific:
 
-![python module overview](images/workflow_overview.png)
+![python module overview](images/workflow_deepUQ.png)
 
 ## Installation 
 
