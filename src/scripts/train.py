@@ -136,8 +136,8 @@ def train_DER(trainDataLoader,
                                     color='#F45866',
                                     edgecolor='black',
                                     zorder=100)
-                        plt.errorbar(y, pred[:,0].flatten().detach().numpy(),
-                                     yerr = loss[2],
+                        plt.errorbar(y, pred[:, 0].flatten().detach().numpy(),
+                                     yerr=loss[2],
                                      color='#F45866',
                                      zorder=100,
                                      ls='None')
