@@ -36,47 +36,7 @@ def train_model(data_source, n_epochs):
 
     return 0
 
-def train_DER(trainDataLoader,
-              x_val,
-              y_val,
-              INIT_LR,
-              DEVICE,
-              COEFF,
-              DER_type,
-              model_name='DER',
-              EPOCHS=40,
-              save_checkpoints=False,
-              plot=False):
-    # measure how long training is going to take
-    print("[INFO] training the network...")
-
-    print("saving checkpoints?")
-    print(save_checkpoints)
-
-    startTime = time.time()
-
-    # Find last epoch saved
-    if save_checkpoints:
-        
-        print(glob.glob('models/*'+model_name+'*'))
-        list_models_run = []
-        for file in glob.glob('models/*'+model_name+'*'):
-            list_models_run.append(float(str.split(str(str.split(file, model_name+'_')[1]),'.')[0]))
-        if list_models_run:
-            start_epoch = max(list_models_run) + 1
-        else:
-            start_epoch = 0
-    else:
-        start_epoch = 0
-    print('starting here', start_epoch)
-
-
-    loss_all_epochs = [] # this is from the training set
-    loss_validation = []
-
-    best_loss = np.inf   # init to infinity
-
-
+def model_setup_DER(DER_type, DEVICE):
     # initialize the model from scratch
     if DER_type == 'SDER':
         #model = models.de_no_var().to(device)
@@ -93,6 +53,52 @@ def train_DER(trainDataLoader,
     # from https://github.com/pasteurlabs/unreasonable_effective_der/blob/main/x3_indepth.ipynb 
     model = torch.nn.Sequential(models.Model(4), DERLayer())
     model = model.to(DEVICE)
+    return model, lossFn
+
+def train_DER(trainDataLoader,
+              x_val,
+              y_val,
+              INIT_LR,
+              DEVICE,
+              COEFF,
+              DER_type,
+              DER_name,
+              EPOCHS=40,
+              save_checkpoints=False,
+              path_to_model='models/',
+              plot=False):
+    # measure how long training is going to take
+    print("[INFO] training the network...")
+
+    print("saving checkpoints?")
+    print(save_checkpoints)
+
+    startTime = time.time()
+
+    # Find last epoch saved
+    if save_checkpoints:
+        
+        print(glob.glob(path_to_model+"/"+str(DER_name)+'*'))
+        list_models_run = []
+        for file in glob.glob(path_to_model+"/"+str(DER_name)+'*'):
+            list_models_run.append(float(str.split(str(str.split(file, DER_name+'_')[1]),'.')[0]))
+        if list_models_run:
+            start_epoch = max(list_models_run) + 1
+        else:
+            start_epoch = 0
+    else:
+        start_epoch = 0
+    print('starting here', start_epoch)
+
+
+    loss_all_epochs = [] # this is from the training set
+    loss_validation = []
+
+    best_loss = np.inf   # init to infinity
+
+
+    model, lossFn = model_setup_DER(DER_type, DEVICE)
+
     loss_fct = functools.partial(lossFn, coeff=COEFF)
     opt = torch.optim.Adam(model.parameters(), lr=INIT_LR)
 
@@ -121,10 +127,6 @@ def train_DER(trainDataLoader,
             # perform a forward pass and calculate the training loss
 
             pred = model(x)
-            #print('shapes train', np.shape(pred), np.shape(y))
-            #print('x', x)
-            #print('y', y)
-        
             loss = lossFn(pred, y, COEFF)
             if plot == True:
                 if e % 5 == 0:
@@ -134,30 +136,25 @@ def train_DER(trainDataLoader,
                                     color='#F45866',
                                     edgecolor='black',
                                     zorder=100)
-                        '''
-                        else:
-                            plt.errorbar(y,
-                                            pred[:, 0].flatten().detach().numpy(),
-                                            yerr=abs(pred[:, 1].flatten().detach().numpy()),
-                                            linestyle='None',
-                                            color='#F45866',
-                                            zorder=100)
-                            plt.scatter(y,
-                                        pred[:, 0].flatten().detach().numpy(),
-                                        color='#F45866',
-                                        edgecolor='black',
-                                        zorder=100)
-                        '''
+                        plt.errorbar(y, pred[:, 0].flatten().detach().numpy(),
+                                     yerr=loss[2],
+                                     color='#F45866',
+                                     zorder=100,
+                                     ls='None')
+                        plt.annotate(r'med $u_{ep} = '+str(np.median(loss[2])),
+                                     xy = (0.03, 0.93),
+                                     xycoords='axes fraction',
+                                     color='#F45866')
+                        
                     else:
                         plt.scatter(y, pred[:, 0].flatten().detach().numpy())
-                        
-            loss_this_epoch.append(loss.item())
+            loss_this_epoch.append(loss[0].item())
 
             # zero out the gradients        
             opt.zero_grad()
             # perform the backpropagation step
             # computes the derivative of loss with respect to the parameters
-            loss.backward()
+            loss[0].backward()
             # update the weights
             # optimizer takes a step based on the gradients of the parameters
             # here, its taking a step for every batch
@@ -177,7 +174,10 @@ def train_DER(trainDataLoader,
         #print('x val', x_val)
         #print('y val', y_val)
         y_pred = model(torch.Tensor(x_val))
-        NIGloss_val = lossFn(y_pred, torch.Tensor(y_val), COEFF).item()
+        loss = lossFn(y_pred, torch.Tensor(y_val), COEFF)
+        NIGloss_val = loss[0].item()
+        med_u_al_val = np.median(loss[1])
+        med_u_ep_val = np.median(loss[2])
 
         loss_validation.append(NIGloss_val)
         if NIGloss_val < best_loss:
@@ -185,7 +185,8 @@ def train_DER(trainDataLoader,
             print('new best loss', NIGloss_val, 'in epoch', epoch)
             #best_weights = copy.deepcopy(model.state_dict())
         #print('validation loss', mse)
-
+            
+        
         if save_checkpoints:
 
             torch.save({
@@ -193,8 +194,10 @@ def train_DER(trainDataLoader,
                 'model_state_dict': model.state_dict(),
                 'optimizer_state_dict': opt.state_dict(),
                 'train_loss': np.mean(loss_this_epoch),
-                'valid_loss': NIGloss_val
-                }, "/home/rnevin/deepskieslab/rnevin/TinyCNN/models/TinyCNN_MSE_"+str(epoch)+".pt")
+                'valid_loss': NIGloss_val,
+                'med_u_al_validation': med_u_al_val,
+                'med_u_ep_validation': med_u_ep_val,
+                }, path_to_model + "/" + str(DER_name)+"_"+str(epoch)+".pt")
     endTime = time.time()
     print('start at', startTime, 'end at', endTime)
     print(endTime - startTime)

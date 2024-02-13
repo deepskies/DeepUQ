@@ -52,14 +52,8 @@ class de_var(nn.Module):
         x = self.ln_4(x)
         return x
 
-## in numpyro, you must specify number of sampling chains you will use upfront
 
-# words of wisdom from Tian Li and crew:
-# on gpu, don't use conda, use pip install
-# HMC after SBI to look at degeneracies between params
-# different guides (some are slower but better at showing degeneracies)
-
-# This is from PasteurLabs - 
+# This following is from PasteurLabs - 
 # https://github.com/pasteurlabs/unreasonable_effective_der/blob/main/models.py
 
 class Model(nn.Module):
@@ -117,8 +111,15 @@ def loss_der(y, y_pred, coeff):
 
 
 def loss_sder(y, y_pred, coeff):
-    gamma, nu, _, beta = y[:, 0], y[:, 1], y[:, 2], y[:, 3]
+    gamma, nu, alpha, beta = y[:, 0], y[:, 1], y[:, 2], y[:, 3]
     error = gamma - y_pred
     var = beta / nu
 
-    return torch.mean(torch.log(var) + (1. + coeff * nu) * error**2 / var)
+    # define aleatoric and epistemic uncert
+    u_al = np.sqrt(beta.detach().numpy() * (1 + nu.detach().numpy()) /
+                   (alpha.detach().numpy() * nu.detach().numpy()))
+    u_ep = 1 / np.sqrt(nu.detach().numpy())
+
+    return torch.mean(torch.log(var) + (1. + coeff * nu) * error**2 / var), \
+        u_al, \
+        u_ep
