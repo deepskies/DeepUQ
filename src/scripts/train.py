@@ -62,7 +62,7 @@ def train_DER(trainDataLoader,
               DEVICE,
               COEFF,
               DER_type,
-              model_name='DER',
+              DER_name,
               EPOCHS=40,
               save_checkpoints=False,
               path_to_model='models/',
@@ -78,10 +78,10 @@ def train_DER(trainDataLoader,
     # Find last epoch saved
     if save_checkpoints:
         
-        print(glob.glob('models/*'+model_name+'*'))
+        print(glob.glob(path_to_model+"/"+str(DER_name)+'*'))
         list_models_run = []
-        for file in glob.glob('models/*'+model_name+'*'):
-            list_models_run.append(float(str.split(str(str.split(file, model_name+'_')[1]),'.')[0]))
+        for file in glob.glob(path_to_model+"/"+str(DER_name)+'*'):
+            list_models_run.append(float(str.split(str(str.split(file, DER_name+'_')[1]),'.')[0]))
         if list_models_run:
             start_epoch = max(list_models_run) + 1
         else:
@@ -197,7 +197,7 @@ def train_DER(trainDataLoader,
                 'valid_loss': NIGloss_val,
                 'med_u_al_validation': med_u_al_val,
                 'med_u_ep_validation': med_u_ep_val,
-                }, path_to_model + "/" + str(DER_type)+"_"+str(epoch)+".pt")
+                }, path_to_model + "/" + str(DER_name)+"_"+str(epoch)+".pt")
     endTime = time.time()
     print('start at', startTime, 'end at', endTime)
     print(endTime - startTime)
