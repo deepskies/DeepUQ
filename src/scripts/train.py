@@ -52,7 +52,7 @@ def train_DER(
 
     best_loss = np.inf  # init to infinity
 
-    model, lossFn = model_setup_DER(DER_type, DEVICE)
+    model, lossFn = models.model_setup_DER(DER_type, DEVICE)
 
     opt = torch.optim.Adam(model.parameters(), lr=INIT_LR)
 
@@ -349,6 +349,8 @@ def train_DE(
                         "valid_loss": mse,
                         "valid_mean": y_pred[:, 0].flatten(),
                         "valid_sigma": y_pred[:, 1].flatten(),
+                        "x_val": x_val,
+                        "y_val": y_val,
                     },
                     path_to_model + "/" +
                     str(model_name) + "_nmodel_" +
