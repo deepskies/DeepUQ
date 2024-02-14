@@ -1,7 +1,6 @@
 # Contains modules used to prepare a dataset
 # with varying noise properties
 
-import pandas as pd
 import numpy as np
 import pickle
 from torch.distributions import Uniform
@@ -46,10 +45,7 @@ class ModelLoader:
 
 
 class DataLoader:
-    def save_data_pkl(self,
-                      data_name,
-                      data,
-                      path='../data/'):
+    def save_data_pkl(self, data_name, data, path="../data/"):
         """
         Save and load the pkl'ed training/test set
 
@@ -61,9 +57,7 @@ class DataLoader:
         with open(file_name, "wb") as file:
             pickle.dump(data, file)
 
-    def load_data_pkl(self,
-                      data_name,
-                      path='../data/'):
+    def load_data_pkl(self, data_name, path="../data/"):
         """
         Load the pkl'ed saved posterior model
 
@@ -76,10 +70,7 @@ class DataLoader:
             data = pickle.load(file)
         return data
 
-    def save_data_h5(self,
-                     data_name,
-                     data,
-                     path="../data/"):
+    def save_data_h5(self, data_name, data, path="../data/"):
         """
         Save data to an h5 file.
 
@@ -121,8 +112,10 @@ class DataPreparation:
     Methods:
     - load_data(): Load data from the specified file path.
     - preprocess_data(): Preprocess the loaded data.
-    - simulate_data(simulation_name, num_samples=1000): Simulate data based on the specified simulation.
-    - save_data(output_file='output_data.csv'): Save the current dataset to a CSV file.
+    - simulate_data(simulation_name, num_samples=1000):
+      Simulate data based on the specified simulation.
+    - save_data(output_file='output_data.csv'): Save the current dataset to
+      a CSV file.
     - get_data(): Retrieve the current dataset.
 
     Example Usage:
@@ -137,55 +130,64 @@ class DataPreparation:
 
     Note: Replace 'your_dataset.csv' with the actual dataset file path.
     """
+
     def __init__(self):
         self.data = None
 
-    def simulate_data(self,
-                      thetas,
-                      sigma,
-                      simulation_name,
-                      x=np.linspace(0, 100, 101),
-                      seed=13):
-        if simulation_name == 'linear_homogeneous':
+    def simulate_data(
+        self,
+        thetas,
+        sigma,
+        simulation_name,
+        x=np.linspace(0, 100, 101),
+        seed=13
+    ):
+        if simulation_name == "linear_homogeneous":
             # convert to numpy array (if tensor):
             thetas = np.atleast_2d(thetas)
             # Check if the input has the correct shape
             if thetas.shape[1] != 2:
-                raise ValueError("Input tensor must have shape (n, 2) where n is the number of parameter sets.")
+                raise ValueError(
+                    "Input tensor must have shape (n, 2) where n is \
+                        the number of parameter sets."
+                )
 
             # Unpack the parameters
             if thetas.shape[0] == 1:
                 # If there's only one set of parameters, extract them directly
                 m, b = thetas[0, 0], thetas[0, 1]
             else:
-                # If there are multiple sets of parameters, extract them for each row
+                # If there are multiple sets of parameters,
+                # extract them for each row
                 m, b = thetas[:, 0], thetas[:, 1]
-            rs = np.random.RandomState(seed)#2147483648)# 
+            rs = np.random.RandomState(seed)  # 2147483648)#
             # I'm thinking sigma could actually be a function of x
             # if we want to get fancy down the road
-            # Generate random noise (epsilon) based on a normal distribution with mean 0 and standard deviation sigma
+            # Generate random noise (epsilon) based
+            # on a normal distribution with mean 0 and standard deviation sigma
             ε = rs.normal(loc=0, scale=sigma, size=(len(x), thetas.shape[0]))
-            
-            # Initialize an empty array to store the results for each set of parameters
+
+            # Initialize an empty array to store the results
+            # for each set of parameters
             y = np.zeros((len(x), thetas.shape[0]))
             for i in range(thetas.shape[0]):
                 m, b = thetas[i, 0], thetas[i, 1]
                 y[:, i] = m * x + b + ε[:, i]
-            #simulated_data = pd.DataFrame({'Feature': x, 'Target': y})
+            # simulated_data = pd.DataFrame({'Feature': x, 'Target': y})
             print("Linear simulation data generated.")
-        elif simulation_name == 'quadratic':
+        elif simulation_name == "quadratic":
             # Example quadratic simulation
-            x = np.linspace(0, 10, num_samples)
-            y = 3 * x**2 + 2 * x + 1 + np.random.normal(0, 1, num_samples)
-            simulated_data = pd.DataFrame({'Feature': x, 'Target': y})
-            print("Quadratic simulation data generated.")
+            y = 3 * x**2 + 2 * x + 1 + np.random.normal(0, 1, len(x))
         else:
-            print(f"Error: Unknown simulation name '{simulation_name}'. No data generated.")
+            print(
+                f"Error: Unknown simulation name '{simulation_name}'. \
+                    No data generated."
+            )
             return
         self.input = x
         self.output = torch.Tensor(y.T)
         self.output_err = ε[:, i]
-        #self.data = simulated_data
+        # self.data = simulated_data
 
     def sample_params_from_prior(self, n_samples):
         low_bounds = torch.tensor([0, -10], dtype=torch.float32)
@@ -196,14 +198,13 @@ class DataPreparation:
 
     def get_dict(self):
         data_dict = {
-                    'params': self.params,
-                    'inputs': self.input,
-                    'output': self.output,
-                    'output_err': self.output_err
-                    }
+            "params": self.params,
+            "inputs": self.input,
+            "output": self.output,
+            "output_err": self.output_err,
+        }
         return data_dict
 
-    
     def get_data(self):
         return self.data
 
@@ -211,12 +212,12 @@ class DataPreparation:
 # Example usage:
 if __name__ == "__main__":
     # Replace 'your_dataset.csv' with your actual dataset file path
-    dataset_manager = DatasetPreparation('your_dataset.csv')
+    dataset_manager = DataPreparation("your_dataset.csv")
     dataset_manager.load_data()
     dataset_manager.preprocess_data()
 
     # Simulate linear data
-    dataset_manager.simulate_data('linear')
+    dataset_manager.simulate_data("linear")
 
     # Access the simulated data
     simulated_data = dataset_manager.get_data()

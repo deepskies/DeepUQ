@@ -24,6 +24,7 @@ def predict(input, model):
     """
     return 0
 
+
 def load_inference_object(input_path):
     """
 
@@ -33,10 +34,17 @@ def load_inference_object(input_path):
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--checkpoint", type=str, help="Checkpoint to unloaded model checkpoint, either weights or the compressed model object")
-    parser.add_argument("--input", type=str, help="path to object to predict quality of")
+    parser.add_argument(
+        "--checkpoint",
+        type=str,
+        help="Checkpoint to unloaded model checkpoint,\
+            either weights or the compressed model object",
+    )
+    parser.add_argument(
+        "--input", type=str, help="path to object to predict quality of"
+    )
     args = parser.parse_args()
 
     model = load_model(args.checkpoint)

@@ -20,7 +20,8 @@ class de_no_var(nn.Module):
         self.ln_3 = nn.Linear(100, 100)
         self.act3 = nn.ReLU()
         self.drop3 = nn.Dropout(drop_percent)
-        self.ln_4 = nn.Linear(100,1) # needs to be 2 if using the GaussianNLLoss
+        self.ln_4 = nn.Linear(100, 1)
+        # this last dim needs to be 2 if using the GaussianNLLoss
 
     def forward(self, x):
         x = self.drop1(self.act1(self.ln_1(x)))
@@ -43,7 +44,8 @@ class de_var(nn.Module):
         self.ln_3 = nn.Linear(100, 100)
         self.act3 = nn.ReLU()
         self.drop3 = nn.Dropout(drop_percent)
-        self.ln_4 = nn.Linear(100,2) # needs to be 2 if using the GaussianNLLoss
+        self.ln_4 = nn.Linear(100, 2)
+        # this last dim needs to be 2 if using the GaussianNLLoss
 
     def forward(self, x):
         x = self.drop1(self.act1(self.ln_1(x)))
@@ -53,8 +55,9 @@ class de_var(nn.Module):
         return x
 
 
-# This following is from PasteurLabs - 
+# This following is from PasteurLabs -
 # https://github.com/pasteurlabs/unreasonable_effective_der/blob/main/models.py
+
 
 class Model(nn.Module):
     def __init__(self, n_output, n_hidden=64):
@@ -116,10 +119,12 @@ def loss_sder(y, y_pred, coeff):
     var = beta / nu
 
     # define aleatoric and epistemic uncert
-    u_al = np.sqrt(beta.detach().numpy() * (1 + nu.detach().numpy()) /
-                   (alpha.detach().numpy() * nu.detach().numpy()))
+    u_al = np.sqrt(
+        beta.detach().numpy()
+        * (1 + nu.detach().numpy())
+        / (alpha.detach().numpy() * nu.detach().numpy())
+    )
     u_ep = 1 / np.sqrt(nu.detach().numpy())
 
-    return torch.mean(torch.log(var) + (1. + coeff * nu) * error**2 / var), \
-        u_al, \
-        u_ep
+    return torch.mean(torch.log(var)
+                      + (1.0 + coeff * nu) * error**2 / var), u_al, u_ep
