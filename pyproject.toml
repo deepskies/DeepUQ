@@ -21,6 +21,8 @@ pytest-cov = "^4.1.0"
 deepbench = "^0.2.2"
 sbi = "^0.22.0"
 h5py = "^3.10.0"
+flake8 = "^7.0.0"
+black = "^24.2.0"
 
 
 [build-system]
