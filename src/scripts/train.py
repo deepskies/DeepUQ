@@ -7,43 +7,6 @@ import matplotlib.pyplot as plt
 from scripts import models
 
 
-def model_setup_DER(DER_type, DEVICE):
-    # initialize the model from scratch
-    if DER_type == "SDER":
-        # model = models.de_no_var().to(device)
-        DERLayer = models.SDERLayer
-
-        # initialize our loss function
-        lossFn = models.loss_sder
-    else:
-        # model = models.de_var().to(device)
-        DERLayer = models.DERLayer
-        # initialize our loss function
-        lossFn = models.loss_der
-
-    # from https://github.com/pasteurlabs/unreasonable_effective_der
-    # /blob/main/x3_indepth.ipynb
-    model = torch.nn.Sequential(models.Model(4), DERLayer())
-    model = model.to(DEVICE)
-    return model, lossFn
-
-
-def model_setup_DE(DE_type, DEVICE):
-    # initialize the model from scratch
-
-    if DE_type == "no_var_loss":
-        model = models.de_no_var().to(DEVICE)
-        # initialize our optimizer and loss function
-        lossFn = torch.nn.MSELoss(reduction="mean")
-    else:
-        model = models.de_var().to(DEVICE)
-        # initialize our optimizer and loss function
-        lossFn = torch.nn.GaussianNLLLoss(full=False,
-                                            eps=1e-06,
-                                            reduction="mean")
-    return model, lossFn
-
-
 def train_DER(
     trainDataLoader,
     x_val,
