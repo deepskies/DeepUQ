@@ -28,6 +28,22 @@ def model_setup_DER(DER_type, DEVICE):
     return model, lossFn
 
 
+def model_setup_DE(DE_type, DEVICE):
+    # initialize the model from scratch
+
+    if DE_type == "no_var_loss":
+        model = models.de_no_var().to(DEVICE)
+        # initialize our optimizer and loss function
+        lossFn = torch.nn.MSELoss(reduction="mean")
+    else:
+        model = models.de_var().to(DEVICE)
+        # initialize our optimizer and loss function
+        lossFn = torch.nn.GaussianNLLLoss(full=False,
+                                            eps=1e-06,
+                                            reduction="mean")
+    return model, lossFn
+
+
 def train_DER(
     trainDataLoader,
     x_val,
@@ -180,7 +196,7 @@ def train_DER(
                     "med_u_ep_validation": med_u_ep_val,
                 },
                 path_to_model + "/" + str(model_name) +
-                "_" + str(epoch) + ".pt",
+                "_epoch_" + str(epoch) + ".pt",
             )
     endTime = time.time()
     print("start at", startTime, "end at", endTime)
@@ -194,15 +210,16 @@ def train_DE(
     x_val,
     y_val,
     INIT_LR,
-    device,
+    DEVICE,
     loss_type,
     n_models,
     model_name="DE",
-    path_to_model="models/",
     EPOCHS=40,
+    path_to_model="models/",
     save_checkpoints=False,
     plot=False,
 ):
+
     # measure how long training is going to take
     print("[INFO] training the network...")
 
@@ -239,12 +256,12 @@ def train_DE(
     for m in range(n_models):
         # initialize the model again each time from scratch
         if loss_type == "no_var_loss":
-            model = models.de_no_var().to(device)
+            model = models.de_no_var().to(DEVICE)
             # initialize our optimizer and loss function
             opt = torch.optim.Adam(model.parameters(), lr=INIT_LR)
             lossFn = torch.nn.MSELoss(reduction="mean")
         else:
-            model = models.de_var().to(device)
+            model = models.de_var().to(DEVICE)
             # initialize our optimizer and loss function
             opt = torch.optim.Adam(model.parameters(), lr=INIT_LR)
             lossFn = torch.nn.GaussianNLLLoss(full=False,
@@ -367,9 +384,12 @@ def train_DE(
                         "optimizer_state_dict": opt.state_dict(),
                         "train_loss": np.mean(loss_this_epoch),
                         "valid_loss": mse,
+                        "valid_mean": y_pred[:, 0].flatten(),
+                        "valid_sigma": y_pred[:, 1].flatten(),
                     },
                     path_to_model + "/" +
-                    str(model_name) + "_" +
+                    str(model_name) + "_nmodel_" +
+                    str(m) + "_epoch_" +
                     str(epoch) + ".pt",
                 )
 
