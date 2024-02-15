@@ -177,24 +177,20 @@ def train_DE(
     loss_type,
     n_models,
     model_name="DE",
-    EPOCHS=40,
+    EPOCHS=100,
     path_to_model="models/",
     save_checkpoints=False,
-    plot=False,
+    plot=True,
+    savefig=True,
 ):
-
-    # measure how long training is going to take
-    print("[INFO] training the network...")
-
-    print("saving checkpoints?")
-    print(save_checkpoints)
 
     startTime = time.time()
 
     # Find last epoch saved
-    if save_checkpoints:
+    if save_checkpoints is True:
 
-        print(glob.glob("models/*" + model_name + "*"))
+        print('looking for saved checkpts',
+              glob.glob("models/*" + model_name + "*"))
         list_models_run = []
         for file in glob.glob("models/*" + model_name + "*"):
             list_models_run.append(
@@ -250,12 +246,27 @@ def train_DE(
                                   y,
                                   pred[:, 1].flatten() ** 2)
                 if loss_type == "bnll_loss":
+                    '''
+                    if e/EPOCHS < 0.2:
+                        # use beta = 1
+                        beta_epoch = 1
+                    if (e/EPOCHS > 0.2) & (e/EPOCHS < 0.5):
+                        beta_epoch = 0.75
+                    if e/EPOCHS > 0.5:
+                        beta_epoch = 0.5
+                    # 1 - e / EPOCHS # this one doesn't work great
+                    '''
+                    beta_epoch = 1 - e / EPOCHS
                     loss = lossFn(pred[:, 0].flatten(),
                                   pred[:, 1].flatten() ** 2,
-                                  y)
-                if plot:
+                                  y,
+                                  beta=beta_epoch)
+                if plot is True:
                     if e % 5 == 0:
                         if i == 0:
+                            plt.plot(range(0, 1000),
+                                     range(0, 1000),
+                                     color='black', ls='--')
                             if loss_type == "no_var_loss":
                                 plt.scatter(
                                     y,
@@ -272,7 +283,7 @@ def train_DE(
                                              flatten().detach().numpy()),
                                     linestyle="None",
                                     color="black",
-                                    capsize=5,
+                                    capsize=2,
                                     zorder=100,
                                 )
                                 plt.scatter(
@@ -281,6 +292,11 @@ def train_DE(
                                     color="black",
                                     zorder=100,
                                 )
+                            if loss_type == "bnll_loss":
+                                plt.annotate(r'$\beta = $' +
+                                             str(round(beta_epoch, 2)),
+                                             xy=(0.03, 0.9),
+                                             xycoords='axes fraction')
                         else:
                             if loss_type == "no_var_loss":
                                 plt.scatter(y, pred.flatten().detach().numpy(),
@@ -305,12 +321,20 @@ def train_DE(
                 # of the parameters
                 # here, its taking a step for every batch
                 opt.step()
-            if plot:
+            if plot is True:
                 if e % 5 == 0:
                     plt.ylabel("prediction")
                     plt.xlabel("true value")
                     plt.title("Epoch " + str(e))
+                    plt.xlim([0, 1000])
+                    plt.ylim([0, 1000])
+                    if savefig is True:
+                        plt.savefig("../images/animations/" +
+                                    str(model_name) + "_nmodel_" +
+                                    str(m) + "_epoch_" +
+                                    str(epoch) + ".png")
                     plt.show()
+
             loss_all_epochs.append(loss_this_epoch)
             # print('training loss', np.mean(loss_this_epoch))
 
@@ -341,7 +365,7 @@ def train_DE(
                 # best_weights = copy.deepcopy(model.state_dict())
             # print('validation loss', mse)
 
-            if save_checkpoints:
+            if save_checkpoints is True:
 
                 torch.save(
                     {
