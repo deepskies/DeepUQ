@@ -212,24 +212,13 @@ def train_DE(
     loss_all_epochs = []  # this is from the training set
     loss_validation = []
 
-    best_mse = np.inf  # init to infinity
+    best_loss = np.inf  # init to infinity
 
     model_ensemble = []
 
     for m in range(n_models):
         # initialize the model again each time from scratch
-        if loss_type == "no_var_loss":
-            model = models.de_no_var().to(DEVICE)
-            # initialize our optimizer and loss function
-            opt = torch.optim.Adam(model.parameters(), lr=INIT_LR)
-            lossFn = torch.nn.MSELoss(reduction="mean")
-        else:
-            model = models.de_var().to(DEVICE)
-            # initialize our optimizer and loss function
-            opt = torch.optim.Adam(model.parameters(), lr=INIT_LR)
-            lossFn = torch.nn.GaussianNLLLoss(full=False,
-                                              eps=1e-06,
-                                              reduction="mean")
+        model, lossFn, opt = models.model_setup_DE(loss_type, DEVICE, INIT_LR)
 
         # loop over our epochs
         for e in range(0, EPOCHS):
@@ -256,10 +245,14 @@ def train_DE(
                 pred = model(x)
                 if loss_type == "no_var_loss":
                     loss = lossFn(pred.flatten(), y)
-                else:
+                if loss_type == "var_loss":
                     loss = lossFn(pred[:, 0].flatten(),
                                   y,
                                   pred[:, 1].flatten() ** 2)
+                if loss_type == "bnll_loss":
+                    loss = lossFn(pred[:, 0].flatten(),
+                                  pred[:, 1].flatten() ** 2,
+                                  y)
                 if plot:
                     if e % 5 == 0:
                         if i == 0:
@@ -278,22 +271,26 @@ def train_DE(
                                     yerr=abs(pred[:, 1].
                                              flatten().detach().numpy()),
                                     linestyle="None",
-                                    color="#F45866",
+                                    color="black",
+                                    capsize=5,
                                     zorder=100,
                                 )
                                 plt.scatter(
                                     y,
                                     pred[:, 0].flatten().detach().numpy(),
-                                    color="#F45866",
-                                    edgecolor="black",
+                                    color="black",
                                     zorder=100,
                                 )
                         else:
                             if loss_type == "no_var_loss":
-                                plt.scatter(y, pred.flatten().detach().numpy())
+                                plt.scatter(y, pred.flatten().detach().numpy(),
+                                            color='grey',
+                                            alpha=0.5)
                             else:
                                 plt.scatter(y, pred[:, 0].flatten().
-                                            detach().numpy())
+                                            detach().numpy(),
+                                            color='grey',
+                                            alpha=0.5)
 
                 loss_this_epoch.append(loss.item())
 
@@ -323,18 +320,24 @@ def train_DE(
             y_pred = model(torch.Tensor(x_val))
             # print(y_pred.flatten().size(), torch.Tensor(y_valid).size())
             if loss_type == "no_var_loss":
-                mse = lossFn(y_pred.flatten(), torch.Tensor(y_val)).item()
-            else:
-                mse = lossFn(
+                loss = lossFn(y_pred.flatten(), torch.Tensor(y_val)).item()
+            if loss_type == "no_var_loss":
+                loss = lossFn(
                     y_pred[:, 0].flatten(),
                     torch.Tensor(y_val),
                     y_pred[:, 1].flatten() ** 2,
                 ).item()
+            if loss_type == "bnll_loss":
+                loss = lossFn(
+                    y_pred[:, 0].flatten(),
+                    y_pred[:, 1].flatten() ** 2,
+                    torch.Tensor(y_val),
+                ).item()
 
-            loss_validation.append(mse)
-            if mse < best_mse:
-                best_mse = mse
-                print("new best mse", mse, "in epoch", epoch)
+            loss_validation.append(loss)
+            if loss < best_loss:
+                best_loss = loss
+                print("new best loss", loss, "in epoch", epoch)
                 # best_weights = copy.deepcopy(model.state_dict())
             # print('validation loss', mse)
 
@@ -346,7 +349,7 @@ def train_DE(
                         "model_state_dict": model.state_dict(),
                         "optimizer_state_dict": opt.state_dict(),
                         "train_loss": np.mean(loss_this_epoch),
-                        "valid_loss": mse,
+                        "valid_loss": loss,
                         "valid_mean": y_pred[:, 0].flatten(),
                         "valid_sigma": y_pred[:, 1].flatten(),
                         "x_val": x_val,

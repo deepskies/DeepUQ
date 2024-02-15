@@ -25,20 +25,21 @@ def model_setup_DER(DER_type, DEVICE):
     return model, lossFn
 
 
-def model_setup_DE(DE_type, DEVICE):
+def model_setup_DE(loss_type, DEVICE, INIT_LR):
     # initialize the model from scratch
-
-    if DE_type == "no_var_loss":
-        model = models.de_no_var().to(DEVICE)
-        # initialize our optimizer and loss function
+    if loss_type == "no_var_loss":
+        model = de_no_var().to(DEVICE)
         lossFn = torch.nn.MSELoss(reduction="mean")
-    else:
-        model = models.de_var().to(DEVICE)
-        # initialize our optimizer and loss function
+    if loss_type == "var_loss":
+        model = de_var().to(DEVICE)
         lossFn = torch.nn.GaussianNLLLoss(full=False,
-                                            eps=1e-06,
-                                            reduction="mean")
-    return model, lossFn
+                                          eps=1e-06,
+                                          reduction="mean")
+    if loss_type == "bnll_loss":
+        model = de_var().to(DEVICE)
+        lossFn = loss_bnll
+    opt = torch.optim.Adam(model.parameters(), lr=INIT_LR)
+    return model, lossFn, opt
 
 
 class de_no_var(nn.Module):
@@ -162,3 +163,46 @@ def loss_sder(y, y_pred, coeff):
 
     return torch.mean(torch.log(var)
                       + (1.0 + coeff * nu) * error**2 / var), u_al, u_ep
+
+# from martius lab
+# https://github.com/martius-lab/beta-nll
+# and Seitzer+2020
+
+def loss_bnll(mean, variance, target, beta=1.0):#beta=0.5):
+    """Compute beta-NLL loss
+    
+    :param mean: Predicted mean of shape B x D
+    :param variance: Predicted variance of shape B x D
+    :param target: Target of shape B x D
+    :param beta: Parameter from range [0, 1] controlling relative 
+        weighting between data points, where `0` corresponds to 
+        high weight on low error points and `1` to an equal weighting.
+    :returns: Loss per batch element of shape B
+    """
+    loss = 0.5 * ((target - mean) ** 2 / variance + variance.log())
+    if beta > 0:
+        loss = loss * (variance.detach() ** beta)
+    return loss.sum(axis=-1)
+
+'''
+def get_loss(transform, beta=None):
+    if beta:
+        def beta_nll_loss(targets, outputs, beta=beta):
+            """Compute beta-NLL loss
+            """
+            mu = outputs[..., 0:1]
+            var = transform(outputs[..., 1:2])
+            loss = (K.square((targets - mu)) / var + K.log(var))
+            loss = loss * K.stop_gradient(var) ** beta
+            return loss
+        return beta_nll_loss
+    else:
+        def negative_log_likelihood(targets, outputs):
+            """Calculate the negative loglikelihood."""
+            mu = outputs[..., 0:1]
+            var = transform(outputs[..., 1:2])
+            y = targets[..., 0:1]
+            loglik = - K.log(var) - K.square((y - mu)) / var
+            return - loglik
+    return negative_log_likelihood
+'''
