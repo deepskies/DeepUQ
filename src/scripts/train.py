@@ -20,14 +20,15 @@ def train_DER(
     save_checkpoints=False,
     path_to_model="models/",
     plot=False,
+    verbose=True,
 ):
     # measure how long training is going to take
-    print("[INFO] training the network...")
-
-    print("saving checkpoints?")
-    print(save_checkpoints)
-    print(f"saving here: {path_to_model}")
-    print(f"model name: {model_name}")
+    if verbose:
+        print("[INFO] training the network...")
+        print("saving checkpoints?")
+        print(save_checkpoints)
+        print(f"saving here: {path_to_model}")
+        print(f"model name: {model_name}")
 
     startTime = time.time()
     start_epoch = 0
@@ -50,12 +51,7 @@ def train_DER(
         start_epoch = 0
     print("starting here", start_epoch)
     '''
-
-    loss_all_epochs = []  # this is from the training set
-    loss_validation = []
-
     best_loss = np.inf  # init to infinity
-
     model, lossFn = models.model_setup_DER(DER_type, DEVICE)
 
     opt = torch.optim.Adam(model.parameters(), lr=INIT_LR)
@@ -68,7 +64,8 @@ def train_DER(
         model.train()
 
         # loop over the training set
-        print("epoch", epoch, round(e / EPOCHS, 2))
+        if verbose:
+            print("epoch", epoch, round(e / EPOCHS, 2))
 
         loss_this_epoch = []
 
@@ -129,24 +126,22 @@ def train_DER(
                 plt.xlabel("true value")
                 plt.title("Epoch " + str(e))
                 plt.show()
-        loss_all_epochs.append(loss_this_epoch)
-        # print('training loss', np.mean(loss_this_epoch))
-
-        # this code from Rohan:
-        # now, once an epoch is done:
         model.eval()
-        # print('x val', x_val)
-        # print('y val', y_val)
         y_pred = model(torch.Tensor(x_val))
         loss = lossFn(y_pred, torch.Tensor(y_val), COEFF)
         NIGloss_val = loss[0].item()
         med_u_al_val = np.median(loss[1])
         med_u_ep_val = np.median(loss[2])
+        std_u_al_val = np.std(loss[1])
+        std_u_ep_val = np.std(loss[2])
 
-        loss_validation.append(NIGloss_val)
+        # lets also grab mse loss
+        mse_loss = torch.nn.MSELoss(reduction='mean')
+        mse = mse_loss(y_pred[:,0], torch.Tensor(y_val)).item()
         if NIGloss_val < best_loss:
             best_loss = NIGloss_val
-            print("new best loss", NIGloss_val, "in epoch", epoch)
+            if verbose:
+                print("new best loss", NIGloss_val, "in epoch", epoch)
             # best_weights = copy.deepcopy(model.state_dict())
         # print('validation loss', mse)
 
@@ -159,17 +154,20 @@ def train_DER(
                     "optimizer_state_dict": opt.state_dict(),
                     "train_loss": np.mean(loss_this_epoch),
                     "valid_loss": NIGloss_val,
+                    "valid_mse": mse,
                     "med_u_al_validation": med_u_al_val,
                     "med_u_ep_validation": med_u_ep_val,
+                    "std_u_al_validation": std_u_al_val,
+                    "std_u_ep_validation": std_u_ep_val,
                 },
                 path_to_model + "/" + str(model_name) +
                 "_epoch_" + str(epoch) + ".pt",
             )
     endTime = time.time()
-    print("start at", startTime, "end at", endTime)
-    print(endTime - startTime)
-
-    return model
+    if verbose:
+        print("start at", startTime, "end at", endTime)
+        print(endTime - startTime)
+    return model, mse
 
 
 def train_DE(
@@ -263,8 +261,8 @@ def train_DE(
                         beta_epoch = 0.5
                     # 1 - e / EPOCHS # this one doesn't work great
                     '''
-                    beta_epoch = 1 - e / EPOCHS
-                    #beta_epoch = 0.5
+                    #beta_epoch = 1 - e / EPOCHS
+                    beta_epoch = 0
                     loss = lossFn(pred[:, 0].flatten(),
                                   pred[:, 1].flatten() ** 2,
                                   y,
