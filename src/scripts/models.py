@@ -8,24 +8,24 @@ def model_setup_DER(DER_type, DEVICE):
     # initialize the model from scratch
     if DER_type == "SDER":
         # model = models.de_no_var().to(device)
-        DERLayer = models.SDERLayer
+        DERLayer = SDERLayer
 
         # initialize our loss function
-        lossFn = models.loss_sder
+        lossFn = loss_sder
     else:
         # model = models.de_var().to(device)
-        DERLayer = models.DERLayer
+        DERLayer = DERLayer
         # initialize our loss function
-        lossFn = models.loss_der
+        lossFn = loss_der
 
     # from https://github.com/pasteurlabs/unreasonable_effective_der
     # /blob/main/x3_indepth.ipynb
-    model = torch.nn.Sequential(models.Model(4), DERLayer())
+    model = torch.nn.Sequential(Model(4), DERLayer())
     model = model.to(DEVICE)
     return model, lossFn
 
 
-def model_setup_DE(loss_type, DEVICE, INIT_LR):
+def model_setup_DE(loss_type, DEVICE, INIT_LR=0.001):
     # initialize the model from scratch
     if loss_type == "no_var_loss":
         model = de_no_var().to(DEVICE)

@@ -26,9 +26,12 @@ def train_DER(
 
     print("saving checkpoints?")
     print(save_checkpoints)
+    print(f"saving here: {path_to_model}")
+    print(f"model name: {model_name}")
 
     startTime = time.time()
-
+    start_epoch = 0
+    '''
     # Find last epoch saved
     if save_checkpoints:
 
@@ -46,6 +49,7 @@ def train_DER(
     else:
         start_epoch = 0
     print("starting here", start_epoch)
+    '''
 
     loss_all_epochs = []  # this is from the training set
     loss_validation = []
@@ -186,6 +190,7 @@ def train_DE(
 
     startTime = time.time()
 
+    '''
     # Find last epoch saved
     if save_checkpoints is True:
 
@@ -203,6 +208,8 @@ def train_DE(
             start_epoch = 0
     else:
         start_epoch = 0
+    '''
+    start_epoch = 0
     print("starting here", start_epoch)
 
     loss_all_epochs = []  # this is from the training set
@@ -257,6 +264,7 @@ def train_DE(
                     # 1 - e / EPOCHS # this one doesn't work great
                     '''
                     beta_epoch = 1 - e / EPOCHS
+                    #beta_epoch = 0.5
                     loss = lossFn(pred[:, 0].flatten(),
                                   pred[:, 1].flatten() ** 2,
                                   y,
@@ -329,9 +337,11 @@ def train_DE(
                     plt.xlim([0, 1000])
                     plt.ylim([0, 1000])
                     if savefig is True:
+                        plt.errorbar(200, 600, yerr=5,
+                                     color='red', capsize=2)
                         plt.savefig("../images/animations/" +
                                     str(model_name) + "_nmodel_" +
-                                    str(m) + "_epoch_" +
+                                    str(m) + "_beta_0.5" + "_epoch_" +
                                     str(epoch) + ".png")
                     plt.show()
 
