@@ -184,6 +184,7 @@ def train_DE(
     save_checkpoints=False,
     plot=True,
     savefig=True,
+    verbose=True,
 ):
 
     startTime = time.time()
@@ -208,16 +209,19 @@ def train_DE(
         start_epoch = 0
     '''
     start_epoch = 0
-    print("starting here", start_epoch)
+    if verbose:
+        print("starting here", start_epoch)
 
     loss_all_epochs = []  # this is from the training set
     loss_validation = []
+    final_mse = []
 
     best_loss = np.inf  # init to infinity
 
     model_ensemble = []
 
     for m in range(n_models):
+        print('model', m)
         # initialize the model again each time from scratch
         model, lossFn, opt = models.model_setup_DE(loss_type, DEVICE, INIT_LR)
 
@@ -229,7 +233,8 @@ def train_DE(
             model.train()
 
             # loop over the training set
-            print("epoch", epoch, round(e / EPOCHS, 2))
+            if verbose:
+                print("epoch", epoch, round(e / EPOCHS, 2))
 
             loss_this_epoch = []
 
@@ -262,7 +267,7 @@ def train_DE(
                     # 1 - e / EPOCHS # this one doesn't work great
                     '''
                     #beta_epoch = 1 - e / EPOCHS
-                    beta_epoch = 0
+                    beta_epoch = 1
                     loss = lossFn(pred[:, 0].flatten(),
                                   pred[:, 1].flatten() ** 2,
                                   y,
@@ -367,9 +372,13 @@ def train_DE(
                 ).item()
 
             loss_validation.append(loss)
+            mse_loss = torch.nn.MSELoss(reduction='mean')
+            mse = mse_loss(y_pred[:,0], torch.Tensor(y_val)).item()
+        
             if loss < best_loss:
                 best_loss = loss
-                print("new best loss", loss, "in epoch", epoch)
+                if verbose:
+                    print("new best loss", loss, "in epoch", epoch)
                 # best_weights = copy.deepcopy(model.state_dict())
             # print('validation loss', mse)
 
@@ -394,12 +403,14 @@ def train_DE(
                 )
 
         model_ensemble.append(model)
+        final_mse.append(mse)
 
     endTime = time.time()
-    print("start at", startTime, "end at", endTime)
-    print(endTime - startTime)
+    if verbose:
+        print("start at", startTime, "end at", endTime)
+        print(endTime - startTime)
 
-    return model_ensemble
+    return model_ensemble, final_mse
 
 
 if __name__ == "__main__":
