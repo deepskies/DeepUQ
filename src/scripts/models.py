@@ -31,13 +31,10 @@ class SDERLayer(nn.Module):
 def model_setup_DER(DER_type, DEVICE):
     # initialize the model from scratch
     if DER_type == "SDER":
-        # model = models.de_no_var().to(device)
         Layer = SDERLayer
-
         # initialize our loss function
         lossFn = loss_sder
     if DER_type == "DER":
-        # model = models.de_var().to(device)
         Layer = DERLayer
         # initialize our loss function
         lossFn = loss_der
@@ -48,22 +45,36 @@ def model_setup_DER(DER_type, DEVICE):
     model = model.to(DEVICE)
     return model, lossFn
 
+class MuVarLayer(nn.Module):
+    def __init__(self):
+        super().__init__()
 
-def model_setup_DE(loss_type, DEVICE, INIT_LR=0.001):
+    def forward(self, x):
+        mu = x[:, 0]
+        var = nn.functional.softplus(x[:, 1])
+        return torch.stack((mu, var), dim=1)
+
+
+
+def model_setup_DE(loss_type, DEVICE):#, INIT_LR=0.001):
     # initialize the model from scratch
     if loss_type == "no_var_loss":
-        model = de_no_var().to(DEVICE)
+        #model = de_no_var().to(DEVICE)
         lossFn = torch.nn.MSELoss(reduction="mean")
     if loss_type == "var_loss":
-        model = de_var().to(DEVICE)
+        #model = de_var().to(DEVICE)
+        Layer = MuVarLayer
         lossFn = torch.nn.GaussianNLLLoss(full=False,
                                           eps=1e-06,
                                           reduction="mean")
     if loss_type == "bnll_loss":
-        model = de_var().to(DEVICE)
+        #model = de_var().to(DEVICE)
+        Layer = MuVarLayer
         lossFn = loss_bnll
-    opt = torch.optim.Adam(model.parameters(), lr=INIT_LR)
-    return model, lossFn, opt
+    #opt = torch.optim.Adam(model.parameters(), lr=INIT_LR)
+    model = torch.nn.Sequential(Model(4), Layer())
+    model = model.to(DEVICE)
+    return model, lossFn#, opt
 
 
 class de_no_var(nn.Module):
@@ -178,7 +189,7 @@ def loss_sder(y, y_pred, coeff):
 # https://github.com/martius-lab/beta-nll
 # and Seitzer+2020
 
-def loss_bnll(mean, variance, target, beta=1.0):#beta=0.5):
+def loss_bnll(mean, variance, target, beta):#beta=0.5):
     """Compute beta-NLL loss
     
     :param mean: Predicted mean of shape B x D
