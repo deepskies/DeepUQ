@@ -270,7 +270,7 @@ def train_DE(
                 if loss_type == "var_loss":
                     loss = lossFn(pred[:, 0].flatten(),
                                   y,
-                                  pred[:, 1].flatten() ** 2)
+                                  pred[:, 1].flatten())
                 if loss_type == "bnll_loss":
                     '''
                     if e/EPOCHS < 0.2:
@@ -282,10 +282,10 @@ def train_DE(
                         beta_epoch = 0.5
                     # 1 - e / EPOCHS # this one doesn't work great
                     '''
-                    #beta_epoch = 1 - e / EPOCHS
-                    beta_epoch = 0.5
+                    beta_epoch = 1 - e / EPOCHS
+                    #beta_epoch = 1.0
                     loss = lossFn(pred[:, 0].flatten(),
-                                  pred[:, 1].flatten() ** 2,
+                                  pred[:, 1].flatten(),
                                   y,
                                   beta=beta_epoch)
                 if plot is True:
@@ -333,15 +333,15 @@ def train_DE(
             # print(y_pred.flatten().size(), torch.Tensor(y_valid).size())
             if loss_type == "no_var_loss":
                 loss = lossFn(y_pred.flatten(), torch.Tensor(y_val)).item()
-            if loss_type == "no_var_loss":
+            if loss_type == "var_loss":
                 loss = lossFn(
                     y_pred[:, 0].flatten(),
                     torch.Tensor(y_val),
-                    y_pred[:, 1].flatten() ** 2,
+                    y_pred[:, 1].flatten(),
                 ).item()
             if loss_type == "bnll_loss":
                 loss = lossFn(y_pred[:, 0].flatten(),
-                              y_pred[:, 1].flatten() ** 2,
+                              y_pred[:, 1].flatten(),
                               torch.Tensor(y_val),
                               beta=beta_epoch
                               ).item()
@@ -374,7 +374,7 @@ def train_DE(
                     ax1.errorbar(
                         y_val,
                         y_pred[:, 0].flatten().detach().numpy(),
-                        yerr=abs(y_pred[:, 1].
+                        yerr=np.sqrt(y_pred[:, 1].
                                     flatten().detach().numpy()),
                         linestyle="None",
                         color="black",
@@ -389,30 +389,41 @@ def train_DE(
                         zorder=101,
                         label='validation data'
                     )
-                if loss_type == "bnll_loss":
-                    ax2.annotate(r'$\beta = $' +
-                                    str(round(beta_epoch, 2)),
-                                    xy=(0.03, 0.4),
-                                    xycoords='axes fraction')
-                    
+                   
                 # add residual plot
                 residuals = y_pred[:, 0].flatten().detach().numpy() - y_val
+                ax2.errorbar(y_val, residuals,
+                             yerr=np.sqrt(y_pred[:, 1].
+                                    flatten().detach().numpy()),
+                            linestyle="None",
+                            color="black",
+                            capsize=2)
                 ax2.scatter(y_val, residuals,
                             color='#9B287B',
-                            s=5)
+                            s=5,
+                            zorder=100)
                 ax2.axhline(0, color='black', linestyle='--', linewidth=1)
                 ax2.set_ylabel("Residuals")
                 ax2.set_xlabel("True Value")
 
                 
                 # add annotion for loss value
-                ax2.annotate(str(loss_type) + ' = ' + str(round(loss,2)),
-                             xy=(0.03, 0.25),
-                             xycoords='axes fraction')
-                # also add annotations for mse
-                ax2.annotate(r'MSE = ' + str(round(mse,2)),
-                             xy=(0.03, 0.1),
-                             xycoords='axes fraction')
+                if loss_type == "bnll_loss":
+                    ax1.annotate(r'$\beta = $' +
+                                    str(round(beta_epoch, 2)) + '\n' + 
+                                    str(loss_type) + ' = ' + str(round(loss,2)) + '\n' +
+                                    r'MSE = ' + str(round(mse,2)),
+                             xy=(0.73, 0.1),
+                             xycoords='axes fraction',
+                             bbox=dict(boxstyle='round,pad=0.5', facecolor='lightgrey', alpha=0.5))
+
+                else:
+                    ax1.annotate(str(loss_type) + ' = ' + str(round(loss,2)) + '\n' + r'MSE = ' + str(round(mse,2)),
+                             xy=(0.73, 0.1),
+                             xycoords='axes fraction',
+                             bbox=dict(boxstyle='round,pad=0.5', facecolor='lightgrey', alpha=0.5))
+                 
+                                
                     
                 ax1.set_ylabel("Prediction")
                 ax1.set_title("Epoch " + str(e))
@@ -424,8 +435,8 @@ def train_DE(
                                     color='red', capsize=2)
                     plt.savefig("../images/animations/" +
                                 str(model_name) + "_nmodel_" +
-                                str(m) + "_beta_0.5" + "_epoch_" +
-                                str(epoch) + ".png")
+                                str(m) + "_beta_" + str(beta_epoch) +
+                                "_epoch_" + str(epoch) + ".png")
                 plt.show()
                 plt.close()
 

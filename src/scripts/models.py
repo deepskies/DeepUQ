@@ -45,13 +45,16 @@ def model_setup_DER(DER_type, DEVICE):
     model = model.to(DEVICE)
     return model, lossFn
 
+
 class MuVarLayer(nn.Module):
     def __init__(self):
         super().__init__()
 
     def forward(self, x):
         mu = x[:, 0]
+        # softplus enforces positivity
         var = nn.functional.softplus(x[:, 1])
+        #var = x[:, 1]
         return torch.stack((mu, var), dim=1)
 
 
