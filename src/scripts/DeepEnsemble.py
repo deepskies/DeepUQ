@@ -1,13 +1,5 @@
 import argparse
-
-import astropy.time
-from lsst.daf.butler import Butler, Timespan
-from lsst.daf.butler.cli.cliLog import CliLog
 import logging
-
-import lsst
-import os
-
 
 def parse_args():
     parser = argparse.ArgumentParser(
