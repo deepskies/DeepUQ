@@ -74,10 +74,9 @@ def model_setup_DE(loss_type, DEVICE):#, INIT_LR=0.001):
         #model = de_var().to(DEVICE)
         Layer = MuVarLayer
         lossFn = loss_bnll
-    #opt = torch.optim.Adam(model.parameters(), lr=INIT_LR)
     model = torch.nn.Sequential(Model(2), Layer())
     model = model.to(DEVICE)
-    return model, lossFn#, opt
+    return model, lossFn
 
 
 class de_no_var(nn.Module):
