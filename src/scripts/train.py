@@ -251,7 +251,7 @@ def train_DE(
                 print("epoch", epoch, round(e / EPOCHS, 2))
 
             loss_this_epoch = []
-            if plot:
+            if plot or savefig:
                 plt.clf()
                 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6),
                                             gridspec_kw={'height_ratios': [3, 1]}
@@ -284,13 +284,24 @@ def train_DE(
                         beta_epoch = 0.5
                     # 1 - e / EPOCHS # this one doesn't work great
                     '''
-                    #beta_epoch = 1 - e / EPOCHS
-                    beta_epoch = BETA
+                    if BETA == 'linear_decrease':
+                        beta_epoch = 1 - e / EPOCHS
+                    if BETA == 'step_decrease_to_0.5':
+                        if e / EPOCHS < 0.5:
+                            beta_epoch = 1
+                        else:
+                            beta_epoch = 0.5
+                    if BETA == 'step_decrease_to_0.0':
+                        if e / EPOCHS < 0.5:
+                            beta_epoch = 1
+                        else:
+                            beta_epoch = 0.0
+                    #beta_epoch = BETA
                     loss = lossFn(pred[:, 0].flatten(),
                                   pred[:, 1].flatten(),
                                   y,
                                   beta=beta_epoch)
-                if plot:
+                if plot or savefig:
                     if (e % (EPOCHS-1) == 0) and (e != 0):
                         if loss_type == "no_var_loss":
                             ax1.scatter(y, pred.flatten().detach().numpy(),
@@ -428,11 +439,11 @@ def train_DE(
                 ax1.set_ylim([0, 1000])
                 ax1.legend()
                 if savefig:
-                    ax1.errorbar(200, 600, yerr=5,
-                                    color='red', capsize=2)
+                    #ax1.errorbar(200, 600, yerr=5,
+                    #                color='red', capsize=2)
                     plt.savefig("../images/animations/" +
                                 str(model_name) + "_nmodel_" +
-                                str(m) + "_beta_" + str(beta_epoch) +
+                                str(m) + "_beta_" + str(BETA) +
                                 "_epoch_" + str(epoch) + ".png")
                 if plot:
                     plt.show()
@@ -454,7 +465,7 @@ def train_DE(
                             "y_val": y_val,
                         },
                         path_to_model + "/" +
-                        str(model_name) + "_beta_" + str(beta_epoch) +
+                        str(model_name) + "_beta_" + str(BETA) +
                         "_nmodel_" + str(m) +
                         "_epoch_" + str(epoch) + ".pt",
                     )
@@ -494,7 +505,7 @@ def train_DE(
                             "y_val": y_val,
                         },
                         path_to_model + "/" +
-                        str(model_name) + "_beta_" + str(beta_epoch) +
+                        str(model_name) + "_beta_" + str(BETA) +
                         "_nmodel_" + str(m) +
                         "_epoch_" + str(epoch) + ".pt",
                     )
