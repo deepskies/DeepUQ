@@ -54,24 +54,21 @@ class MuVarLayer(nn.Module):
         mu = x[:, 0]
         # softplus enforces positivity
         var = nn.functional.softplus(x[:, 1])
-        #var = x[:, 1]
+        # var = x[:, 1]
         return torch.stack((mu, var), dim=1)
 
 
-
-def model_setup_DE(loss_type, DEVICE):#, INIT_LR=0.001):
+def model_setup_DE(loss_type, DEVICE):  # , INIT_LR=0.001):
     # initialize the model from scratch
     if loss_type == "no_var_loss":
-        #model = de_no_var().to(DEVICE)
+        # model = de_no_var().to(DEVICE)
         lossFn = torch.nn.MSELoss(reduction="mean")
     if loss_type == "var_loss":
-        #model = de_var().to(DEVICE)
+        # model = de_var().to(DEVICE)
         Layer = MuVarLayer
-        lossFn = torch.nn.GaussianNLLLoss(full=False,
-                                          eps=1e-06,
-                                          reduction="mean")
+        lossFn = torch.nn.GaussianNLLLoss(full=False, eps=1e-06, reduction="mean")
     if loss_type == "bnll_loss":
-        #model = de_var().to(DEVICE)
+        # model = de_var().to(DEVICE)
         Layer = MuVarLayer
         lossFn = loss_bnll
     model = torch.nn.Sequential(Model(2), Layer())
@@ -146,14 +143,11 @@ class Model(nn.Module):
         return self.model(x)
 
 
-
-
 def loss_der(y, y_pred, coeff):
     gamma, nu, alpha, beta = y[:, 0], y[:, 1], y[:, 2], y[:, 3]
     error = gamma - y_pred
     omega = 2.0 * beta * (1.0 + nu)
 
-    
     # define aleatoric and epistemic uncert
     u_al = np.sqrt(
         beta.detach().numpy()
@@ -161,14 +155,18 @@ def loss_der(y, y_pred, coeff):
         / (alpha.detach().numpy() * nu.detach().numpy())
     )
     u_ep = 1 / np.sqrt(nu.detach().numpy())
-    return torch.mean(
-        0.5 * torch.log(math.pi / nu)
-        - alpha * torch.log(omega)
-        + (alpha + 0.5) * torch.log(error**2 * nu + omega)
-        + torch.lgamma(alpha)
-        - torch.lgamma(alpha + 0.5)
-        + coeff * torch.abs(error) * (2.0 * nu + alpha)
-    ), u_al, u_ep
+    return (
+        torch.mean(
+            0.5 * torch.log(math.pi / nu)
+            - alpha * torch.log(omega)
+            + (alpha + 0.5) * torch.log(error**2 * nu + omega)
+            + torch.lgamma(alpha)
+            - torch.lgamma(alpha + 0.5)
+            + coeff * torch.abs(error) * (2.0 * nu + alpha)
+        ),
+        u_al,
+        u_ep,
+    )
 
 
 def loss_sder(y, y_pred, coeff):
@@ -184,21 +182,22 @@ def loss_sder(y, y_pred, coeff):
     )
     u_ep = 1 / np.sqrt(nu.detach().numpy())
 
-    return torch.mean(torch.log(var)
-                      + (1.0 + coeff * nu) * error**2 / var), u_al, u_ep
+    return torch.mean(torch.log(var) + (1.0 + coeff * nu) * error**2 / var), u_al, u_ep
+
 
 # from martius lab
 # https://github.com/martius-lab/beta-nll
 # and Seitzer+2020
 
-def loss_bnll(mean, variance, target, beta):#beta=0.5):
+
+def loss_bnll(mean, variance, target, beta):  # beta=0.5):
     """Compute beta-NLL loss
-    
+
     :param mean: Predicted mean of shape B x D
     :param variance: Predicted variance of shape B x D
     :param target: Target of shape B x D
-    :param beta: Parameter from range [0, 1] controlling relative 
-        weighting between data points, where `0` corresponds to 
+    :param beta: Parameter from range [0, 1] controlling relative
+        weighting between data points, where `0` corresponds to
         high weight on low error points and `1` to an equal weighting.
     :returns: Loss per batch element of shape B
     """
@@ -206,6 +205,7 @@ def loss_bnll(mean, variance, target, beta):#beta=0.5):
     if beta > 0:
         loss = loss * (variance.detach() ** beta)
     return loss.sum(axis=-1)
+
 
 '''
 def get_loss(transform, beta=None):

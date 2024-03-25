@@ -1,6 +1,7 @@
 import argparse
 import logging
 
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Transferring data from embargo butler to another butler"
