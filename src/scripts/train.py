@@ -194,17 +194,13 @@ def train_DE(
     path_to_model="models/",
     save_all_checkpoints=False,
     save_final_checkpoint=False,
-    overwrite_checkpoints=False,
+    overwrite_final_checkpoint=False,
     plot=True,
     savefig=True,
     verbose=True,
 ):
 
     startTime = time.time()
-
-    
-    
-    
     start_epoch = 0
     if verbose:
         print("starting here", start_epoch)
@@ -219,47 +215,31 @@ def train_DE(
 
     for m in range(n_models):
         print('model', m)
-        # Find last epoch saved
-        if loss_type == 'bnll_loss':
-            final_chk = path_to_model + "/" +
-                        str(model_name) + "_beta_" + str(BETA) +
-                        "_nmodel_" + str(m) +
-                        "_epoch_" + str(EPOCHS - 1) + ".pt",
-        else:
-            final_chk = path_to_model + "/" +
-                        str(model_name) + "_nmodel_" +
-                        str(m) + "_epoch_" +
-                        str(EPOCHS - 1) + ".pt",
-        # check if the final epoch checkpoint already exists
-        print(glob.glob("models/" + final_chk))
-        if glob.glob("models/" + final_chk):
-            print('final model already exists')
-            if overwrite_checkpoints:
-                print('going to overwrite final checkpoint')
+        if not save_all_checkpoints and save_final_checkpoint:
+            # option to skip running this model if you don't care about
+            # saving all checkpoints and only want to save the final
+            if loss_type == 'bnll_loss':
+                final_chk = path_to_model + str(model_name) + \
+                    "_beta_" + str(BETA) + "_nmodel_" + str(m) + \
+                    "_epoch_" + str(EPOCHS - 1) + ".pt"
             else:
-                print('not going to overwrite, skipping to next model in loop')
-        else:
-            print('model does not exist yet, going to save')
-        STOP
-        if overwrite_checkpoints:
-            print('overwriting ')
-        else:
-            #check for saved checkpoint at the final epoch
+                final_chk = path_to_model + str(model_name) + \
+                    "_nmodel_" + str(m) + "_epoch_" + str(EPOCHS - 1) + ".pt"
+            if verbose:
+                print('final chk', final_chk)
+                # check if the final epoch checkpoint already exists
+                print(glob.glob(final_chk))
+            if glob.glob(final_chk):
+                print('final model already exists')
+                if overwrite_final_checkpoint:
+                    print('going to overwrite final checkpoint')
+                else:
+                    print('not overwriting, skipping to next model in loop')
+                    continue
+            else:
+                print('model does not exist yet, going to save')
 
-            print('looking for saved checkpts',
-                glob.glob("models/*" + model_name + "*"))
-            list_models_run = []
-            for file in glob.glob("models/*" + model_name + "*"):
-                list_models_run.append(
-                    float(str.split(str(str.split(file,
-                                                model_name + "_")[1]), ".")[0])
-                )
-            if list_models_run:
-                start_epoch = max(list_models_run) + 1
-            else:
-                start_epoch = 0
-        else:
-            start_epoch = 0
+        
         # initialize the model again each time from scratch
         model, lossFn = models.model_setup_DE(loss_type, DEVICE)
         opt = torch.optim.Adam(model.parameters(), lr=INIT_LR)
@@ -322,7 +302,12 @@ def train_DE(
                             beta_epoch = 1
                         else:
                             beta_epoch = 0.0
-                    #beta_epoch = BETA
+
+                    # Try to convert the BETA input to a constant float value
+                    try:
+                        beta_epoch = float(BETA)
+                    except ValueError:
+                        pass
                     loss = lossFn(pred[:, 0].flatten(),
                                   pred[:, 1].flatten(),
                                   y,
@@ -360,8 +345,6 @@ def train_DE(
                 # of the parameters
                 # here, its taking a step for every batch
                 opt.step()
-            
-
             loss_all_epochs.append(loss_this_epoch)
             # print('training loss', np.mean(loss_this_epoch))
 
@@ -384,11 +367,9 @@ def train_DE(
                               torch.Tensor(y_val),
                               beta=beta_epoch
                               ).item()
-
             loss_validation.append(loss)
             mse_loss = torch.nn.MSELoss(reduction='mean')
-            mse = mse_loss(y_pred[:,0], torch.Tensor(y_val)).item()
-        
+            mse = mse_loss(y_pred[:, 0], torch.Tensor(y_val)).item()
             if loss < best_loss:
                 best_loss = loss
                 if verbose:
