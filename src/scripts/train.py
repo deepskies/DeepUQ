@@ -194,6 +194,7 @@ def train_DE(
     path_to_model="models/",
     save_all_checkpoints=False,
     save_final_checkpoint=False,
+    overwrite_checkpoints=False,
     plot=True,
     savefig=True,
     verbose=True,
@@ -201,25 +202,9 @@ def train_DE(
 
     startTime = time.time()
 
-    '''
-    # Find last epoch saved
-    if save_checkpoints:
-
-        print('looking for saved checkpts',
-              glob.glob("models/*" + model_name + "*"))
-        list_models_run = []
-        for file in glob.glob("models/*" + model_name + "*"):
-            list_models_run.append(
-                float(str.split(str(str.split(file,
-                                              model_name + "_")[1]), ".")[0])
-            )
-        if list_models_run:
-            start_epoch = max(list_models_run) + 1
-        else:
-            start_epoch = 0
-    else:
-        start_epoch = 0
-    '''
+    
+    
+    
     start_epoch = 0
     if verbose:
         print("starting here", start_epoch)
@@ -234,6 +219,47 @@ def train_DE(
 
     for m in range(n_models):
         print('model', m)
+        # Find last epoch saved
+        if loss_type == 'bnll_loss':
+            final_chk = path_to_model + "/" +
+                        str(model_name) + "_beta_" + str(BETA) +
+                        "_nmodel_" + str(m) +
+                        "_epoch_" + str(EPOCHS - 1) + ".pt",
+        else:
+            final_chk = path_to_model + "/" +
+                        str(model_name) + "_nmodel_" +
+                        str(m) + "_epoch_" +
+                        str(EPOCHS - 1) + ".pt",
+        # check if the final epoch checkpoint already exists
+        print(glob.glob("models/" + final_chk))
+        if glob.glob("models/" + final_chk):
+            print('final model already exists')
+            if overwrite_checkpoints:
+                print('going to overwrite final checkpoint')
+            else:
+                print('not going to overwrite, skipping to next model in loop')
+        else:
+            print('model does not exist yet, going to save')
+        STOP
+        if overwrite_checkpoints:
+            print('overwriting ')
+        else:
+            #check for saved checkpoint at the final epoch
+
+            print('looking for saved checkpts',
+                glob.glob("models/*" + model_name + "*"))
+            list_models_run = []
+            for file in glob.glob("models/*" + model_name + "*"):
+                list_models_run.append(
+                    float(str.split(str(str.split(file,
+                                                model_name + "_")[1]), ".")[0])
+                )
+            if list_models_run:
+                start_epoch = max(list_models_run) + 1
+            else:
+                start_epoch = 0
+        else:
+            start_epoch = 0
         # initialize the model again each time from scratch
         model, lossFn = models.model_setup_DE(loss_type, DEVICE)
         opt = torch.optim.Adam(model.parameters(), lr=INIT_LR)
