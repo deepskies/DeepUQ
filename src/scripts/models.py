@@ -66,7 +66,9 @@ def model_setup_DE(loss_type, DEVICE):  # , INIT_LR=0.001):
     if loss_type == "var_loss":
         # model = de_var().to(DEVICE)
         Layer = MuVarLayer
-        lossFn = torch.nn.GaussianNLLLoss(full=False, eps=1e-06, reduction="mean")
+        lossFn = torch.nn.GaussianNLLLoss(full=False,
+                                          eps=1e-06,
+                                          reduction="mean")
     if loss_type == "bnll_loss":
         # model = de_var().to(DEVICE)
         Layer = MuVarLayer
@@ -182,7 +184,8 @@ def loss_sder(y, y_pred, coeff):
     )
     u_ep = 1 / np.sqrt(nu.detach().numpy())
 
-    return torch.mean(torch.log(var) + (1.0 + coeff * nu) * error**2 / var), u_al, u_ep
+    return torch.mean(torch.log(var) + (1.0 + coeff * nu) * error**2 / var), \
+        u_al, u_ep
 
 
 # from martius lab

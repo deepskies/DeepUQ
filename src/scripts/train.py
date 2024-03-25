@@ -109,7 +109,9 @@ def train_DER(
                         color="black",
                     )
                 else:
-                    ax1.scatter(y, pred[:, 0].flatten().detach().numpy(), color="grey")
+                    ax1.scatter(y,
+                                pred[:, 0].flatten().detach().numpy(),
+                                color="grey")
             loss_this_epoch.append(loss[0].item())
 
             # zero out the gradients
@@ -168,7 +170,8 @@ def train_DER(
                     "std_u_al_validation": std_u_al_val,
                     "std_u_ep_validation": std_u_ep_val,
                 },
-                path_to_model + "/" + str(model_name) + "_epoch_" + str(epoch) + ".pt",
+                path_to_model + "/" + str(model_name)
+                + "_epoch_" + str(epoch) + ".pt",
             )
     endTime = time.time()
     if verbose:
@@ -287,7 +290,9 @@ def train_DE(
                 if loss_type == "no_var_loss":
                     loss = lossFn(pred.flatten(), y)
                 if loss_type == "var_loss":
-                    loss = lossFn(pred[:, 0].flatten(), y, pred[:, 1].flatten())
+                    loss = lossFn(pred[:, 0].flatten(),
+                                  y,
+                                  pred[:, 1].flatten())
                 if loss_type == "bnll_loss":
                     """
                     if e/EPOCHS < 0.2:
@@ -318,7 +323,10 @@ def train_DE(
                     except ValueError:
                         pass
                     loss = lossFn(
-                        pred[:, 0].flatten(), pred[:, 1].flatten(), y, beta=beta_epoch
+                        pred[:, 0].flatten(),
+                        pred[:, 1].flatten(),
+                        y,
+                        beta=beta_epoch
                     )
                 if plot or savefig:
                     if (e % (EPOCHS - 1) == 0) and (e != 0):
@@ -393,7 +401,10 @@ def train_DE(
                 # best_weights = copy.deepcopy(model.state_dict())
             # print('validation loss', mse)
             if (plot or savefig) and (e % (EPOCHS - 1) == 0) and (e != 0):
-                ax1.plot(range(0, 1000), range(0, 1000), color="black", ls="--")
+                ax1.plot(range(0, 1000),
+                         range(0, 1000),
+                         color="black",
+                         ls="--")
                 if loss_type == "no_var_loss":
                     ax1.scatter(
                         y_val,
@@ -451,7 +462,9 @@ def train_DE(
                         xy=(0.73, 0.1),
                         xycoords="axes fraction",
                         bbox=dict(
-                            boxstyle="round,pad=0.5", facecolor="lightgrey", alpha=0.5
+                            boxstyle="round,pad=0.5",
+                            facecolor="lightgrey",
+                            alpha=0.5
                         ),
                     )
 
@@ -466,7 +479,9 @@ def train_DE(
                         xy=(0.73, 0.1),
                         xycoords="axes fraction",
                         bbox=dict(
-                            boxstyle="round,pad=0.5", facecolor="lightgrey", alpha=0.5
+                            boxstyle="round,pad=0.5",
+                            facecolor="lightgrey",
+                            alpha=0.5
                         ),
                     )
                 ax1.set_ylabel("Prediction")
@@ -605,9 +620,13 @@ def train_DE(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data_source", type=str, help="Data used to train the model")
+    parser.add_argument("--data_source",
+                        type=str,
+                        help="Data used to train the model")
     parser.add_argument(
-        "--n_epochs", type=int, help="Integer number of epochs to train the model"
+        "--n_epochs",
+        type=int,
+        help="Integer number of epochs to train the model"
     )
 
     args = parser.parse_args()
