@@ -1,11 +1,69 @@
 # Contains modules used to prepare a dataset
 # with varying noise properties
-
+import argparse
 import numpy as np
+from sklearn.model_selection import train_test_split
 import pickle
 from torch.distributions import Uniform
+from torch.utils.data import DataLoader, TensorDataset
 import torch
 import h5py
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="data handling module"
+    )
+    parser.add_argument(
+        "size_df",
+        type=float,
+        required=False,
+        default=1000,
+        help="Used to load the associated .h5 data file",
+    )
+    parser.add_argument(
+        "noise_level",
+        type=str,
+        required=False,
+        default='low',
+        help="low, medium, high or vhigh, used to look up associated sigma value",
+    )
+    parser.add_argument(
+        "size_df",
+        type=str,
+        nargs="?",
+        default="/repo/embargo",
+        help="Butler Repository path from which data is transferred. \
+            Input str. Default = '/repo/embargo'",
+    )
+    parser.add_argument(
+        "--normalize",
+        required=False,
+        action="store_true",
+        help="If true theres an option to normalize the dataset",
+    )
+    parser.add_argument(
+        "--val_proportion",
+        type=float,
+        required=False,
+        default=0.1,
+        help="Proportion of the dataset to use as validation",
+    )
+    parser.add_argument(
+        "--randomseed",
+        type=float,
+        required=False,
+        default=42,
+        help="Random seed used for shuffling the training and validation set",
+    )
+    parser.add_argument(
+        "--batchsize",
+        type=float,
+        required=False,
+        default=100,
+        help="Size of batched used in the traindataloader",
+    )
+    return parser.parse_args()
 
 
 class ModelLoader:
@@ -208,17 +266,81 @@ class DataPreparation:
     def get_data(self):
         return self.data
 
+    def get_sigma(noise):
+        if noise == 'low':
+            sigma = 1
+        if noise == 'medium':
+            sigma = 5
+        if noise == 'high':
+            sigma = 10
+        if noise == 'vhigh':
+            sigma = 100
+        return sigma
+    
+    def normalize(inputs,
+                  ys_array,
+                  norm=False):
+        if norm:
+            # normalize everything before it goes into a network
+            inputmin = np.min(inputs, axis=0)
+            inputmax = np.max(inputs, axis=0)
+            outputmin = np.min(ys_array)
+            outputmax = np.max(ys_array)
+            model_inputs = (inputs - inputmin) / (inputmax - inputmin)
+            model_outputs = (ys_array - outputmin) / (outputmax - outputmin)
+        else:
+            model_inputs = inputs
+            model_outputs = ys_array
+        return model_inputs, model_outputs
+    
+    def train_val_split(model_inputs,
+                        model_outputs,
+                        val_proportion=0.1,
+                        random_state=42):
+        x_train, x_val, y_train, y_val = train_test_split(model_inputs,
+                                                          model_outputs,
+                                                          test_size=val_proportion,
+                                                          random_state=random_state)
+        return x_train, x_val, y_train, y_val
+
 
 # Example usage:
 if __name__ == "__main__":
-    # Replace 'your_dataset.csv' with your actual dataset file path
-    dataset_manager = DataPreparation("your_dataset.csv")
-    dataset_manager.load_data()
-    dataset_manager.preprocess_data()
+    namespace = parse_args()
+    size_df = namespace.size_df
+    noise = namespace.noise_level
+    norm = namespace.normalize
+    val_prop = namespace.val_proportion
+    rs = namespace.randomseed
+    BATCH_SIZE = namespace.batchsize
+    sigma = DataPreparation.get_sigma(noise)
+    loader = DataLoader()
+    data = loader.load_data_h5('linear_sigma_'+str(sigma)+'_size_'+str(size_df))
+    len_df = len(data['params'][:, 0].numpy())
+    len_x = len(data['inputs'].numpy())
+    ms_array = np.repeat(data['params'][:, 0].numpy(), len_x)
+    bs_array = np.repeat(data['params'][:, 1].numpy(), len_x)
+    xs_array = np.tile(data['inputs'].numpy(), len_df)
+    ys_array = np.reshape(data['output'].numpy(), (len_df * len_x))
+    inputs = np.array([xs_array, ms_array, bs_array]).T
+    model_inputs, model_outputs = DataPreparation.normalize(inputs,
+                              ys_array,
+                              norm)
+    x_train, x_val, y_train, y_val = DataPreparation.train_val_split(model_inputs,
+                                    model_outputs,
+                                    test_size=val_prop,
+                                    random_state=rs)
+    trainData = TensorDataset(torch.Tensor(x_train), torch.Tensor(y_train))
+    trainDataLoader = DataLoader(trainData,
+                                 batch_size=BATCH_SIZE,
+                                 shuffle=True)
+    '''
+    valData = TensorDataset(torch.Tensor(x_val), torch.Tensor(y_val))
+    valDataLoader = DataLoader(valData,
+                               batch_size=BATCH_SIZE)
 
-    # Simulate linear data
-    dataset_manager.simulate_data("linear")
-
-    # Access the simulated data
-    simulated_data = dataset_manager.get_data()
-    print(simulated_data.head())
+    # calculate steps per epoch for training and validation set
+    trainSteps = len(trainDataLoader.dataset) // BATCH_SIZE
+    valSteps = len(valDataLoader.dataset) // BATCH_SIZE
+    '''
+    return trainDataLoader, x_val, y_val
