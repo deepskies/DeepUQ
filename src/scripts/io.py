@@ -343,4 +343,4 @@ if __name__ == "__main__":
     trainSteps = len(trainDataLoader.dataset) // BATCH_SIZE
     valSteps = len(valDataLoader.dataset) // BATCH_SIZE
     '''
-    return trainDataLoader, x_val, y_val
+    #return trainDataLoader, x_val, y_val
