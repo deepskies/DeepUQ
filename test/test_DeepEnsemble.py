@@ -104,9 +104,9 @@ def test_chkpt_saved(temp_directory):
         wd,
         "--n_epochs",
         str(n_epochs),
-        "--save_final_checkpoints",
-        "True",
-    ]
+        "--save_final_checkpoint",
+        "--savefig"
+        ]
     # now run the subprocess
     subprocess.run(subprocess_args, check=True)
     # check if the right number of checkpoints are saved
