@@ -214,6 +214,9 @@ def train_DE(
 
     model_ensemble = []
 
+    print('this is the value of save_final_checkpoint',
+          save_final_checkpoint)
+
     for m in range(n_models):
         print("model", m)
         if not save_all_checkpoints and save_final_checkpoint:
