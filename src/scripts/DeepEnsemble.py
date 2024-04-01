@@ -61,14 +61,14 @@ def parse_args():
     )
     parser.add_argument(
         "--randomseed",
-        type=float,
+        type=int,
         required=False,
         default=42,
         help="Random seed used for shuffling the training and validation set",
     )
     parser.add_argument(
         "--batchsize",
-        type=float,
+        type=int,
         required=False,
         default=100,
         help="Size of batched used in the traindataloader",
@@ -76,7 +76,7 @@ def parse_args():
     # now args for model
     parser.add_argument(
         "n_models",
-        type=float,
+        type=int,
         default=100,
         help="Number of MVEs in the ensemble",
     )
@@ -91,7 +91,7 @@ def parse_args():
         "--loss_type",
         type=str,
         required=False,
-        default="bnn_loss",
+        default="bnll_loss",
         help="Loss types for MVE, options are no_var_loss, var_loss, and bnn_loss",
     )
     parser.add_argument(
@@ -102,6 +102,11 @@ def parse_args():
         help="If loss_type is bnn_loss, specify a beta as a float or there are string options: linear_decrease, step_decrease_to_0.5, and step_decrease_to_1.0",
     )
     parser.add_argument(
+        "wd",
+        type=str,
+        help="Top level of directory",
+    )
+    parser.add_argument(
         "--model_type",
         type=str,
         required=False,
@@ -110,7 +115,7 @@ def parse_args():
     )
     parser.add_argument(
         "--n_epochs",
-        type=float,
+        type=int,
         required=False,
         default=100,
         help="number of epochs for each MVE",
@@ -147,7 +152,7 @@ def parse_args():
         "--plot",
         type=bool,
         required=False,
-        default=True,
+        default=False,
         help="option to plot in notebook",
     )
     parser.add_argument(
@@ -177,7 +182,8 @@ if __name__ == "__main__":
     BATCH_SIZE = namespace.batchsize
     sigma = io.DataPreparation.get_sigma(noise)
     loader = io.DataLoader()
-    data = loader.load_data_h5('linear_sigma_'+str(sigma)+'_size_'+str(size_df))
+    data = loader.load_data_h5('linear_sigma_'+str(sigma)+'_size_'+str(size_df),
+                               path='/Users/rnevin/Documents/DeepUQ/data/')
     len_df = len(data['params'][:, 0].numpy())
     len_x = len(data['inputs'].numpy())
     ms_array = np.repeat(data['params'][:, 0].numpy(), len_x)
@@ -190,7 +196,7 @@ if __name__ == "__main__":
                                                                norm)
     x_train, x_val, y_train, y_val = io.DataPreparation.train_val_split(model_inputs,
                                                                         model_outputs,
-                                                                        test_size=val_prop,
+                                                                        val_proportion=val_prop,
                                                                         random_state=rs)
     trainData = TensorDataset(torch.Tensor(x_train), torch.Tensor(y_train))
     trainDataLoader = DataLoader(trainData,
@@ -212,9 +218,7 @@ if __name__ == "__main__":
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     model_name = namespace.model_type + '_noise_' + noise
-
     model, lossFn = models.model_setup_DE(namespace.loss_type, DEVICE)
-
     model_ensemble = train.train_DE(trainDataLoader,
                                     x_val,
                                     y_val,
@@ -222,13 +226,14 @@ if __name__ == "__main__":
                                     DEVICE,
                                     namespace.loss_type,
                                     namespace.n_models,
+                                    namespace.wd,
                                     model_name,
                                     BETA=namespace.BETA,
                                     EPOCHS=namespace.n_epochs,
-                                    path_to_model=namespace.path_to_model,
+                                    path_to_model=namespace.path_to_models,
                                     save_all_checkpoints=namespace.save_all_checkpoints,
-                                    save_final_checkpoint=namespace.save_final_checkpoint,
-                                    overwrite_final_checkpoint=namespace.overwrite_final_checkpoint,          
+                                    save_final_checkpoint=namespace.save_final_checkpoints,
+                                    overwrite_final_checkpoint=namespace.overwrite_final_checkpoints,          
                                     plot=namespace.plot,
                                     savefig=namespace.savefig,
                                     verbose=namespace.verbose

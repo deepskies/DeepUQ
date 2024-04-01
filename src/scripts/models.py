@@ -58,7 +58,7 @@ class MuVarLayer(nn.Module):
         return torch.stack((mu, var), dim=1)
 
 
-def model_setup_DE(loss_type, DEVICE):  # , INIT_LR=0.001):
+def model_setup_DE(loss_type, DEVICE):
     # initialize the model from scratch
     if loss_type == "no_var_loss":
         # model = de_no_var().to(DEVICE)

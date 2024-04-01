@@ -188,6 +188,7 @@ def train_DE(
     DEVICE,
     loss_type,
     n_models,
+    wd,
     model_name="DE",
     BETA=None,
     EPOCHS=100,
@@ -493,7 +494,8 @@ def train_DE(
                     # ax1.errorbar(200, 600, yerr=5,
                     #                color='red', capsize=2)
                     plt.savefig(
-                        "../images/animations/"
+                        str(wd)
+                        + "images/animations/"
                         + str(model_name)
                         + "_nmodel_"
                         + str(m)
@@ -522,8 +524,8 @@ def train_DE(
                             "x_val": x_val,
                             "y_val": y_val,
                         },
-                        path_to_model
-                        + "/"
+                        str(wd)
+                        + "models/"
                         + str(model_name)
                         + "_beta_"
                         + str(BETA)
@@ -547,8 +549,8 @@ def train_DE(
                             "x_val": x_val,
                             "y_val": y_val,
                         },
-                        path_to_model
-                        + "/"
+                        str(wd)
+                        + "models/"
                         + str(model_name)
                         + "_nmodel_"
                         + str(m)
@@ -572,8 +574,8 @@ def train_DE(
                             "x_val": x_val,
                             "y_val": y_val,
                         },
-                        path_to_model
-                        + "/"
+                        str(wd)
+                        + "models/"
                         + str(model_name)
                         + "_beta_"
                         + str(BETA)
@@ -597,8 +599,8 @@ def train_DE(
                             "x_val": x_val,
                             "y_val": y_val,
                         },
-                        path_to_model
-                        + "/"
+                        str(wd)
+                        + "models/"
                         + str(model_name)
                         + "_nmodel_"
                         + str(m)
