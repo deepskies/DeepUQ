@@ -1,28 +1,28 @@
 import argparse
-import logging
 import numpy as np
 import torch
 from torch.utils.data import DataLoader, TensorDataset
-from scripts import train, models, analysis, io
+from scripts import train, models, io
 
 
 def beta_type(value):
     if isinstance(value, float):
         return value
-    elif value.lower() == 'linear_decrease':
+    elif value.lower() == "linear_decrease":
         return value
-    elif value.lower() == 'step_decrease_to_0.5':
+    elif value.lower() == "step_decrease_to_0.5":
         return value
-    elif value.lower() == 'step_decrease_to_1.0':
+    elif value.lower() == "step_decrease_to_1.0":
         return value
     else:
-        raise argparse.ArgumentTypeError("BETA must be a float or one of 'linear_decrease', 'step_decrease_to_0.5', 'step_decrease_to_1.0'")
+        raise argparse.ArgumentTypeError(
+            "BETA must be a float or one of 'linear_decrease', \
+            'step_decrease_to_0.5', 'step_decrease_to_1.0'"
+        )
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(
-        description="data handling module"
-    )
+    parser = argparse.ArgumentParser(description="data handling module")
     parser.add_argument(
         "--size_df",
         type=float,
@@ -33,8 +33,9 @@ def parse_args():
     parser.add_argument(
         "noise_level",
         type=str,
-        default='low',
-        help="low, medium, high or vhigh, used to look up associated sigma value",
+        default="low",
+        help="low, medium, high or vhigh, \
+            used to look up associated sigma value",
     )
     parser.add_argument(
         "--normalize",
@@ -82,14 +83,17 @@ def parse_args():
         type=str,
         required=False,
         default="bnll_loss",
-        help="Loss types for MVE, options are no_var_loss, var_loss, and bnn_loss",
+        help="Loss types for MVE, options are no_var_loss, var_loss, \
+              and bnn_loss",
     )
     parser.add_argument(
         "--BETA",
         type=beta_type,
         required=False,
         default=0.5,
-        help="If loss_type is bnn_loss, specify a beta as a float or there are string options: linear_decrease, step_decrease_to_0.5, and step_decrease_to_1.0",
+        help="If loss_type is bnn_loss, specify a beta as a float or \
+              there are string options: linear_decrease, \
+              step_decrease_to_0.5, and step_decrease_to_1.0",
     )
     parser.add_argument(
         "wd",
@@ -166,61 +170,50 @@ if __name__ == "__main__":
     BATCH_SIZE = namespace.batchsize
     sigma = io.DataPreparation.get_sigma(noise)
     loader = io.DataLoader()
-    data = loader.load_data_h5('linear_sigma_'+str(sigma)+'_size_'+str(size_df),
-                               path='/Users/rnevin/Documents/DeepUQ/data/')
-    len_df = len(data['params'][:, 0].numpy())
-    len_x = len(data['inputs'].numpy())
-    ms_array = np.repeat(data['params'][:, 0].numpy(), len_x)
-    bs_array = np.repeat(data['params'][:, 1].numpy(), len_x)
-    xs_array = np.tile(data['inputs'].numpy(), len_df)
-    ys_array = np.reshape(data['output'].numpy(), (len_df * len_x))
+    data = loader.load_data_h5(
+        "linear_sigma_" + str(sigma) + "_size_" + str(size_df),
+        path="/Users/rnevin/Documents/DeepUQ/data/",
+    )
+    len_df = len(data["params"][:, 0].numpy())
+    len_x = len(data["inputs"].numpy())
+    ms_array = np.repeat(data["params"][:, 0].numpy(), len_x)
+    bs_array = np.repeat(data["params"][:, 1].numpy(), len_x)
+    xs_array = np.tile(data["inputs"].numpy(), len_df)
+    ys_array = np.reshape(data["output"].numpy(), (len_df * len_x))
     inputs = np.array([xs_array, ms_array, bs_array]).T
     model_inputs, model_outputs = io.DataPreparation.normalize(inputs,
                                                                ys_array,
                                                                norm)
-    x_train, x_val, y_train, y_val = io.DataPreparation.train_val_split(model_inputs,
-                                                                        model_outputs,
-                                                                        val_proportion=val_prop,
-                                                                        random_state=rs)
+    x_train, x_val, y_train, y_val = io.DataPreparation.train_val_split(
+        model_inputs, model_outputs, val_proportion=val_prop, random_state=rs
+    )
     trainData = TensorDataset(torch.Tensor(x_train), torch.Tensor(y_train))
     trainDataLoader = DataLoader(trainData,
                                  batch_size=BATCH_SIZE,
                                  shuffle=True)
-    '''
-    valData = TensorDataset(torch.Tensor(x_val), torch.Tensor(y_val))
-    valDataLoader = DataLoader(valData,
-                               batch_size=BATCH_SIZE)
-
-    # calculate steps per epoch for training and validation set
-    trainSteps = len(trainDataLoader.dataset) // BATCH_SIZE
-    valSteps = len(valDataLoader.dataset) // BATCH_SIZE
-    
-    return trainDataLoader, x_val, y_val
-    '''
     print("[INFO] initializing the gal model...")
     # set the device we will be using to train the model
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model_name = namespace.model_type + '_noise_' + noise
+    model_name = namespace.model_type + "_noise_" + noise
     model, lossFn = models.model_setup_DE(namespace.loss_type, DEVICE)
-    model_ensemble = train.train_DE(trainDataLoader,
-                                    x_val,
-                                    y_val,
-                                    namespace.init_lr,
-                                    DEVICE,
-                                    namespace.loss_type,
-                                    namespace.n_models,
-                                    namespace.wd,
-                                    model_name,
-                                    BETA=namespace.BETA,
-                                    EPOCHS=namespace.n_epochs,
-                                    path_to_model=namespace.path_to_models,
-                                    save_all_checkpoints=namespace.save_all_checkpoints,
-                                    save_final_checkpoint=namespace.save_final_checkpoint,
-                                    overwrite_final_checkpoint=namespace.overwrite_final_checkpoint,
-                                    plot=namespace.plot,
-                                    savefig=namespace.savefig,
-                                    verbose=namespace.verbose
-                                    )
-
-
+    model_ensemble = train.train_DE(
+        trainDataLoader,
+        x_val,
+        y_val,
+        namespace.init_lr,
+        DEVICE,
+        namespace.loss_type,
+        namespace.n_models,
+        namespace.wd,
+        model_name,
+        BETA=namespace.BETA,
+        EPOCHS=namespace.n_epochs,
+        path_to_model=namespace.path_to_models,
+        save_all_checkpoints=namespace.save_all_checkpoints,
+        save_final_checkpoint=namespace.save_final_checkpoint,
+        overwrite_final_checkpoint=namespace.overwrite_final_checkpoint,
+        plot=namespace.plot,
+        savefig=namespace.savefig,
+        verbose=namespace.verbose,
+    )

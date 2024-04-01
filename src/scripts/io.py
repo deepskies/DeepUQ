@@ -5,15 +5,13 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 import pickle
 from torch.distributions import Uniform
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import TensorDataset
 import torch
 import h5py
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(
-        description="data handling module"
-    )
+    parser = argparse.ArgumentParser(description="data handling module")
     parser.add_argument(
         "size_df",
         type=float,
@@ -25,8 +23,9 @@ def parse_args():
         "noise_level",
         type=str,
         required=False,
-        default='low',
-        help="low, medium, high or vhigh, used to look up associated sigma value",
+        default="low",
+        help="low, medium, high or vhigh, \
+              used to look up associated sigma value",
     )
     parser.add_argument(
         "size_df",
@@ -267,19 +266,17 @@ class DataPreparation:
         return self.data
 
     def get_sigma(noise):
-        if noise == 'low':
+        if noise == "low":
             sigma = 1
-        if noise == 'medium':
+        if noise == "medium":
             sigma = 5
-        if noise == 'high':
+        if noise == "high":
             sigma = 10
-        if noise == 'vhigh':
+        if noise == "vhigh":
             sigma = 100
         return sigma
-    
-    def normalize(inputs,
-                  ys_array,
-                  norm=False):
+
+    def normalize(inputs, ys_array, norm=False):
         if norm:
             # normalize everything before it goes into a network
             inputmin = np.min(inputs, axis=0)
@@ -292,15 +289,16 @@ class DataPreparation:
             model_inputs = inputs
             model_outputs = ys_array
         return model_inputs, model_outputs
-    
-    def train_val_split(model_inputs,
-                        model_outputs,
-                        val_proportion=0.1,
-                        random_state=42):
-        x_train, x_val, y_train, y_val = train_test_split(model_inputs,
-                                                          model_outputs,
-                                                          test_size=val_proportion,
-                                                          random_state=random_state)
+
+    def train_val_split(
+        model_inputs, model_outputs, val_proportion=0.1, random_state=42
+    ):
+        x_train, x_val, y_train, y_val = train_test_split(
+            model_inputs,
+            model_outputs,
+            test_size=val_proportion,
+            random_state=random_state,
+        )
         return x_train, x_val, y_train, y_val
 
 
@@ -315,32 +313,22 @@ if __name__ == "__main__":
     BATCH_SIZE = namespace.batchsize
     sigma = DataPreparation.get_sigma(noise)
     loader = DataLoader()
-    data = loader.load_data_h5('linear_sigma_'+str(sigma)+'_size_'+str(size_df))
-    len_df = len(data['params'][:, 0].numpy())
-    len_x = len(data['inputs'].numpy())
-    ms_array = np.repeat(data['params'][:, 0].numpy(), len_x)
-    bs_array = np.repeat(data['params'][:, 1].numpy(), len_x)
-    xs_array = np.tile(data['inputs'].numpy(), len_df)
-    ys_array = np.reshape(data['output'].numpy(), (len_df * len_x))
+    data = loader.load_data_h5("linear_sigma_" + str(sigma) +
+                               "_size_" + str(size_df))
+    len_df = len(data["params"][:, 0].numpy())
+    len_x = len(data["inputs"].numpy())
+    ms_array = np.repeat(data["params"][:, 0].numpy(), len_x)
+    bs_array = np.repeat(data["params"][:, 1].numpy(), len_x)
+    xs_array = np.tile(data["inputs"].numpy(), len_df)
+    ys_array = np.reshape(data["output"].numpy(), (len_df * len_x))
     inputs = np.array([xs_array, ms_array, bs_array]).T
     model_inputs, model_outputs = DataPreparation.normalize(inputs,
-                              ys_array,
-                              norm)
-    x_train, x_val, y_train, y_val = DataPreparation.train_val_split(model_inputs,
-                                    model_outputs,
-                                    test_size=val_prop,
-                                    random_state=rs)
+                                                            ys_array,
+                                                            norm)
+    x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
+        model_inputs, model_outputs, test_size=val_prop, random_state=rs
+    )
     trainData = TensorDataset(torch.Tensor(x_train), torch.Tensor(y_train))
     trainDataLoader = DataLoader(trainData,
                                  batch_size=BATCH_SIZE,
                                  shuffle=True)
-    '''
-    valData = TensorDataset(torch.Tensor(x_val), torch.Tensor(y_val))
-    valDataLoader = DataLoader(valData,
-                               batch_size=BATCH_SIZE)
-
-    # calculate steps per epoch for training and validation set
-    trainSteps = len(trainDataLoader.dataset) // BATCH_SIZE
-    valSteps = len(valDataLoader.dataset) // BATCH_SIZE
-    '''
-    #return trainDataLoader, x_val, y_val
