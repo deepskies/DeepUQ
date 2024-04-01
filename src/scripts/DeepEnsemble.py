@@ -36,16 +36,6 @@ def parse_args():
         default='low',
         help="low, medium, high or vhigh, used to look up associated sigma value",
     )
-    '''
-    parser.add_argument(
-        "size_df",
-        type=str,
-        nargs="?",
-        default="/repo/embargo",
-        help="Butler Repository path from which data is transferred. \
-            Input str. Default = '/repo/embargo'",
-    )
-    '''
     parser.add_argument(
         "--normalize",
         required=False,
@@ -104,7 +94,7 @@ def parse_args():
     parser.add_argument(
         "wd",
         type=str,
-        help="Top level of directory",
+        help="Top level of directory, required arg",
     )
     parser.add_argument(
         "--model_type",
@@ -154,7 +144,7 @@ def parse_args():
     parser.add_argument(
         "--savefig",
         action="store_true",
-        default=True,
+        default=False,
         help="option to save a figure of the true and predicted values",
     )
     parser.add_argument(
