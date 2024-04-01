@@ -18,6 +18,13 @@ Getting a little more specific:
 
 ![python module overview](images/workflow_deepUQ.png)
 
+These modules can be accessed via the ipython example notebooks or via the model modules (ie `DeepEnsemble.py`). For example, to ingest data and train a Deep Ensemble: 
+> cd src/scripts/
+> python DeepEnsemble.py low 10 /Users/rnevin/Documents/DeepUQ/ --save_final_checkpoints=True --savefig=True --n_epochs=10
+
+This command will train a 10 network, 10 epoch ensemble on the low noise data and will save figures and final checkpoints to the specified directory. For more information on the arguments:
+> python DeepEnsemble.py --help
+
 ## Installation 
 
 ### Clone this repo
