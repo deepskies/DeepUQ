@@ -129,43 +129,37 @@ def parse_args():
     )
     parser.add_argument(
         "--save_all_checkpoints",
-        type=bool,
-        required=False,
+        action="store_true",
         default=False,
         help="option to save all checkpoints",
     )
     parser.add_argument(
-        "--save_final_checkpoints",
-        type=bool,
-        required=False,
-        default=False,
+        "--save_final_checkpoint",
+        action="store_true",  # Set to True if argument is present
+        default=False,  # Set default value to False if argument is not present
         help="option to save the final epoch checkpoint for each ensemble",
     )
     parser.add_argument(
-        "--overwrite_final_checkpoints",
-        type=bool,
-        required=False,
+        "--overwrite_final_checkpoint",
+        action="store_true",
         default=False,
         help="option to overwite already saved checkpoints",
     )
     parser.add_argument(
         "--plot",
-        type=bool,
-        required=False,
+        action="store_true",
         default=False,
         help="option to plot in notebook",
     )
     parser.add_argument(
         "--savefig",
-        type=bool,
-        required=False,
+        action="store_true",
         default=True,
         help="option to save a figure of the true and predicted values",
     )
     parser.add_argument(
         "--verbose",
-        type=bool,
-        required=False,
+        action="store_true",
         default=False,
         help="verbose option for train",
     )
@@ -232,8 +226,8 @@ if __name__ == "__main__":
                                     EPOCHS=namespace.n_epochs,
                                     path_to_model=namespace.path_to_models,
                                     save_all_checkpoints=namespace.save_all_checkpoints,
-                                    save_final_checkpoint=namespace.save_final_checkpoints,
-                                    overwrite_final_checkpoint=namespace.overwrite_final_checkpoints,          
+                                    save_final_checkpoint=namespace.save_final_checkpoint,
+                                    overwrite_final_checkpoint=namespace.overwrite_final_checkpoint,
                                     plot=namespace.plot,
                                     savefig=namespace.savefig,
                                     verbose=namespace.verbose
