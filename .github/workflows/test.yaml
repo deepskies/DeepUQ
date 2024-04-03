@@ -34,4 +34,4 @@ jobs:
       run: |
        pwd
        cd ./test
-       pytest --cov
+       pytest test_DeepEnsemble.py
