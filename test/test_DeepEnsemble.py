@@ -1,13 +1,9 @@
 import sys
 import pytest
-import torch
-import numpy as np
-import sbi
 import os
 import subprocess
 import tempfile
 import shutil
-import unittest
 
 # flake8: noqa
 sys.path.append("..")

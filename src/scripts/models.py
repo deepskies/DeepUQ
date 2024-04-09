@@ -28,13 +28,14 @@ class SDERLayer(nn.Module):
         return torch.stack((gamma, nu, alpha, beta), dim=1)
 
 
-def model_setup_DER(DER_type, DEVICE):
+def model_setup_DER(loss_type, DEVICE):
+    print('loss type', loss_type, type(loss_type))
     # initialize the model from scratch
-    if DER_type == "SDER":
+    if loss_type == "SDER":
         Layer = SDERLayer
         # initialize our loss function
         lossFn = loss_sder
-    if DER_type == "DER":
+    if loss_type == "DER":
         Layer = DERLayer
         # initialize our loss function
         lossFn = loss_der
