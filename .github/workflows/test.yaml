@@ -40,9 +40,7 @@ jobs:
       run: echo "PYTHONPATH=$(pwd):$(pwd)/src" >> ${{ runner.workspace }}/.env
     
     - name: Test with pytest
-      run: |
-      pwd
-      python -m poetry run pytest --cov
+      run: python -m poetry run pytest --cov
       env:
         PYTHONPATH: ${{ env.PYTHONPATH }}
         ENV_FILE: ${{ runner.workspace }}/.env
