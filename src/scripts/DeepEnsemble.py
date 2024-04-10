@@ -58,6 +58,13 @@ def parse_args():
         help="Random seed used for shuffling the training and validation set",
     )
     parser.add_argument(
+        "--generatedata",
+        action="store_true",
+        default=False,
+        help="option to generate df, if not specified \
+            default behavior is to load from file",
+    )
+    parser.add_argument(
         "--batchsize",
         type=int,
         required=False,
@@ -169,23 +176,28 @@ if __name__ == "__main__":
     rs = namespace.randomseed
     BATCH_SIZE = namespace.batchsize
     sigma = io.DataPreparation.get_sigma(noise)
+    if namespace.generatedata:
+        # generate the df
+        data = io.DataPreparation()
+        data.sample_params_from_prior(size_df)
+        data.simulate_data(data.params, sigma, "linear_homogeneous")
+        df_array = data.get_dict()
+        # Convert non-tensor entries to tensors
+        df = {}
+        for key, value in df_array.items():
 
-    # generate the df
-    data = io.DataPreparation()
-    data.sample_params_from_prior(size_df)
-    data.simulate_data(data.params, sigma, "linear_homogeneous")
-    df_array = data.get_dict()
-    # Convert non-tensor entries to tensors
-    df = {}
-    for key, value in df_array.items():
-
-        if isinstance(value, TensorDataset):
-            # Keep tensors as they are
-            df[key] = value
-        else:
-            # Convert lists to tensors
-            df[key] = torch.tensor(value)
-
+            if isinstance(value, TensorDataset):
+                # Keep tensors as they are
+                df[key] = value
+            else:
+                # Convert lists to tensors
+                df[key] = torch.tensor(value)
+    else:
+        loader = io.DataLoader()
+        df = loader.load_data_h5(
+            "linear_sigma_" + str(sigma) + "_size_" + str(size_df),
+            path="/Users/rnevin/Documents/DeepUQ/data/",
+        )
     len_df = len(df["params"][:, 0].numpy())
     len_x = len(df["inputs"].numpy())
     ms_array = np.repeat(df["params"][:, 0].numpy(), len_x)
@@ -193,21 +205,6 @@ if __name__ == "__main__":
     xs_array = np.tile(df["inputs"].numpy(), len_df)
     ys_array = np.reshape(df["output"].numpy(), (len_df * len_x))
 
-    """
-    loader = io.DataLoader()
-    df = loader.load_data_h5(
-        "linear_sigma_" + str(sigma) + "_size_" + str(size_df),
-        path="/Users/rnevin/Documents/DeepUQ/data/",
-    )
-    len_df = len(df["params"][:, 0].numpy())
-    len_x = len(df["inputs"].numpy())
-    ms_array = np.repeat(df["params"][:, 0].numpy(), len_x)
-    bs_array = np.repeat(df["params"][:, 1].numpy(), len_x)
-    xs_array = np.tile(df["inputs"].numpy(), len_df)
-    ys_array = np.reshape(df["output"].numpy(), (len_df * len_x))
-    print(df)
-    STOP
-    """
     inputs = np.array([xs_array, ms_array, bs_array]).T
     model_inputs, model_outputs = io.DataPreparation.normalize(inputs,
                                                                ys_array,

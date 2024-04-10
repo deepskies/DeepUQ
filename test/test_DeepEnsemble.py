@@ -43,6 +43,7 @@ def test_chkpt_saved(temp_directory):
         str(n_epochs),
         "--save_final_checkpoint",
         "--savefig",
+        "--generatedata"
     ]
     # now run the subprocess
     subprocess.run(subprocess_args, check=True)
@@ -91,6 +92,7 @@ def test_no_chkpt_saved_xfail(temp_directory):
         wd,
         "--n_epochs",
         str(n_epochs),
+        "--generatedata"
     ]
     # now run the subprocess
     subprocess.run(subprocess_args, check=True)
@@ -117,6 +119,7 @@ def test_no_chkpt_saved(temp_directory):
         wd,
         "--n_epochs",
         str(n_epochs),
+        "--generatedata"
     ]
     # now run the subprocess
     subprocess.run(subprocess_args, check=True)
@@ -144,6 +147,7 @@ def test_run_simple_ensemble(temp_directory):
         wd,
         "--n_epochs",
         "2",
+        "--generatedata"
     ]
     # now run the subprocess
     subprocess.run(subprocess_args, check=True)
@@ -160,6 +164,7 @@ def test_missing_req_arg(temp_directory):
         n_models,
         "--n_epochs",
         "2",
+        "--generatedata"
     ]
     # now run the subprocess
     subprocess.run(subprocess_args, check=True)
