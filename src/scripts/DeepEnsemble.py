@@ -1,95 +1,247 @@
 import argparse
-import logging
+import numpy as np
+import torch
+from torch.utils.data import DataLoader, TensorDataset
+from scripts import train, models, io
+
+
+def beta_type(value):
+    if isinstance(value, float):
+        return value
+    elif value.lower() == "linear_decrease":
+        return value
+    elif value.lower() == "step_decrease_to_0.5":
+        return value
+    elif value.lower() == "step_decrease_to_1.0":
+        return value
+    else:
+        raise argparse.ArgumentTypeError(
+            "BETA must be a float or one of 'linear_decrease', \
+            'step_decrease_to_0.5', 'step_decrease_to_1.0'"
+        )
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(
-        description="Transferring data from embargo butler to another butler"
-    )
-
-    # at least one arg in dataId needed for 'where' clause.
+    parser = argparse.ArgumentParser(description="data handling module")
     parser.add_argument(
-        "fromrepo",
-        type=str,
-        nargs="?",
-        default="/repo/embargo",
-        help="Butler Repository path from which data is transferred. \
-            Input str. Default = '/repo/embargo'",
-    )
-    parser.add_argument(
-        "torepo",
-        type=str,
-        help="Repository to which data is transferred. Input str",
-    )
-    parser.add_argument(
-        "instrument",
-        type=str,
-        nargs="?",
-        default="LATISS",
-        help="Instrument. Input str",
-    )
-    parser.add_argument(
-        "--embargohours",
+        "--size_df",
         type=float,
         required=False,
-        default=80.0,
-        help="Embargo time period in hours. Input float",
+        default=1000,
+        help="Used to load the associated .h5 data file",
     )
     parser.add_argument(
-        "--datasettype",
+        "noise_level",
+        type=str,
+        default="low",
+        help="low, medium, high or vhigh, \
+            used to look up associated sigma value",
+    )
+    parser.add_argument(
+        "--normalize",
         required=False,
-        nargs="+",
-        # default=[]
-        help="Dataset type. Input list or str",
+        action="store_true",
+        help="If true theres an option to normalize the dataset",
     )
     parser.add_argument(
-        "--collections",
-        # type=str,
-        nargs="+",
+        "--val_proportion",
+        type=float,
         required=False,
-        default="LATISS/raw/all",
-        help="Data Collections. Input list or str",
+        default=0.1,
+        help="Proportion of the dataset to use as validation",
     )
     parser.add_argument(
-        "--nowtime",
+        "--randomseed",
+        type=int,
+        required=False,
+        default=42,
+        help="Random seed used for shuffling the training and validation set",
+    )
+    parser.add_argument(
+        "--batchsize",
+        type=int,
+        required=False,
+        default=100,
+        help="Size of batched used in the traindataloader",
+    )
+    # now args for model
+    parser.add_argument(
+        "n_models",
+        type=int,
+        default=100,
+        help="Number of MVEs in the ensemble",
+    )
+    parser.add_argument(
+        "--init_lr",
+        type=float,
+        required=False,
+        default=0.001,
+        help="Learning rate",
+    )
+    parser.add_argument(
+        "--loss_type",
         type=str,
         required=False,
-        default="now",
-        help="Now time in (ISO, TAI timescale). If left blank it will \
-                        use astropy.time.Time.now.",
+        default="bnll_loss",
+        help="Loss types for MVE, options are no_var_loss, var_loss, \
+              and bnn_loss",
     )
     parser.add_argument(
-        "--move",
-        type=str,
+        "--BETA",
+        type=beta_type,
         required=False,
-        default="False",
-        help="Copies if False, deletes original if True",
+        default=0.5,
+        help="If loss_type is bnn_loss, specify a beta as a float or \
+              there are string options: linear_decrease, \
+              step_decrease_to_0.5, and step_decrease_to_1.0",
     )
     parser.add_argument(
-        "--log",
+        "wd",
         type=str,
-        required=False,
-        default="False",
-        help="No logging if False, longlog if True",
+        help="Top level of directory, required arg",
     )
     parser.add_argument(
-        "--desturiprefix",
+        "--model_type",
         type=str,
         required=False,
-        default="False",
-        help="Define dest uri if you need to run ingest for raws",
+        default="DE",
+        help="Beginning of name for saved checkpoints and figures",
+    )
+    parser.add_argument(
+        "--n_epochs",
+        type=int,
+        required=False,
+        default=100,
+        help="number of epochs for each MVE",
+    )
+    parser.add_argument(
+        "--path_to_models",
+        type=str,
+        required=False,
+        default="models/",
+        help="path to where the checkpoints are saved",
+    )
+    parser.add_argument(
+        "--save_all_checkpoints",
+        action="store_true",
+        default=False,
+        help="option to save all checkpoints",
+    )
+    parser.add_argument(
+        "--save_final_checkpoint",
+        action="store_true",  # Set to True if argument is present
+        default=False,  # Set default value to False if argument is not present
+        help="option to save the final epoch checkpoint for each ensemble",
+    )
+    parser.add_argument(
+        "--overwrite_final_checkpoint",
+        action="store_true",
+        default=False,
+        help="option to overwite already saved checkpoints",
+    )
+    parser.add_argument(
+        "--plot",
+        action="store_true",
+        default=False,
+        help="option to plot in notebook",
+    )
+    parser.add_argument(
+        "--savefig",
+        action="store_true",
+        default=False,
+        help="option to save a figure of the true and predicted values",
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        default=False,
+        help="verbose option for train",
     )
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     namespace = parse_args()
-    # Define embargo and destination butler
-    # If move is true, then you'll need write
-    # permissions from the fromrepo (embargo)
-    dest_butler = namespace.torepo
-    if namespace.log == "True":
-        # CliLog.initLog(longlog=True)
-        logger = logging.getLogger("lsst.transfer.embargo")
-        logger.info("from path: %s", namespace.fromrepo)
-        logger.info("to path: %s", namespace.torepo)
+    size_df = namespace.size_df
+    noise = namespace.noise_level
+    norm = namespace.normalize
+    val_prop = namespace.val_proportion
+    rs = namespace.randomseed
+    BATCH_SIZE = namespace.batchsize
+    sigma = io.DataPreparation.get_sigma(noise)
+
+    # generate the df
+    data = io.DataPreparation()
+    data.sample_params_from_prior(size_df)
+    data.simulate_data(data.params, sigma, "linear_homogeneous")
+    df_array = data.get_dict()
+    # Convert non-tensor entries to tensors
+    df = {}
+    for key, value in df_array.items():
+
+        if isinstance(value, TensorDataset):
+            # Keep tensors as they are
+            df[key] = value
+        else:
+            # Convert lists to tensors
+            df[key] = torch.tensor(value)
+
+    len_df = len(df["params"][:, 0].numpy())
+    len_x = len(df["inputs"].numpy())
+    ms_array = np.repeat(df["params"][:, 0].numpy(), len_x)
+    bs_array = np.repeat(df["params"][:, 1].numpy(), len_x)
+    xs_array = np.tile(df["inputs"].numpy(), len_df)
+    ys_array = np.reshape(df["output"].numpy(), (len_df * len_x))
+
+    """
+    loader = io.DataLoader()
+    df = loader.load_data_h5(
+        "linear_sigma_" + str(sigma) + "_size_" + str(size_df),
+        path="/Users/rnevin/Documents/DeepUQ/data/",
+    )
+    len_df = len(df["params"][:, 0].numpy())
+    len_x = len(df["inputs"].numpy())
+    ms_array = np.repeat(df["params"][:, 0].numpy(), len_x)
+    bs_array = np.repeat(df["params"][:, 1].numpy(), len_x)
+    xs_array = np.tile(df["inputs"].numpy(), len_df)
+    ys_array = np.reshape(df["output"].numpy(), (len_df * len_x))
+    print(df)
+    STOP
+    """
+    inputs = np.array([xs_array, ms_array, bs_array]).T
+    model_inputs, model_outputs = io.DataPreparation.normalize(inputs,
+                                                               ys_array,
+                                                               norm)
+    x_train, x_val, y_train, y_val = io.DataPreparation.train_val_split(
+        model_inputs, model_outputs, val_proportion=val_prop, random_state=rs
+    )
+    trainData = TensorDataset(torch.Tensor(x_train), torch.Tensor(y_train))
+    trainDataLoader = DataLoader(trainData,
+                                 batch_size=BATCH_SIZE,
+                                 shuffle=True)
+    print("[INFO] initializing the gal model...")
+    # set the device we will be using to train the model
+    DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    model_name = namespace.model_type + "_noise_" + noise
+    model, lossFn = models.model_setup_DE(namespace.loss_type, DEVICE)
+    model_ensemble = train.train_DE(
+        trainDataLoader,
+        x_val,
+        y_val,
+        namespace.init_lr,
+        DEVICE,
+        namespace.loss_type,
+        namespace.n_models,
+        namespace.wd,
+        model_name,
+        BETA=namespace.BETA,
+        EPOCHS=namespace.n_epochs,
+        path_to_model=namespace.path_to_models,
+        save_all_checkpoints=namespace.save_all_checkpoints,
+        save_final_checkpoint=namespace.save_final_checkpoint,
+        overwrite_final_checkpoint=namespace.overwrite_final_checkpoint,
+        plot=namespace.plot,
+        savefig=namespace.savefig,
+        verbose=namespace.verbose,
+    )
