@@ -1,10 +1,8 @@
-import sys
 import pytest
 import os
 import subprocess
 import tempfile
 import shutil
-from scripts import evaluate, models, DeepEnsemble
 
 
 @pytest.fixture
@@ -29,6 +27,7 @@ def temp_directory():
     """
     shutil.rmtree(temp_dir)
 
+
 def test_chkpt_saved(temp_directory):
     noise_level = "low"
     n_models = 10
@@ -43,8 +42,8 @@ def test_chkpt_saved(temp_directory):
         "--n_epochs",
         str(n_epochs),
         "--save_final_checkpoint",
-        "--savefig"
-        ]
+        "--savefig",
+    ]
     # now run the subprocess
     subprocess.run(subprocess_args, check=True)
     # check if the right number of checkpoints are saved
@@ -76,7 +75,6 @@ def test_chkpt_saved(temp_directory):
         assert (
             expected_substring in file_name
         ), f"File '{file_name}' does not contain the expected substring"
-
 
 
 @pytest.mark.xfail(strict=True)
@@ -127,8 +125,8 @@ def test_no_chkpt_saved(temp_directory):
     # list all files in the "models" folder
     files_in_models_folder = os.listdir(models_folder)
     # assert that the number of files is equal to 10
-    assert len(files_in_models_folder) == 0, "Expect 0 files in the 'models' folder"
-
+    assert len(files_in_models_folder) == 0, \
+        "Expect 0 files in the 'models' folder"
 
 
 def test_run_simple_ensemble(temp_directory):
