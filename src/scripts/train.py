@@ -206,7 +206,7 @@ def train_DER(
             ax1.annotate(
                 str(loss_type)
                 + " = "
-                + str(round(loss, 2))
+                + str(round(NIGloss_val, 2))
                 + "\n"
                 + r"MSE = "
                 + str(round(mse, 2)),
