@@ -28,7 +28,55 @@ def temp_directory():
     shutil.rmtree(temp_dir)
 
 
-def test_chkpt_saved(temp_directory):
+def test_DER_chkpt_saved(temp_directory):
+    noise_level = "low"
+    wd = str(temp_directory) + "/"
+    n_epochs = 2
+    subprocess_args = [
+        "python",
+        "src/scripts/DeepEvidentialRegression.py",
+        noise_level,
+        wd,
+        "--n_epochs",
+        str(n_epochs),
+        "--save_final_checkpoint",
+        "--savefig",
+        "--generatedata"
+    ]
+    # now run the subprocess
+    subprocess.run(subprocess_args, check=True)
+    # check if the right number of checkpoints are saved
+    models_folder = os.path.join(temp_directory, "models")
+    # list all files in the "models" folder
+    files_in_models_folder = os.listdir(models_folder)
+    # assert that the number of files is equal to 10
+    assert (
+        len(files_in_models_folder) == 1
+    ), "Expected 1 file in the 'models' folder"
+
+    # check if the right number of images were saved
+    animations_folder = os.path.join(temp_directory, "images/animations")
+    files_in_animations_folder = os.listdir(animations_folder)
+    # assert that the number of files is equal to 10
+    assert (
+        len(files_in_animations_folder) == 1
+    ), "Expected 1 file in the 'images/animations' folder"
+
+    # also check that all files in here have the same name elements
+    expected_substring = "epoch_" + str(n_epochs - 1)
+    for file_name in files_in_models_folder:
+        assert (
+            expected_substring in file_name
+        ), f"File '{file_name}' does not contain the expected substring"
+
+    # also check that all files in here have the same name elements
+    for file_name in files_in_animations_folder:
+        assert (
+            expected_substring in file_name
+        ), f"File '{file_name}' does not contain the expected substring"
+
+
+def test_DE_chkpt_saved(temp_directory):
     noise_level = "low"
     n_models = 10
     wd = str(temp_directory) + "/"
@@ -43,6 +91,7 @@ def test_chkpt_saved(temp_directory):
         str(n_epochs),
         "--save_final_checkpoint",
         "--savefig",
+        "--generatedata"
     ]
     # now run the subprocess
     subprocess.run(subprocess_args, check=True)
@@ -78,7 +127,7 @@ def test_chkpt_saved(temp_directory):
 
 
 @pytest.mark.xfail(strict=True)
-def test_no_chkpt_saved_xfail(temp_directory):
+def test_DE_no_chkpt_saved_xfail(temp_directory):
     noise_level = "low"
     n_models = 10
     wd = str(temp_directory) + "/"
@@ -91,6 +140,7 @@ def test_no_chkpt_saved_xfail(temp_directory):
         wd,
         "--n_epochs",
         str(n_epochs),
+        "--generatedata"
     ]
     # now run the subprocess
     subprocess.run(subprocess_args, check=True)
@@ -104,7 +154,7 @@ def test_no_chkpt_saved_xfail(temp_directory):
     ), "Expected 10 files in the 'models' folder"
 
 
-def test_no_chkpt_saved(temp_directory):
+def test_DE_no_chkpt_saved(temp_directory):
     noise_level = "low"
     n_models = 10
     wd = str(temp_directory) + "/"
@@ -117,6 +167,7 @@ def test_no_chkpt_saved(temp_directory):
         wd,
         "--n_epochs",
         str(n_epochs),
+        "--generatedata"
     ]
     # now run the subprocess
     subprocess.run(subprocess_args, check=True)
@@ -129,7 +180,7 @@ def test_no_chkpt_saved(temp_directory):
         "Expect 0 files in the 'models' folder"
 
 
-def test_run_simple_ensemble(temp_directory):
+def test_DE_run_simple_ensemble(temp_directory):
     noise_level = "low"
     n_models = "10"
     # here = os.getcwd()
@@ -144,13 +195,14 @@ def test_run_simple_ensemble(temp_directory):
         wd,
         "--n_epochs",
         "2",
+        "--generatedata"
     ]
     # now run the subprocess
     subprocess.run(subprocess_args, check=True)
 
 
 @pytest.mark.xfail(strict=True)
-def test_missing_req_arg(temp_directory):
+def test_DE_missing_req_arg(temp_directory):
     noise_level = "low"
     n_models = "10"
     subprocess_args = [
@@ -160,6 +212,7 @@ def test_missing_req_arg(temp_directory):
         n_models,
         "--n_epochs",
         "2",
+        "--generatedata"
     ]
     # now run the subprocess
     subprocess.run(subprocess_args, check=True)

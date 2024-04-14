@@ -5,22 +5,6 @@ from torch.utils.data import DataLoader, TensorDataset
 from scripts import train, models, io
 
 
-def beta_type(value):
-    if isinstance(value, float):
-        return value
-    elif value.lower() == "linear_decrease":
-        return value
-    elif value.lower() == "step_decrease_to_0.5":
-        return value
-    elif value.lower() == "step_decrease_to_1.0":
-        return value
-    else:
-        raise argparse.ArgumentTypeError(
-            "BETA must be a float or one of 'linear_decrease', \
-            'step_decrease_to_0.5', 'step_decrease_to_1.0'"
-        )
-
-
 def parse_args():
     parser = argparse.ArgumentParser(description="data handling module")
     parser.add_argument(
@@ -73,12 +57,6 @@ def parse_args():
     )
     # now args for model
     parser.add_argument(
-        "n_models",
-        type=int,
-        default=100,
-        help="Number of MVEs in the ensemble",
-    )
-    parser.add_argument(
         "--init_lr",
         type=float,
         required=False,
@@ -86,21 +64,21 @@ def parse_args():
         help="Learning rate",
     )
     parser.add_argument(
+        "--coeff",
+        type=float,
+        required=False,
+        default=0.5,
+        help="Coeff, see DER lit",
+    )
+    parser.add_argument(
         "--loss_type",
         type=str,
         required=False,
-        default="bnll_loss",
-        help="Loss types for MVE, options are no_var_loss, var_loss, \
-              and bnn_loss",
-    )
-    parser.add_argument(
-        "--BETA",
-        type=beta_type,
-        required=False,
-        default=0.5,
-        help="If loss_type is bnn_loss, specify a beta as a float or \
-              there are string options: linear_decrease, \
-              step_decrease_to_0.5, and step_decrease_to_1.0",
+        default="SDER",
+        help="Loss types. \
+              For MVE, options are no_var_loss, var_loss, \
+              and bnn_loss. \
+              For DER, options are DER or SDER",
     )
     parser.add_argument(
         "wd",
@@ -111,7 +89,7 @@ def parse_args():
         "--model_type",
         type=str,
         required=False,
-        default="DE",
+        default="DER",
         help="Beginning of name for saved checkpoints and figures",
     )
     parser.add_argument(
@@ -198,13 +176,13 @@ if __name__ == "__main__":
             "linear_sigma_" + str(sigma) + "_size_" + str(size_df),
             path="/Users/rnevin/Documents/DeepUQ/data/",
         )
+    print('df', df)
     len_df = len(df["params"][:, 0].numpy())
     len_x = len(df["inputs"].numpy())
     ms_array = np.repeat(df["params"][:, 0].numpy(), len_x)
     bs_array = np.repeat(df["params"][:, 1].numpy(), len_x)
     xs_array = np.tile(df["inputs"].numpy(), len_df)
     ys_array = np.reshape(df["output"].numpy(), (len_df * len_x))
-
     inputs = np.array([xs_array, ms_array, bs_array]).T
     model_inputs, model_outputs = io.DataPreparation.normalize(inputs,
                                                                ys_array,
@@ -221,18 +199,17 @@ if __name__ == "__main__":
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     model_name = namespace.model_type + "_noise_" + noise
-    model, lossFn = models.model_setup_DE(namespace.loss_type, DEVICE)
-    model_ensemble = train.train_DE(
+    model, lossFn = models.model_setup_DER(namespace.loss_type, DEVICE)
+    model_ensemble = train.train_DER(
         trainDataLoader,
         x_val,
         y_val,
         namespace.init_lr,
         DEVICE,
+        namespace.coeff,
         namespace.loss_type,
-        namespace.n_models,
         namespace.wd,
         model_name,
-        BETA=namespace.BETA,
         EPOCHS=namespace.n_epochs,
         path_to_model=namespace.path_to_models,
         save_all_checkpoints=namespace.save_all_checkpoints,
@@ -242,3 +219,22 @@ if __name__ == "__main__":
         savefig=namespace.savefig,
         verbose=namespace.verbose,
     )
+    '''
+    trainDataLoader,
+    x_val,
+    y_val,
+    INIT_LR,
+    DEVICE,
+    COEFF,
+    loss_type,
+    wd,
+    model_name="DER",
+    EPOCHS=100,
+    path_to_model="models/",
+    save_all_checkpoints=False,
+    save_final_checkpoint=False,
+    overwrite_final_checkpoint=False,
+    plot=True,
+    savefig=True,
+    verbose=True
+    '''
