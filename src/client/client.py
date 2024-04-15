@@ -4,36 +4,36 @@ from argparse import ArgumentParser
 
 from utils.config import Config
 from utils.defaults import Defaults
-from data import DataModules 
-from models import ModelModules 
-from metrics import Metrics 
-from plots import Plots
+from data import DataModules
+#from models import ModelModules 
+#from metrics import Metrics 
+#from plots import Plots
 
 
-def parser(): 
+def parser():
     parser = ArgumentParser()
     parser.add_argument("--config", '-c', default=None)
 
-    # Model 
+    # Model
     parser.add_argument("--model_path", '-m', default=None)
-    parser.add_argument("--model_engine", '-e', default=Defaults['model']['model_engine'], choices=ModelModules.keys())
+    # parser.add_argument("--model_engine", '-e', default=Defaults['model']['model_engine'], choices=ModelModules.keys())
 
-    # Data 
+    # Data
     parser.add_argument("--data_path", '-d', default=None)
-    parser.add_argument("--data_engine", '-g', default=Defaults['data']['data_engine'], choices=DataModules.keys())
-    parser.add_argument("--simulator", '-s', default=None)
+    parser.add_argument("--data_engine", '-dl', default=Defaults['data']['data_engine'], choices=DataModules.keys())
+    
     # Common
     parser.add_argument("--out_dir", default=Defaults['common']['out_dir'])
 
     # List of metrics (cannot supply specific kwargs)
-    parser.add_argument("--metrics", nargs='+', default=list(Defaults['metrics'].keys()), choices=Metrics.keys())
+    # parser.add_argument("--metrics", nargs='+', default=list(Defaults['metrics'].keys()), choices=Metrics.keys())
 
     # List of plots 
-    parser.add_argument("--plots", nargs='+', default=list(Defaults['plots'].keys()), choices=Plots.keys())
+    # parser.add_argument("--plots", nargs='+', default=list(Defaults['plots'].keys()), choices=Plots.keys())
 
 
     args = parser.parse_args()
-    if args.config is not None: 
+    if args.config is not None:
         config = Config(args.config)
 
     else: 
@@ -42,8 +42,8 @@ def parser():
 
         input_yaml = {
             "common": {"out_dir":args.out_dir}, 
-            "model": {"model_path":args.model_path, "model_engine":args.model_engine}, 
-            "data": {"data_path":args.data_path, "data_engine":args.data_engine, "simulator": args.simulator}, 
+            #"model": {"model_path":args.model_path, "model_engine":args.model_engine}, 
+            "data": {"data_path":args.data_path, "data_engine":args.data_engine}, 
             "plots": {key: {} for key in args.plots}, 
             "metrics": {key: {} for key in args.metrics}, 
         }

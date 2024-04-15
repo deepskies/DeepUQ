@@ -15,6 +15,10 @@ def get_section(section, raise_exception=True):
 class Config: 
     ENV_VAR_PATH = "DeepDiagnostics_Config"
     def __init__(self, config_path:Optional[str]=None) -> None:
+        # okay what Maggie is doing here is a little trick or "cheat"
+        # where the config_path is saved to the ENV_VAR_PATH
+        # the first time this thing is called and then later it
+        # can be loaded from this temp location saving on memory
         if config_path is not None: 
             # Add it to the env vars in case we need to get it later. 
             os.environ[self.ENV_VAR_PATH] = config_path
@@ -39,6 +43,8 @@ class Config:
             config = yaml.safe_load(f)
         return config
 
+    # if raise_exception is True, then throws an error if we're missing
+    # otherwise, pull value from the defaults.py
     def get_item(self, section, item, raise_exception=True): 
         try: 
             return self.config[section][item]
