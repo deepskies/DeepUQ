@@ -735,20 +735,3 @@ def train_DE(
 
     return model_ensemble
 
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--data_source",
-                        type=str,
-                        help="Data used to train the model")
-    parser.add_argument(
-        "--n_epochs",
-        type=int,
-        help="Integer number of epochs to train the model"
-    )
-
-    args = parser.parse_args()
-
-    # eventually change the bottom to train_model,
-    # which will contain train_DE and train_DER
-    train_DER(data_source=args.data_source, n_epochs=args.n_epochs)
