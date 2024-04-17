@@ -196,15 +196,32 @@ def parse_args():
         os.makedirs(os.path.dirname(temp_config), exist_ok=True)
 
         input_yaml = {
-            "common": {"out_dir": args.out_dir}, 
-            #"model": {"model_path":args.model_path, "model_engine":args.model_engine}, 
+            "common": {"out_dir": args.out_dir},
+            "model": {"model_path": args.model_path,
+                      "model_engine": args.model_engine,
+                      "model_type": args.model_type,
+                      "loss_type": args.loss_type,
+                      "n_models": args.n_models,
+                      "init_lr": args.init_lr,
+                      "wd": args.wd,
+                      "BETA": args.BETA,
+                      "n_epochs": args.n_epochs,
+                      "path_to_models": args.path_to_models,
+                      "save_all_checkpoints": args.save_all_checkpoints,
+                      "save_final_checkpoint": args.save_final_checkpoint,
+                      "overwrite_final_checkpoint": args.overwrite_final_checkpoint,
+                      "plot": args.plot,
+                      "savefig": args.savefig,
+                      "verbose": args.verbose,
+                      },
             "data": {"data_path": args.data_path,
                      "data_engine": args.data_engine,
                      "size_df": args.size_df,
                      "noise_level": args.noise_level,
                      "val_proportion": args.val_proportion,
                      "randomseed": args.randomseed,
-                     "batchsize": args.batchsize}, 
+                     "batchsize": args.batchsize,
+                     },
             #"plots": {key: {} for key in args.plots}, 
             #"metrics": {key: {} for key in args.metrics}, 
         }
@@ -296,25 +313,26 @@ if __name__ == "__main__":
     # set the device we will be using to train the model
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model_name = namespace.model_type + "_noise_" + noise
-    model, lossFn = models.model_setup_DE(namespace.loss_type, DEVICE)
+    model_name = config.get_item("model", "model_type") + "_noise_" + noise
+    model, lossFn = models.model_setup_DE(config.get_item("model", "loss_type"), DEVICE)
     model_ensemble = train.train_DE(
         trainDataLoader,
         x_val,
         y_val,
-        namespace.init_lr,
+        config.get_item("model", "init_lr"),
         DEVICE,
-        namespace.loss_type,
-        namespace.n_models,
-        namespace.wd,
+        config.get_item("model", "loss_type"),
+        config.get_item("model", "n_models"),
+        config.get_item("model", "wd"),
         model_name,
-        BETA=namespace.BETA,
-        EPOCHS=namespace.n_epochs,
-        path_to_model=namespace.path_to_models,
-        save_all_checkpoints=namespace.save_all_checkpoints,
-        save_final_checkpoint=namespace.save_final_checkpoint,
-        overwrite_final_checkpoint=namespace.overwrite_final_checkpoint,
-        plot=namespace.plot,
-        savefig=namespace.savefig,
-        verbose=namespace.verbose,
+        BETA=config.get_item("model", "BETA"),
+        EPOCHS=config.get_item("model", "n_epochs"),
+        path_to_model=config.get_item("model", "path_to_models"),
+        save_all_checkpoints=config.get_item("model", "save_all_checkpoints"),
+        save_final_checkpoint=config.get_item("model", "save_final_checkpoint"),
+        overwrite_final_checkpoint=config.get_item("model",
+                                                   "overwrite_final_checkpoint"),
+        plot=config.get_item("model", "plot"),
+        savefig=config.get_item("model", "savefig"),
+        verbose=config.get_item("model", "verbose"),
     )
