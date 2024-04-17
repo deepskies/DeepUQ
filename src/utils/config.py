@@ -13,7 +13,7 @@ def get_section(section, raise_exception=True):
 
 
 class Config: 
-    ENV_VAR_PATH = "DeepDiagnostics_Config"
+    ENV_VAR_PATH = "DeepUQ_Config"
     def __init__(self, config_path:Optional[str]=None) -> None:
         # okay what Maggie is doing here is a little trick or "cheat"
         # where the config_path is saved to the ENV_VAR_PATH

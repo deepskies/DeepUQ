@@ -4,7 +4,7 @@ import time
 import glob
 import numpy as np
 import matplotlib.pyplot as plt
-from scripts import models
+from models import models
 
 
 def train_DER(
