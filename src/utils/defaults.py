@@ -9,9 +9,11 @@ Defaults = {
         "data_engine": "DataLoader",
         "size_df": 1000,
         "noise_level": "low",
+        "normalize": False,
         "val_proportion": 0.1,
         "randomseed": 42,
         "batchsize": 100,
+        "generatedata": False,
     },
     "model": {
         "model_path": "./models/",

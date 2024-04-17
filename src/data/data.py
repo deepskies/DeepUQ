@@ -65,7 +65,9 @@ def parse_args():
     return parser.parse_args()
 
 
-class DataLoader:
+class MyDataLoader:
+    def __init__(self):
+        self.data = None
     def save_data_pkl(self, data_name, data, path="../data/"):
         """
         Save and load the pkl'ed training/test set

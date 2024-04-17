@@ -1,6 +1,6 @@
-from data.data import DataLoader, DataPreparation
+from data.data import MyDataLoader, DataPreparation
 
 DataModules = {
-    "DataLoader": DataLoader, 
+    "MyDataLoader": MyDataLoader,
     "DataPreparation": DataPreparation
 }

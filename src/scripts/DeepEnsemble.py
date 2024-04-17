@@ -1,14 +1,18 @@
 import os
+import yaml 
 import argparse
 import numpy as np
 import torch
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import TensorDataset, DataLoader 
 #from scripts import train, models, io
 from train import train
 from models import models
+from data import DataModules
+from models import ModelModules
 from utils.config import Config
 from utils.defaults import Defaults
-from plots import Plots
+from data.data import DataPreparation, MyDataLoader
+#from plots import Plots
 
 
 
@@ -38,7 +42,7 @@ def parse_args():
     # parser.add_argument("--metrics", nargs='+', default=list(Defaults['metrics'].keys()), choices=Metrics.keys())
 
     # List of plots
-    parser.add_argument("--plots", nargs='+', default=list(Defaults['plots'].keys()), choices=Plots.keys())
+    #parser.add_argument("--plots", nargs='+', default=list(Defaults['plots'].keys()), choices=Plots.keys())
 
     parser.add_argument(
         "--size_df",
@@ -201,8 +205,8 @@ def parse_args():
                      "val_proportion": args.val_proportion,
                      "randomseed": args.randomseed,
                      "batchsize": args.batchsize}, 
-            "plots": {key: {} for key in args.plots}, 
-            "metrics": {key: {} for key in args.metrics}, 
+            #"plots": {key: {} for key in args.plots}, 
+            #"metrics": {key: {} for key in args.metrics}, 
         }
 
         yaml.dump(input_yaml, open(temp_config, "w"))
@@ -229,17 +233,28 @@ def beta_type(value):
 
 
 if __name__ == "__main__":
-    namespace = parse_args()
+    #namespace = parse_args()
+    #print('ns', namespace)
+    config = parse_args()
+    '''
     size_df = namespace.size_df
     noise = namespace.noise_level
     norm = namespace.normalize
     val_prop = namespace.val_proportion
     rs = namespace.randomseed
     BATCH_SIZE = namespace.batchsize
-    sigma = io.DataPreparation.get_sigma(noise)
-    if namespace.generatedata:
+    '''
+    size_df = config.get_item("data", "size_df")
+    noise = config.get_item("data", "noise_level")
+    norm = config.get_item("data", "normalize", raise_exception=False)
+    val_prop = config.get_item("data", "val_proportion")
+    rs = config.get_item("data", "randomseed")
+    BATCH_SIZE = config.get_item("data", "batchsize")
+    sigma = DataPreparation.get_sigma(noise)
+    print("generated data", config.get_item("data", "generatedata", raise_exception=False))
+    if config.get_item("data", "generatedata", raise_exception=False):
         # generate the df
-        data = io.DataPreparation()
+        data = DataPreparation()
         data.sample_params_from_prior(size_df)
         data.simulate_data(data.params, sigma, "linear_homogeneous")
         df_array = data.get_dict()
@@ -254,7 +269,7 @@ if __name__ == "__main__":
                 # Convert lists to tensors
                 df[key] = torch.tensor(value)
     else:
-        loader = io.DataLoader()
+        loader = MyDataLoader()
         df = loader.load_data_h5(
             "linear_sigma_" + str(sigma) + "_size_" + str(size_df),
             path="/Users/rnevin/Documents/DeepUQ/data/",
@@ -267,10 +282,10 @@ if __name__ == "__main__":
     ys_array = np.reshape(df["output"].numpy(), (len_df * len_x))
 
     inputs = np.array([xs_array, ms_array, bs_array]).T
-    model_inputs, model_outputs = io.DataPreparation.normalize(inputs,
+    model_inputs, model_outputs = DataPreparation.normalize(inputs,
                                                                ys_array,
                                                                norm)
-    x_train, x_val, y_train, y_val = io.DataPreparation.train_val_split(
+    x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
         model_inputs, model_outputs, val_proportion=val_prop, random_state=rs
     )
     trainData = TensorDataset(torch.Tensor(x_train), torch.Tensor(y_train))
