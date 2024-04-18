@@ -1,4 +1,3 @@
-# DeepUQ
 ![DeepUQ logo](files/DeepUQLogo.png)
 DeepUQ is a package for injecting and measuring different types of uncertainty in ML models.
 
