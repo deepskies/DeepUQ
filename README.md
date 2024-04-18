@@ -1,4 +1,5 @@
 # DeepUQ
+![DeepUQ logo](files/DeepUQLogo.png)
 DeepUQ is a package for injecting and measuring different types of uncertainty in ML models.
 
 ![status](https://img.shields.io/badge/arXiv-000.000-red)(arxiv link if applicable)
@@ -12,11 +13,11 @@ DeepUQ is a package for injecting and measuring different types of uncertainty i
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/owner/repo/test-repo?label=test)
 
 ## Workflow
-![Folder structure overview](images/folders_deepUQ.png)
+![Folder structure overview](files/folders_deepUQ.png)
 
 Getting a little more specific:
 
-![python module overview](images/workflow_deepUQ.png)
+![python module overview](files/workflow_deepUQ.png)
 
 These modules can be accessed via the ipython example notebooks or via the model modules (ie `DeepEnsemble.py`). For example, to ingest data and train a Deep Ensemble: 
 > cd src/scripts/
