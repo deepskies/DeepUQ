@@ -1,14 +1,29 @@
-Defaults = {
+DefaultsDER = {
     "common":{
-        "out_dir":"./DeepDiagnosticsResources/results/", 
-        "temp_config": "./DeepDiagnosticsResources/temp/temp_config.yml", 
-        "sim_location": "DeepDiagnosticsResources_Simulators"
-    }, 
+        "out_dir":"./DeepUQResources/results/",
+        "temp_config": "./DeepUQResources/temp/temp_config_DER.yml",
+    },
+    "data": {
+        "data_path": "./data/",
+        "data_engine": "DataLoader",
+        "size_df": 1000,
+        "noise_level": "low",
+        "normalize": False,
+        "val_proportion": 0.1,
+        "randomseed": 42,
+        "batchsize": 100,
+        "generatedata": False,
+    },
     "model": {
-        "model_engine": "SBIModel"
-    }, 
-    "data":{
-        "data_engine": "H5Data"
+        "model_path": "./models/",
+        # the engines are the classes, defined
+        "model_engine": "DER",
+        "model_type": "DER",
+        "loss_type": "SDER",
+        "init_lr": 0.001,
+        "wd": "./",
+        "COEFF": 0.5,
+        "n_epochs": 100,
     },
     "plots_common": {
         "axis_spines": False, 

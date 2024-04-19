@@ -10,7 +10,7 @@ from models import models
 from data import DataModules
 from models import ModelModules
 from utils.config import Config
-from utils.defaults import Defaults
+from utils.defaults_DER import DefaultsDER
 from data.data import DataPreparation, MyDataLoader
 #from plots import Plots
 
@@ -26,15 +26,22 @@ def parse_args():
     parser.add_argument("--config", '-c', default=None)
 
     # data info
-    parser.add_argument("--data_path", '-d', default=Defaults['data']['data_path'], choices=DataModules.keys())
-    parser.add_argument("--data_engine", '-dl', default=Defaults['data']['data_engine'], choices=DataModules.keys())
+    parser.add_argument("--data_path", '-d',
+                        default=DefaultsDER['data']['data_path'],
+                        choices=DataModules.keys())
+    parser.add_argument("--data_engine", '-dl',
+                        default=DefaultsDER['data']['data_engine'],
+                        choices=DataModules.keys())
 
     # model
     parser.add_argument("--model_path", '-m', default=None)
-    parser.add_argument("--model_engine", '-e', default=Defaults['model']['model_engine'], choices=ModelModules.keys())
+    parser.add_argument("--model_engine", '-e',
+                        default=DefaultsDER['model']['model_engine'],
+                        choices=ModelModules.keys())
 
     # path to save the yaml if thats what you'd like
-    parser.add_argument("--out_dir", default=Defaults['common']['out_dir'])
+    parser.add_argument("--out_dir",
+                        default=DefaultsDER['common']['out_dir'])
 
     # List of metrics (cannot supply specific kwargs)
     # parser.add_argument("--metrics", nargs='+', default=list(Defaults['metrics'].keys()), choices=Metrics.keys())
@@ -50,9 +57,10 @@ def parse_args():
         help="Used to load the associated .h5 data file",
     )
     parser.add_argument(
-        "noise_level",
+        "--noise_level",
         type=str,
         default="low",
+        choices=["low","medium","high","vhigh"],
         help="low, medium, high or vhigh, \
             used to look up associated sigma value",
     )
@@ -112,15 +120,16 @@ def parse_args():
         help="Coefficient for DER",
     )
     parser.add_argument(
-        "wd",
+        "--wd",
         type=str,
+        default="./DeepUQResources/",
         help="Top level of directory, required arg",
     )
     parser.add_argument(
         "--model_type",
         type=str,
         required=False,
-        default="DE",
+        default="DER",
         help="Beginning of name for saved checkpoints and figures",
     )
     parser.add_argument(
@@ -180,7 +189,7 @@ def parse_args():
         config = Config(args.config)
 
     else:
-        temp_config = Defaults['common']['temp_config']
+        temp_config = DefaultsDER['common']['temp_config']
         os.makedirs(os.path.dirname(temp_config), exist_ok=True)
 
         input_yaml = {
@@ -191,7 +200,7 @@ def parse_args():
                       "loss_type": args.loss_type,
                       "init_lr": args.init_lr,
                       "wd": args.wd,
-                      "coeff": args.COEFF,
+                      "COEFF": args.COEFF,
                       "n_epochs": args.n_epochs,
                       "path_to_models": args.path_to_models,
                       "save_all_checkpoints": args.save_all_checkpoints,
@@ -222,15 +231,15 @@ def parse_args():
 
 if __name__ == "__main__":
     config = parse_args()
-    size_df = config.get_item("data", "size_df")
-    noise = config.get_item("data", "noise_level")
-    norm = config.get_item("data", "normalize", raise_exception=False)
-    val_prop = config.get_item("data", "val_proportion")
-    rs = config.get_item("data", "randomseed")
-    BATCH_SIZE = config.get_item("data", "batchsize")
+    size_df = config.get_item("data", "size_df", "DER")
+    noise = config.get_item("data", "noise_level", "DER")
+    norm = config.get_item("data", "normalize", "DER", raise_exception=False)
+    val_prop = config.get_item("data", "val_proportion", "DER")
+    rs = config.get_item("data", "randomseed", "DER")
+    BATCH_SIZE = config.get_item("data", "batchsize", "DER")
     sigma = DataPreparation.get_sigma(noise)
-    print("generated data", config.get_item("data", "generatedata", raise_exception=False))
-    if config.get_item("data", "generatedata", raise_exception=False):
+    print("generated data", config.get_item("data", "generatedata", "DER", raise_exception=False))
+    if config.get_item("data", "generatedata", "DER", raise_exception=False):
         # generate the df
         data = DataPreparation()
         data.sample_params_from_prior(size_df)
@@ -272,27 +281,38 @@ if __name__ == "__main__":
     print("[INFO] initializing the gal model...")
     # set the device we will be using to train the model
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model_name = config.get_item("model", "model_type") + "_noise_" + noise
-    model, lossFn = models.model_setup_DER(config.get_item("model", "loss_type"), DEVICE)
+    model_name = config.get_item("model", "model_type", "DER") + "_noise_" + noise
+    model, lossFn = models.model_setup_DER(config.get_item("model",
+                                                           "loss_type",
+                                                           "DER"), DEVICE)
     model_ensemble = train.train_DER(
         trainDataLoader,
         x_val,
         y_val,
-        config.get_item("model", "init_lr"),
+        config.get_item("model", "init_lr", "DER"),
         DEVICE,
-        config.get_item("model", "coeff"),
-        config.get_item("model", "loss_type"),
-        config.get_item("model", "wd"),
+        config.get_item("model", "COEFF", "DER"),
+        config.get_item("model", "loss_type", "DER"),
+        config.get_item("model", "wd", "DER"),
         model_name,
-        EPOCHS=config.get_item("model", "n_epochs"),
-        path_to_model=config.get_item("model", "path_to_models"),
-        save_all_checkpoints=config.get_item("model", "save_all_checkpoints"),
-        save_final_checkpoint=config.get_item("model", "save_final_checkpoint"),
+        EPOCHS=config.get_item("model",
+                               "n_epochs",
+                               "DER"),
+        path_to_model=config.get_item("model",
+                                      "path_to_models",
+                                      "DER"),
+        save_all_checkpoints=config.get_item("model",
+                                             "save_all_checkpoints",
+                                             "DER"),
+        save_final_checkpoint=config.get_item("model",
+                                              "save_final_checkpoint",
+                                              "DER"),
         overwrite_final_checkpoint=config.get_item("model",
-                                                   "overwrite_final_checkpoint"),
-        plot=config.get_item("model", "plot"),
-        savefig=config.get_item("model", "savefig"),
-        verbose=config.get_item("model", "verbose"),
+                                                   "overwrite_final_checkpoint",
+                                                   "DER"),
+        plot=config.get_item("model", "plot", "DER"),
+        savefig=config.get_item("model", "savefig", "DER"),
+        verbose=config.get_item("model", "verbose", "DER"),
     )
 
 
