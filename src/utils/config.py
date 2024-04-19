@@ -1,13 +1,14 @@
 from typing import Optional
 import os
 import yaml
-from utils.defaults_DE import DefaultsDE
-from utils.defaults_DER import DefaultsDER
+from utils.defaults import DefaultsDE, DefaultsDER
 
-def get_item(section, item, raise_exception=True): 
-    return Config().get_item(section, item, raise_exception) 
 
-def get_section(section, raise_exception=True): 
+def get_item(section, item, raise_exception=True):
+    return Config().get_item(section, item, raise_exception)
+
+
+def get_section(section, raise_exception=True):
     return Config().get_section(section, raise_exception)
 
 

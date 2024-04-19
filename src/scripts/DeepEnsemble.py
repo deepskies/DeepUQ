@@ -10,7 +10,7 @@ from models import models
 from data import DataModules
 from models import ModelModules
 from utils.config import Config
-from utils.defaults_DE import DefaultsDE
+from utils.defaults import DefaultsDE
 from data.data import DataPreparation, MyDataLoader
 #from plots import Plots
 
