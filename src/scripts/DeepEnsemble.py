@@ -250,17 +250,7 @@ def beta_type(value):
 
 
 if __name__ == "__main__":
-    #namespace = parse_args()
-    #print('ns', namespace)
     config = parse_args()
-    '''
-    size_df = namespace.size_df
-    noise = namespace.noise_level
-    norm = namespace.normalize
-    val_prop = namespace.val_proportion
-    rs = namespace.randomseed
-    BATCH_SIZE = namespace.batchsize
-    '''
     size_df = config.get_item("data", "size_df")
     noise = config.get_item("data", "noise_level")
     norm = config.get_item("data", "normalize", raise_exception=False)

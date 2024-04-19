@@ -1,14 +1,13 @@
 # Contains modules used to prepare a dataset
 # with varying noise properties
-import argparse
 import numpy as np
 from sklearn.model_selection import train_test_split
 import pickle
 from torch.distributions import Uniform
 from torch.utils.data import TensorDataset
 import torch
-import h5py
 import torch.nn as nn
+import math
 
 
 class ModelLoader:

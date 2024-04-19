@@ -1,12 +1,47 @@
+import os
+import yaml 
 import argparse
 import numpy as np
 import torch
-from torch.utils.data import DataLoader, TensorDataset
-from scripts import train, models, io
+from torch.utils.data import TensorDataset, DataLoader 
+#from scripts import train, models, io
+from train import train
+from models import models
+from data import DataModules
+from models import ModelModules
+from utils.config import Config
+from utils.defaults import Defaults
+from data.data import DataPreparation, MyDataLoader
+#from plots import Plots
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description="data handling module")
+    # there are three options with the parser:
+    # 1) Read from a yaml
+    # 2) Reads from the command line and default file
+    # and dumps to yaml
+
+    # option to pass name of config
+    parser.add_argument("--config", '-c', default=None)
+
+    # data info
+    parser.add_argument("--data_path", '-d', default=Defaults['data']['data_path'], choices=DataModules.keys())
+    parser.add_argument("--data_engine", '-dl', default=Defaults['data']['data_engine'], choices=DataModules.keys())
+
+    # model
+    parser.add_argument("--model_path", '-m', default=None)
+    parser.add_argument("--model_engine", '-e', default=Defaults['model']['model_engine'], choices=ModelModules.keys())
+
+    # path to save the yaml if thats what you'd like
+    parser.add_argument("--out_dir", default=Defaults['common']['out_dir'])
+
+    # List of metrics (cannot supply specific kwargs)
+    # parser.add_argument("--metrics", nargs='+', default=list(Defaults['metrics'].keys()), choices=Metrics.keys())
+
+    # List of plots
+    #parser.add_argument("--plots", nargs='+', default=list(Defaults['plots'].keys()), choices=Plots.keys())
+
     parser.add_argument(
         "--size_df",
         type=float,
@@ -55,7 +90,6 @@ def parse_args():
         default=100,
         help="Size of batched used in the traindataloader",
     )
-    # now args for model
     parser.add_argument(
         "--init_lr",
         type=float,
@@ -64,21 +98,18 @@ def parse_args():
         help="Learning rate",
     )
     parser.add_argument(
-        "--coeff",
-        type=float,
-        required=False,
-        default=0.5,
-        help="Coeff, see DER lit",
-    )
-    parser.add_argument(
         "--loss_type",
         type=str,
         required=False,
-        default="SDER",
-        help="Loss types. \
-              For MVE, options are no_var_loss, var_loss, \
-              and bnn_loss. \
-              For DER, options are DER or SDER",
+        default="DER",
+        help="Loss types for DER",
+    )
+    parser.add_argument(
+        "--COEFF",
+        type=float,
+        required=False,
+        default=0.5,
+        help="Coefficient for DER",
     )
     parser.add_argument(
         "wd",
@@ -89,7 +120,7 @@ def parse_args():
         "--model_type",
         type=str,
         required=False,
-        default="DER",
+        default="DE",
         help="Beginning of name for saved checkpoints and figures",
     )
     parser.add_argument(
@@ -142,21 +173,66 @@ def parse_args():
         default=False,
         help="verbose option for train",
     )
-    return parser.parse_args()
+    #return parser.parse_args()
+
+    args = parser.parse_args()
+    if args.config is not None:
+        config = Config(args.config)
+
+    else:
+        temp_config = Defaults['common']['temp_config']
+        os.makedirs(os.path.dirname(temp_config), exist_ok=True)
+
+        input_yaml = {
+            "common": {"out_dir": args.out_dir},
+            "model": {"model_path": args.model_path,
+                      "model_engine": args.model_engine,
+                      "model_type": args.model_type,
+                      "loss_type": args.loss_type,
+                      "init_lr": args.init_lr,
+                      "wd": args.wd,
+                      "coeff": args.COEFF,
+                      "n_epochs": args.n_epochs,
+                      "path_to_models": args.path_to_models,
+                      "save_all_checkpoints": args.save_all_checkpoints,
+                      "save_final_checkpoint": args.save_final_checkpoint,
+                      "overwrite_final_checkpoint": args.overwrite_final_checkpoint,
+                      "plot": args.plot,
+                      "savefig": args.savefig,
+                      "verbose": args.verbose,
+                      },
+            "data": {"data_path": args.data_path,
+                     "data_engine": args.data_engine,
+                     "size_df": args.size_df,
+                     "noise_level": args.noise_level,
+                     "val_proportion": args.val_proportion,
+                     "randomseed": args.randomseed,
+                     "batchsize": args.batchsize,
+                     },
+            #"plots": {key: {} for key in args.plots}, 
+            #"metrics": {key: {} for key in args.metrics}, 
+        }
+
+        yaml.dump(input_yaml, open(temp_config, "w"))
+        config = Config(temp_config)
+
+    return config
+    #return parser.parse_args() 
 
 
 if __name__ == "__main__":
-    namespace = parse_args()
-    size_df = namespace.size_df
-    noise = namespace.noise_level
-    norm = namespace.normalize
-    val_prop = namespace.val_proportion
-    rs = namespace.randomseed
-    BATCH_SIZE = namespace.batchsize
-    sigma = io.DataPreparation.get_sigma(noise)
-    if namespace.generatedata:
+    config = parse_args()
+    size_df = config.get_item("data", "size_df")
+    noise = config.get_item("data", "noise_level")
+    norm = config.get_item("data", "normalize", raise_exception=False)
+    val_prop = config.get_item("data", "val_proportion")
+    rs = config.get_item("data", "randomseed")
+    BATCH_SIZE = config.get_item("data", "batchsize")
+    sigma = DataPreparation.get_sigma(noise)
+    print("generated data", config.get_item("data", "generatedata", raise_exception=False))
+    if config.get_item("data", "generatedata", raise_exception=False):
         # generate the df
-        data = io.DataPreparation()
+        data = DataPreparation()
         data.sample_params_from_prior(size_df)
         data.simulate_data(data.params, sigma, "linear_homogeneous")
         df_array = data.get_dict()
@@ -171,12 +247,11 @@ if __name__ == "__main__":
                 # Convert lists to tensors
                 df[key] = torch.tensor(value)
     else:
-        loader = io.DataLoader()
+        loader = MyDataLoader()
         df = loader.load_data_h5(
             "linear_sigma_" + str(sigma) + "_size_" + str(size_df),
             path="/Users/rnevin/Documents/DeepUQ/data/",
         )
-    print('df', df)
     len_df = len(df["params"][:, 0].numpy())
     len_x = len(df["inputs"].numpy())
     ms_array = np.repeat(df["params"][:, 0].numpy(), len_x)
@@ -184,10 +259,10 @@ if __name__ == "__main__":
     xs_array = np.tile(df["inputs"].numpy(), len_df)
     ys_array = np.reshape(df["output"].numpy(), (len_df * len_x))
     inputs = np.array([xs_array, ms_array, bs_array]).T
-    model_inputs, model_outputs = io.DataPreparation.normalize(inputs,
+    model_inputs, model_outputs = DataPreparation.normalize(inputs,
                                                                ys_array,
                                                                norm)
-    x_train, x_val, y_train, y_val = io.DataPreparation.train_val_split(
+    x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
         model_inputs, model_outputs, val_proportion=val_prop, random_state=rs
     )
     trainData = TensorDataset(torch.Tensor(x_train), torch.Tensor(y_train))
@@ -197,44 +272,27 @@ if __name__ == "__main__":
     print("[INFO] initializing the gal model...")
     # set the device we will be using to train the model
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-    model_name = namespace.model_type + "_noise_" + noise
-    model, lossFn = models.model_setup_DER(namespace.loss_type, DEVICE)
+    model_name = config.get_item("model", "model_type") + "_noise_" + noise
+    model, lossFn = models.model_setup_DER(config.get_item("model", "loss_type"), DEVICE)
     model_ensemble = train.train_DER(
         trainDataLoader,
         x_val,
         y_val,
-        namespace.init_lr,
+        config.get_item("model", "init_lr"),
         DEVICE,
-        namespace.coeff,
-        namespace.loss_type,
-        namespace.wd,
+        config.get_item("model", "coeff"),
+        config.get_item("model", "loss_type"),
+        config.get_item("model", "wd"),
         model_name,
-        EPOCHS=namespace.n_epochs,
-        path_to_model=namespace.path_to_models,
-        save_all_checkpoints=namespace.save_all_checkpoints,
-        save_final_checkpoint=namespace.save_final_checkpoint,
-        overwrite_final_checkpoint=namespace.overwrite_final_checkpoint,
-        plot=namespace.plot,
-        savefig=namespace.savefig,
-        verbose=namespace.verbose,
+        EPOCHS=config.get_item("model", "n_epochs"),
+        path_to_model=config.get_item("model", "path_to_models"),
+        save_all_checkpoints=config.get_item("model", "save_all_checkpoints"),
+        save_final_checkpoint=config.get_item("model", "save_final_checkpoint"),
+        overwrite_final_checkpoint=config.get_item("model",
+                                                   "overwrite_final_checkpoint"),
+        plot=config.get_item("model", "plot"),
+        savefig=config.get_item("model", "savefig"),
+        verbose=config.get_item("model", "verbose"),
     )
-    '''
-    trainDataLoader,
-    x_val,
-    y_val,
-    INIT_LR,
-    DEVICE,
-    COEFF,
-    loss_type,
-    wd,
-    model_name="DER",
-    EPOCHS=100,
-    path_to_model="models/",
-    save_all_checkpoints=False,
-    save_final_checkpoint=False,
-    overwrite_final_checkpoint=False,
-    plot=True,
-    savefig=True,
-    verbose=True
-    '''
+
+
