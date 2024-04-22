@@ -112,12 +112,6 @@ def parse_args():
         help="Coefficient for DER",
     )
     parser.add_argument(
-        "--wd",
-        type=str,
-        default=DefaultsDER['model']['wd'],
-        help="Top level of directory, required arg",
-    )
-    parser.add_argument(
         "--model_type",
         type=str,
         required=False,
@@ -182,7 +176,6 @@ def parse_args():
                       "model_type": args.model_type,
                       "loss_type": args.loss_type,
                       "init_lr": args.init_lr,
-                      "wd": args.wd,
                       "COEFF": args.COEFF,
                       "n_epochs": args.n_epochs,
                       "save_all_checkpoints": args.save_all_checkpoints,
@@ -274,7 +267,6 @@ if __name__ == "__main__":
         DEVICE,
         config.get_item("model", "COEFF", "DER"),
         config.get_item("model", "loss_type", "DER"),
-        config.get_item("model", "wd", "DER"),
         model_name,
         EPOCHS=config.get_item("model",
                                "n_epochs",

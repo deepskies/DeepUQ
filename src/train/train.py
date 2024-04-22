@@ -15,7 +15,6 @@ def train_DER(
     DEVICE,
     COEFF,
     loss_type,
-    wd,
     model_name="DER",
     EPOCHS=100,
     path_to_model="models/",
@@ -31,7 +30,8 @@ def train_DER(
         # option to skip running the model if you don't care about
         # saving all checkpoints and only want to save the final
         final_chk = (
-            path_to_model
+            str(path_to_model)
+            + "checkpoints/"
             + str(model_name)
             + "_loss_"
             + str(loss_type)
@@ -227,7 +227,7 @@ def train_DER(
                 # ax1.errorbar(200, 600, yerr=5,
                 #                color='red', capsize=2)
                 plt.savefig(
-                    str(wd)
+                    str(path_to_model)
                     + "images/animations/"
                     + str(model_name)
                     + "_loss_"
@@ -254,8 +254,8 @@ def train_DER(
                     "std_u_al_validation": std_u_al_val,
                     "std_u_ep_validation": std_u_ep_val,
                 },
-                str(wd)
-                + "models/"
+                str(path_to_model)
+                + "checkpoints/"
                 + str(model_name)
                 + "_loss_"
                 + str(loss_type)
@@ -278,8 +278,8 @@ def train_DER(
                     "std_u_al_validation": std_u_al_val,
                     "std_u_ep_validation": std_u_ep_val,
                 },
-                str(wd)
-                + "models/"
+                str(path_to_model)
+                + "checkpoints/"
                 + str(model_name)
                 + "_loss_"
                 + str(loss_type)
@@ -302,7 +302,6 @@ def train_DE(
     DEVICE,
     loss_type,
     n_models,
-    wd,
     model_name="DE",
     BETA=None,
     EPOCHS=100,
@@ -610,7 +609,7 @@ def train_DE(
                     # ax1.errorbar(200, 600, yerr=5,
                     #                color='red', capsize=2)
                     plt.savefig(
-                        str(wd)
+                        str(path_to_model)
                         + "images/animations/"
                         + str(model_name)
                         + "_nmodel_"
@@ -640,8 +639,8 @@ def train_DE(
                             "x_val": x_val,
                             "y_val": y_val,
                         },
-                        str(wd)
-                        + "models/"
+                        str(path_to_model)
+                        + 'checkpoints/'
                         + str(model_name)
                         + "_beta_"
                         + str(BETA)
@@ -665,7 +664,7 @@ def train_DE(
                             "x_val": x_val,
                             "y_val": y_val,
                         },
-                        str(path_to_model) + 
+                        str(path_to_model)
                         + str(model_name)
                         + "_nmodel_"
                         + str(m)

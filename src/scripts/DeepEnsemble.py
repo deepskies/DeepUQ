@@ -124,12 +124,6 @@ def parse_args():
             step_decrease_to_0.5, and step_decrease_to_1.0",
     )
     parser.add_argument(
-        "--wd",
-        type=str,
-        default=DefaultsDE['model']['wd'],
-        help="Top level of directory, required arg",
-    )
-    parser.add_argument(
         "--model_type",
         type=str,
         required=False,
@@ -201,7 +195,6 @@ def parse_args():
                       "loss_type": args.loss_type,
                       "n_models": args.n_models,
                       "init_lr": args.init_lr,
-                      "wd": args.wd,
                       "BETA": args.BETA,
                       "n_epochs": args.n_epochs,
                       "save_all_checkpoints": args.save_all_checkpoints,
@@ -311,7 +304,6 @@ if __name__ == "__main__":
         DEVICE,
         config.get_item("model", "loss_type", "DE"),
         config.get_item("model", "n_models", "DE"),
-        config.get_item("model", "wd", "DE"),
         model_name,
         BETA=config.get_item("model", "BETA", "DE"),
         EPOCHS=config.get_item("model", "n_epochs", "DE"),
