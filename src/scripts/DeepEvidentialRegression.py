@@ -34,33 +34,24 @@ def parse_args():
                         choices=DataModules.keys())
 
     # model
-    parser.add_argument("--model_path", '-m', default=None)
+    parser.add_argument("--out_dir",
+                        default=DefaultsDER['common']['out_dir'])
     parser.add_argument("--model_engine", '-e',
                         default=DefaultsDER['model']['model_engine'],
                         choices=ModelModules.keys())
-
-    # path to save the yaml if thats what you'd like
-    parser.add_argument("--out_dir",
-                        default=DefaultsDER['common']['out_dir'])
-
-    # List of metrics (cannot supply specific kwargs)
-    # parser.add_argument("--metrics", nargs='+', default=list(Defaults['metrics'].keys()), choices=Metrics.keys())
-
-    # List of plots
-    #parser.add_argument("--plots", nargs='+', default=list(Defaults['plots'].keys()), choices=Plots.keys())
 
     parser.add_argument(
         "--size_df",
         type=float,
         required=False,
-        default=1000,
+        default=DefaultsDER['data']['size_df'],
         help="Used to load the associated .h5 data file",
     )
     parser.add_argument(
         "--noise_level",
         type=str,
-        default="low",
-        choices=["low","medium","high","vhigh"],
+        default=DefaultsDER['data']['noise_level'],
+        choices=["low", "medium", "high", "vhigh"],
         help="low, medium, high or vhigh, \
             used to look up associated sigma value",
     )
@@ -68,26 +59,27 @@ def parse_args():
         "--normalize",
         required=False,
         action="store_true",
+        default=DefaultsDER['data']['normalize'],
         help="If true theres an option to normalize the dataset",
     )
     parser.add_argument(
         "--val_proportion",
         type=float,
         required=False,
-        default=0.1,
+        default=DefaultsDER['data']['val_proportion'],
         help="Proportion of the dataset to use as validation",
     )
     parser.add_argument(
         "--randomseed",
         type=int,
         required=False,
-        default=42,
+        default=DefaultsDER['data']['randomseed'],
         help="Random seed used for shuffling the training and validation set",
     )
     parser.add_argument(
         "--generatedata",
         action="store_true",
-        default=False,
+        default=DefaultsDER['data']['generatedata'],
         help="option to generate df, if not specified \
             default behavior is to load from file",
     )
@@ -95,95 +87,86 @@ def parse_args():
         "--batchsize",
         type=int,
         required=False,
-        default=100,
+        default=DefaultsDER['data']['batchsize'],
         help="Size of batched used in the traindataloader",
     )
     parser.add_argument(
         "--init_lr",
         type=float,
         required=False,
-        default=0.001,
+        default=DefaultsDER['model']['init_lr'],
         help="Learning rate",
     )
     parser.add_argument(
         "--loss_type",
         type=str,
         required=False,
-        default="DER",
+        default=DefaultsDER['model']['loss_type'],
         help="Loss types for DER",
     )
     parser.add_argument(
         "--COEFF",
         type=float,
         required=False,
-        default=0.5,
+        default=DefaultsDER['model']['COEFF'],
         help="Coefficient for DER",
     )
     parser.add_argument(
         "--wd",
         type=str,
-        default="./DeepUQResources/",
+        default=DefaultsDER['model']['wd'],
         help="Top level of directory, required arg",
     )
     parser.add_argument(
         "--model_type",
         type=str,
         required=False,
-        default="DER",
+        default=DefaultsDER['model']['model_type'],
         help="Beginning of name for saved checkpoints and figures",
     )
     parser.add_argument(
         "--n_epochs",
         type=int,
         required=False,
-        default=100,
+        default=DefaultsDER['model']['n_epochs'],
         help="number of epochs for each MVE",
-    )
-    parser.add_argument(
-        "--path_to_models",
-        type=str,
-        required=False,
-        default="models/",
-        help="path to where the checkpoints are saved",
     )
     parser.add_argument(
         "--save_all_checkpoints",
         action="store_true",
-        default=False,
+        default=DefaultsDER['model']['save_all_checkpoints'],
         help="option to save all checkpoints",
     )
     parser.add_argument(
         "--save_final_checkpoint",
         action="store_true",  # Set to True if argument is present
-        default=False,  # Set default value to False if argument is not present
+        default=DefaultsDER['model']['save_final_checkpoint'],
         help="option to save the final epoch checkpoint for each ensemble",
     )
     parser.add_argument(
         "--overwrite_final_checkpoint",
         action="store_true",
-        default=False,
+        default=DefaultsDER['model']['overwrite_final_checkpoint'],
         help="option to overwite already saved checkpoints",
     )
     parser.add_argument(
         "--plot",
         action="store_true",
-        default=False,
+        default=DefaultsDER['model']['plot'],
         help="option to plot in notebook",
     )
     parser.add_argument(
         "--savefig",
         action="store_true",
-        default=False,
+        default=DefaultsDER['model']['savefig'],
         help="option to save a figure of the true and predicted values",
     )
     parser.add_argument(
         "--verbose",
         action="store_true",
-        default=False,
+        default=DefaultsDER['model']['verbose'],
         help="verbose option for train",
     )
-    #return parser.parse_args()
-
     args = parser.parse_args()
     if args.config is not None:
         config = Config(args.config)
@@ -194,7 +177,7 @@ def parse_args():
 
         input_yaml = {
             "common": {"out_dir": args.out_dir},
-            "model": {"model_path": args.model_path,
+            "model": {"model_path": args.out_dir,
                       "model_engine": args.model_engine,
                       "model_type": args.model_type,
                       "loss_type": args.loss_type,
@@ -202,7 +185,6 @@ def parse_args():
                       "wd": args.wd,
                       "COEFF": args.COEFF,
                       "n_epochs": args.n_epochs,
-                      "path_to_models": args.path_to_models,
                       "save_all_checkpoints": args.save_all_checkpoints,
                       "save_final_checkpoint": args.save_final_checkpoint,
                       "overwrite_final_checkpoint": args.overwrite_final_checkpoint,
@@ -226,7 +208,6 @@ def parse_args():
         config = Config(temp_config)
 
     return config
-    #return parser.parse_args() 
 
 
 if __name__ == "__main__":
@@ -298,8 +279,8 @@ if __name__ == "__main__":
         EPOCHS=config.get_item("model",
                                "n_epochs",
                                "DER"),
-        path_to_model=config.get_item("model",
-                                      "path_to_models",
+        path_to_model=config.get_item("common",
+                                      "out_dir",
                                       "DER"),
         save_all_checkpoints=config.get_item("model",
                                              "save_all_checkpoints",

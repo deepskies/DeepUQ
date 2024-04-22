@@ -15,16 +15,20 @@ DefaultsDE = {
         "generatedata": False,
     },
     "model": {
-        "model_path": "./models/",
-        # the engines are the classes, defined
         "model_engine": "DE",
         "model_type": "DE",
-        "loss_type": "bnll",
+        "loss_type": "bnll_loss",
         "n_models": 100,
         "init_lr": 0.001,
         "wd": "./",
         "BETA": 0.5,
         "n_epochs": 100,
+        "save_all_checkpoints": False,
+        "save_final_checkpoint": True,
+        "overwrite_final_checkpoint": False,
+        "plot": False,
+        "savefig": False,
+        "verbose": False,
     },
     "plots_common": {
         "axis_spines": False, 
@@ -52,8 +56,8 @@ DefaultsDE = {
     }
 }
 DefaultsDER = {
-    "common":{
-        "out_dir":"./DeepUQResources/results/",
+    "common": {
+        "out_dir": "./DeepUQResources/results/",
         "temp_config": "./DeepUQResources/temp/temp_config_DER.yml",
     },
     "data": {
@@ -68,7 +72,6 @@ DefaultsDER = {
         "generatedata": False,
     },
     "model": {
-        "model_path": "./models/",
         # the engines are the classes, defined
         "model_engine": "DER",
         "model_type": "DER",
@@ -77,9 +80,15 @@ DefaultsDER = {
         "wd": "./",
         "COEFF": 0.5,
         "n_epochs": 100,
+        "save_all_checkpoints": False,
+        "save_final_checkpoint": True,
+        "overwrite_final_checkpoint": False,
+        "plot": False,
+        "savefig": False,
+        "verbose": False,
     },
     "plots_common": {
-        "axis_spines": False, 
+        "axis_spines": False,
         "tight_layout": True,
         "default_colorway": "viridis", 
         "plot_style": "fast", 

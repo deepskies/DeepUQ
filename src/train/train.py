@@ -665,8 +665,7 @@ def train_DE(
                             "x_val": x_val,
                             "y_val": y_val,
                         },
-                        str(wd)
-                        + "models/"
+                        str(path_to_model) + 
                         + str(model_name)
                         + "_nmodel_"
                         + str(m)
@@ -690,8 +689,7 @@ def train_DE(
                             "x_val": x_val,
                             "y_val": y_val,
                         },
-                        str(wd)
-                        + "models/"
+                        str(path_to_model) 
                         + str(model_name)
                         + "_beta_"
                         + str(BETA)
@@ -715,8 +713,7 @@ def train_DE(
                             "x_val": x_val,
                             "y_val": y_val,
                         },
-                        str(wd)
-                        + "models/"
+                        str(path_to_model)
                         + str(model_name)
                         + "_nmodel_"
                         + str(m)
