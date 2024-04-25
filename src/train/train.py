@@ -226,6 +226,7 @@ def train_DER(
             if savefig:
                 # ax1.errorbar(200, 600, yerr=5,
                 #                color='red', capsize=2)
+                print('path to model', path_to_model)
                 plt.savefig(
                     str(path_to_model)
                     + "images/animations/"
@@ -336,7 +337,8 @@ def train_DE(
             # saving all checkpoints and only want to save the final
             if loss_type == "bnll_loss":
                 final_chk = (
-                    path_to_model
+                    str(path_to_model)
+                    + "checkpoints/"
                     + str(model_name)
                     + "_beta_"
                     + str(BETA)
@@ -348,7 +350,8 @@ def train_DE(
                 )
             else:
                 final_chk = (
-                    path_to_model
+                    str(path_to_model)
+                    + "checkpoints/"
                     + str(model_name)
                     + "_nmodel_"
                     + str(m)
@@ -665,6 +668,7 @@ def train_DE(
                             "y_val": y_val,
                         },
                         str(path_to_model)
+                        + "checkpoints/"
                         + str(model_name)
                         + "_nmodel_"
                         + str(m)
@@ -688,7 +692,8 @@ def train_DE(
                             "x_val": x_val,
                             "y_val": y_val,
                         },
-                        str(path_to_model) 
+                        str(path_to_model)
+                        + "checkpoints/"
                         + str(model_name)
                         + "_beta_"
                         + str(BETA)
@@ -713,6 +718,7 @@ def train_DE(
                             "y_val": y_val,
                         },
                         str(path_to_model)
+                        + "checkpoints/"
                         + str(model_name)
                         + "_nmodel_"
                         + str(m)
