@@ -296,6 +296,10 @@ if __name__ == "__main__":
                                                           "loss_type",
                                                           "DE"),
                                           DEVICE)
+    print('save final checkpoint has this value',
+          config.get_item("model",
+                          "save_final_checkpoint",
+                          "DE"))
     model_ensemble = train.train_DE(
         trainDataLoader,
         x_val,

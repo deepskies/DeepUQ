@@ -208,8 +208,6 @@ def test_DE_no_chkpt_saved(temp_directory):
         "--n_epochs",
         str(n_epochs),
         "--generatedata",
-        "--save_final_checkpoint",
-        "False"
     ]
     # now run the subprocess
     subprocess.run(subprocess_args, check=True)
