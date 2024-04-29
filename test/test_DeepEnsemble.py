@@ -33,35 +33,37 @@ def temp_directory():
 
 
 def create_test_config(temp_directory, n_epochs):
-    print('dumping temp yaml')
-    print('temp_dir', temp_directory)
+    print("dumping temp yaml")
+    print("temp_dir", temp_directory)
     input_yaml = {
         "common": {"out_dir": str(temp_directory)},
-        "model": {"model_engine": "DE",
-                  "model_type": "DE",
-                  "loss_type": "bnll_loss",
-                  "init_lr": 0.001,
-                  "BETA": 0.5,
-                  "n_models": 2,
-                  "n_epochs": n_epochs,
-                  "save_all_checkpoints": False,
-                  "save_final_checkpoint": True,
-                  "overwrite_final_checkpoint": True,
-                  "plot": False,
-                  "savefig": True,
-                  "verbose": False,
-                    },
-        "data": {"data_path": "./data",
-                    "data_engine": "DataLoader",
-                    "size_df": 1000,
-                    "noise_level": "low",
-                    "val_proportion": 0.1,
-                    "randomseed": 42,
-                    "batchsize": 100,
-                    },
-        }
-    print('theoretically dumping here', str(temp_directory)+"yamls/DE.yaml")
-    yaml.dump(input_yaml, open(str(temp_directory)+"yamls/DE.yaml", "w"))
+        "model": {
+            "model_engine": "DE",
+            "model_type": "DE",
+            "loss_type": "bnll_loss",
+            "init_lr": 0.001,
+            "BETA": 0.5,
+            "n_models": 2,
+            "n_epochs": n_epochs,
+            "save_all_checkpoints": False,
+            "save_final_checkpoint": True,
+            "overwrite_final_checkpoint": True,
+            "plot": False,
+            "savefig": True,
+            "verbose": False,
+        },
+        "data": {
+            "data_path": "./data",
+            "data_engine": "DataLoader",
+            "size_df": 1000,
+            "noise_level": "low",
+            "val_proportion": 0.1,
+            "randomseed": 42,
+            "batchsize": 100,
+        },
+    }
+    print("theoretically dumping here", str(temp_directory) + "yamls/DE.yaml")
+    yaml.dump(input_yaml, open(str(temp_directory) + "yamls/DE.yaml", "w"))
 
 
 def test_DE_from_config(temp_directory):
@@ -69,21 +71,21 @@ def test_DE_from_config(temp_directory):
     # make the temporary config file
     n_epochs = 2
     n_models = 2
-    create_test_config(temp_directory+"/", n_epochs)
+    create_test_config(temp_directory + "/", n_epochs)
     subprocess_args = [
         "python",
         "src/scripts/DeepEnsemble.py",
         "--config",
-        str(temp_directory)+"/yamls/DE.yaml",
+        str(temp_directory) + "/yamls/DE.yaml",
     ]
     # now run the subprocess
     subprocess.run(subprocess_args, check=True)
     # check if the right number of checkpoints are saved
     models_folder = os.path.join(temp_directory, "checkpoints")
-    print('this is the checkpoints folder', models_folder)
+    print("this is the checkpoints folder", models_folder)
     # list all files in the "models" folder
     files_in_models_folder = os.listdir(models_folder)
-    print('files in checkpoints folder', files_in_models_folder)
+    print("files in checkpoints folder", files_in_models_folder)
     # assert that the number of files is equal to 10
     assert (
         len(files_in_models_folder) == n_models
@@ -122,12 +124,12 @@ def test_DE_chkpt_saved(temp_directory):
         "--n_models",
         str(n_models),
         "--out_dir",
-        str(temp_directory) + '/',
+        str(temp_directory) + "/",
         "--n_epochs",
         str(n_epochs),
         "--save_final_checkpoint",
         "--savefig",
-        "--generatedata"
+        "--generatedata",
     ]
     # now run the subprocess
     subprocess.run(subprocess_args, check=True)
@@ -175,7 +177,7 @@ def test_DE_no_chkpt_saved_xfail(temp_directory):
         "--n_models",
         str(n_models),
         "--out_dir",
-        str(temp_directory) + '/',
+        str(temp_directory) + "/",
         "--n_epochs",
         str(n_epochs),
         "--generatedata",
@@ -204,7 +206,7 @@ def test_DE_no_chkpt_saved(temp_directory):
         "--n_models",
         str(n_models),
         "--out_dir",
-        str(temp_directory) + '/',
+        str(temp_directory) + "/",
         "--n_epochs",
         str(n_epochs),
         "--generatedata",
@@ -231,11 +233,10 @@ def test_DE_run_simple_ensemble(temp_directory):
         "--n_models",
         str(n_models),
         "--out_dir",
-        str(temp_directory) + '/',
+        str(temp_directory) + "/",
         "--n_epochs",
         "2",
-        "--generatedata"
+        "--generatedata",
     ]
     # now run the subprocess
     subprocess.run(subprocess_args, check=True)
-

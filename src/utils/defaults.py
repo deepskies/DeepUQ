@@ -1,6 +1,6 @@
 DefaultsDE = {
-    "common":{
-        "out_dir":"./DeepUQResources/results/",
+    "common": {
+        "out_dir": "./DeepUQResources/results/",
         "temp_config": "./DeepUQResources/temp/temp_config_DE.yml",
     },
     "data": {
@@ -30,29 +30,27 @@ DefaultsDE = {
         "verbose": False,
     },
     "plots_common": {
-        "axis_spines": False, 
+        "axis_spines": False,
         "tight_layout": True,
-        "default_colorway": "viridis", 
-        "plot_style": "fast", 
-        "parameter_labels" : ['$m$','$b$'], 
-        "parameter_colors": ['#9C92A3','#0F5257'], 
+        "default_colorway": "viridis",
+        "plot_style": "fast",
+        "parameter_labels": ["$m$", "$b$"],
+        "parameter_colors": ["#9C92A3", "#0F5257"],
         "line_style_cycle": ["-", "-."],
-        "figure_size": [6, 6]
-    }, 
-    "plots":{
-        "CDFRanks":{}, 
-        "Ranks":{"num_bins":None}, 
-        "CoverageFraction":{}
-    }, 
+        "figure_size": [6, 6],
+    },
+    "plots": {"CDFRanks": {},
+              "Ranks": {"num_bins": None},
+              "CoverageFraction": {}},
     "metrics_common": {
         "use_progress_bar": False,
-        "samples_per_inference":1000, 
-        "percentiles":[75, 85, 95]
+        "samples_per_inference": 1000,
+        "percentiles": [75, 85, 95],
     },
-    "metrics":{
-        "AllSBC":{}, 
-        "CoverageFraction": {}, 
-    }
+    "metrics": {
+        "AllSBC": {},
+        "CoverageFraction": {},
+    },
 }
 DefaultsDER = {
     "common": {
@@ -88,26 +86,23 @@ DefaultsDER = {
     "plots_common": {
         "axis_spines": False,
         "tight_layout": True,
-        "default_colorway": "viridis", 
-        "plot_style": "fast", 
-        "parameter_labels" : ['$m$','$b$'], 
-        "parameter_colors": ['#9C92A3','#0F5257'], 
+        "default_colorway": "viridis",
+        "plot_style": "fast",
+        "parameter_labels": ["$m$", "$b$"],
+        "parameter_colors": ["#9C92A3", "#0F5257"],
         "line_style_cycle": ["-", "-."],
-        "figure_size": [6, 6]
-    }, 
-    "plots":{
-        "CDFRanks":{}, 
-        "Ranks":{"num_bins":None}, 
-        "CoverageFraction":{}
-    }, 
+        "figure_size": [6, 6],
+    },
+    "plots": {"CDFRanks": {},
+              "Ranks": {"num_bins": None},
+              "CoverageFraction": {}},
     "metrics_common": {
         "use_progress_bar": False,
-        "samples_per_inference":1000, 
-        "percentiles":[75, 85, 95]
+        "samples_per_inference": 1000,
+        "percentiles": [75, 85, 95],
     },
-    "metrics":{
-        "AllSBC":{}, 
-        "CoverageFraction": {}, 
-    }
+    "metrics": {
+        "AllSBC": {},
+        "CoverageFraction": {},
+    },
 }
-

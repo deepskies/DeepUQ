@@ -15,7 +15,7 @@ def get_section(section, raise_exception=True):
 class Config:
     ENV_VAR_PATH = "DeepUQ_Config"
 
-    def __init__(self, config_path: Optional[str]=None) -> None:
+    def __init__(self, config_path: Optional[str] = None) -> None:
         # okay what Maggie is doing here is a little trick or "cheat"
         # where the config_path is saved to the ENV_VAR_PATH
         # the first time this thing is called and then later it
@@ -28,7 +28,10 @@ class Config:
             try:
                 config_path = os.environ[self.ENV_VAR_PATH]
             except KeyError:
-                assert False, "Cannot load config from enviroment. Hint: Have you set the config path by pasing a str path to Config?"
+                assert False, \
+                    "Cannot load config from enviroment. \
+                     Hint: Have you set the config path \
+                     by passing a str path to Config?"
         self.config = self._read_config(config_path)
         self._validate_config()
 
@@ -57,11 +60,14 @@ class Config:
                     "DE": DefaultsDE
                 }[defaulttype][section][item]
 
-    def get_section(self, section, raise_exception=True):
+    def get_section(self, section, defaulttype, raise_exception=True):
         try:
             return self.config[section]
         except KeyError as e:
             if raise_exception:
                 raise KeyError(e)
             else:
-                return Defaults[section]
+                return {
+                    "DER": DefaultsDER,
+                    "DE": DefaultsDE
+                }[defaulttype][section]

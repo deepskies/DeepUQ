@@ -1,10 +1,11 @@
 import os
-import yaml 
+import yaml
 import argparse
 import numpy as np
 import torch
-from torch.utils.data import TensorDataset, DataLoader 
-#from scripts import train, models, io
+from torch.utils.data import TensorDataset, DataLoader
+
+# from scripts import train, models, io
 from train import train
 from models import models
 from data import DataModules
@@ -12,9 +13,8 @@ from models import ModelModules
 from utils.config import Config
 from utils.defaults import DefaultsDE
 from data.data import DataPreparation, MyDataLoader
-#from plots import Plots
 
-
+# from plots import Plots
 
 
 def parse_args():
@@ -25,34 +25,42 @@ def parse_args():
     # and dumps to yaml
 
     # option to pass name of config
-    parser.add_argument("--config", '-c', default=None)
+    parser.add_argument("--config", "-c", default=None)
 
     # data info
-    parser.add_argument("--data_path", '-d',
-                        default=DefaultsDE['data']['data_path'],
-                        choices=DataModules.keys())
-    parser.add_argument("--data_engine", '-dl',
-                        default=DefaultsDE['data']['data_engine'],
-                        choices=DataModules.keys())
+    parser.add_argument(
+        "--data_path",
+        "-d",
+        default=DefaultsDE["data"]["data_path"],
+        choices=DataModules.keys(),
+    )
+    parser.add_argument(
+        "--data_engine",
+        "-dl",
+        default=DefaultsDE["data"]["data_engine"],
+        choices=DataModules.keys(),
+    )
 
     # model
     # path to save the model results
-    parser.add_argument("--out_dir",
-                        default=DefaultsDE['common']['out_dir'])
-    parser.add_argument("--model_engine", '-e',
-                        default=DefaultsDE['model']['model_engine'],
-                        choices=ModelModules.keys())
+    parser.add_argument("--out_dir", default=DefaultsDE["common"]["out_dir"])
+    parser.add_argument(
+        "--model_engine",
+        "-e",
+        default=DefaultsDE["model"]["model_engine"],
+        choices=ModelModules.keys(),
+    )
     parser.add_argument(
         "--size_df",
         type=float,
         required=False,
-        default=DefaultsDE['data']['size_df'],
+        default=DefaultsDE["data"]["size_df"],
         help="Used to load the associated .h5 data file",
     )
     parser.add_argument(
         "--noise_level",
         type=str,
-        default=DefaultsDE['data']['noise_level'],
+        default=DefaultsDE["data"]["noise_level"],
         choices=["low", "medium", "high", "vhigh"],
         help="low, medium, high or vhigh, \
             used to look up associated sigma value",
@@ -61,27 +69,27 @@ def parse_args():
         "--normalize",
         required=False,
         action="store_true",
-        default=DefaultsDE['data']['normalize'],
+        default=DefaultsDE["data"]["normalize"],
         help="If true theres an option to normalize the dataset",
     )
     parser.add_argument(
         "--val_proportion",
         type=float,
         required=False,
-        default=DefaultsDE['data']['val_proportion'],
+        default=DefaultsDE["data"]["val_proportion"],
         help="Proportion of the dataset to use as validation",
     )
     parser.add_argument(
         "--randomseed",
         type=int,
         required=False,
-        default=DefaultsDE['data']['randomseed'],
+        default=DefaultsDE["data"]["randomseed"],
         help="Random seed used for shuffling the training and validation set",
     )
     parser.add_argument(
         "--generatedata",
         action="store_true",
-        default=DefaultsDE['data']['generatedata'],
+        default=DefaultsDE["data"]["generatedata"],
         help="option to generate df, if not specified \
             default behavior is to load from file",
     )
@@ -89,28 +97,28 @@ def parse_args():
         "--batchsize",
         type=int,
         required=False,
-        default=DefaultsDE['data']['batchsize'],
+        default=DefaultsDE["data"]["batchsize"],
         help="Size of batched used in the traindataloader",
     )
     # now args for model
     parser.add_argument(
         "--n_models",
         type=int,
-        default=DefaultsDE['model']['n_models'],
+        default=DefaultsDE["model"]["n_models"],
         help="Number of MVEs in the ensemble",
     )
     parser.add_argument(
         "--init_lr",
         type=float,
         required=False,
-        default=DefaultsDE['model']['init_lr'],
+        default=DefaultsDE["model"]["init_lr"],
         help="Learning rate",
     )
     parser.add_argument(
         "--loss_type",
         type=str,
         required=False,
-        default=DefaultsDE['model']['loss_type'],
+        default=DefaultsDE["model"]["loss_type"],
         help="Loss types for MVE, options are no_var_loss, var_loss, \
             and bnn_loss",
     )
@@ -118,7 +126,7 @@ def parse_args():
         "--BETA",
         type=beta_type,
         required=False,
-        default=DefaultsDE['model']['BETA'],
+        default=DefaultsDE["model"]["BETA"],
         help="If loss_type is bnn_loss, specify a beta as a float or \
             there are string options: linear_decrease, \
             step_decrease_to_0.5, and step_decrease_to_1.0",
@@ -127,101 +135,105 @@ def parse_args():
         "--model_type",
         type=str,
         required=False,
-        default=DefaultsDE['model']['model_type'],
+        default=DefaultsDE["model"]["model_type"],
         help="Beginning of name for saved checkpoints and figures",
     )
     parser.add_argument(
         "--n_epochs",
         type=int,
         required=False,
-        default=DefaultsDE['model']['n_epochs'],
+        default=DefaultsDE["model"]["n_epochs"],
         help="number of epochs for each MVE",
     )
     parser.add_argument(
         "--save_all_checkpoints",
         action="store_true",
-        default=DefaultsDE['model']['save_all_checkpoints'],
+        default=DefaultsDE["model"]["save_all_checkpoints"],
         help="option to save all checkpoints",
     )
     parser.add_argument(
         "--save_final_checkpoint",
         action="store_true",  # Set to True if argument is present
-        default=DefaultsDE['model']['save_final_checkpoint'],
+        default=DefaultsDE["model"]["save_final_checkpoint"],
         help="option to save the final epoch checkpoint for each ensemble",
     )
     parser.add_argument(
         "--overwrite_final_checkpoint",
         action="store_true",
-        default=DefaultsDE['model']['overwrite_final_checkpoint'],
+        default=DefaultsDE["model"]["overwrite_final_checkpoint"],
         help="option to overwite already saved checkpoints",
     )
     parser.add_argument(
         "--plot",
         action="store_true",
-        default=DefaultsDE['model']['plot'],
+        default=DefaultsDE["model"]["plot"],
         help="option to plot in notebook",
     )
     parser.add_argument(
         "--savefig",
         action="store_true",
-        default=DefaultsDE['model']['savefig'],
+        default=DefaultsDE["model"]["savefig"],
         help="option to save a figure of the true and predicted values",
     )
     parser.add_argument(
         "--verbose",
         action="store_true",
-        default=DefaultsDE['model']['verbose'],
+        default=DefaultsDE["model"]["verbose"],
         help="verbose option for train",
     )
     args = parser.parse_args()
     args = parser.parse_args()
     if args.config is not None:
-        print('Reading settings from config file', args.config)
+        print("Reading settings from config file", args.config)
         config = Config(args.config)
 
     else:
-        temp_config = DefaultsDE['common']['temp_config']
-        print('Reading settings from cli and default, \
-              dumping to temp config: ',
-              temp_config)
+        temp_config = DefaultsDE["common"]["temp_config"]
+        print(
+            "Reading settings from cli and default, \
+              dumping to temp config: ",
+            temp_config,
+        )
         os.makedirs(os.path.dirname(temp_config), exist_ok=True)
 
         # check if args were specified in cli
         # if not, default is from DefaultsDE dictionary
         input_yaml = {
             "common": {"out_dir": args.out_dir},
-            "model": {"model_engine": args.model_engine,
-                      "model_type": args.model_type,
-                      "loss_type": args.loss_type,
-                      "n_models": args.n_models,
-                      "init_lr": args.init_lr,
-                      "BETA": args.BETA,
-                      "n_epochs": args.n_epochs,
-                      "save_all_checkpoints": args.save_all_checkpoints,
-                      "save_final_checkpoint": args.save_final_checkpoint,
-                      "overwrite_final_checkpoint": args.overwrite_final_checkpoint,
-                      "plot": args.plot,
-                      "savefig": args.savefig,
-                      "verbose": args.verbose,
-                      },
-            "data": {"data_path": args.data_path,
-                     "data_engine": args.data_engine,
-                     "size_df": args.size_df,
-                     "noise_level": args.noise_level,
-                     "val_proportion": args.val_proportion,
-                     "randomseed": args.randomseed,
-                     "batchsize": args.batchsize,
-                     },
-            #"plots": {key: {} for key in args.plots}, 
-            #"metrics": {key: {} for key in args.metrics}, 
+            "model": {
+                "model_engine": args.model_engine,
+                "model_type": args.model_type,
+                "loss_type": args.loss_type,
+                "n_models": args.n_models,
+                "init_lr": args.init_lr,
+                "BETA": args.BETA,
+                "n_epochs": args.n_epochs,
+                "save_all_checkpoints": args.save_all_checkpoints,
+                "save_final_checkpoint": args.save_final_checkpoint,
+                "overwrite_final_checkpoint": args.overwrite_final_checkpoint,
+                "plot": args.plot,
+                "savefig": args.savefig,
+                "verbose": args.verbose,
+            },
+            "data": {
+                "data_path": args.data_path,
+                "data_engine": args.data_engine,
+                "size_df": args.size_df,
+                "noise_level": args.noise_level,
+                "val_proportion": args.val_proportion,
+                "randomseed": args.randomseed,
+                "batchsize": args.batchsize,
+            },
+            # "plots": {key: {} for key in args.plots},
+            # "metrics": {key: {} for key in args.metrics},
         }
 
         yaml.dump(input_yaml, open(temp_config, "w"))
         config = Config(temp_config)
 
     return config
-    #return parser.parse_args() 
-    
+    # return parser.parse_args()
+
 
 def beta_type(value):
     if isinstance(value, float):
@@ -278,28 +290,32 @@ if __name__ == "__main__":
     ys_array = np.reshape(df["output"].numpy(), (len_df * len_x))
 
     inputs = np.array([xs_array, ms_array, bs_array]).T
-    model_inputs, model_outputs = DataPreparation.normalize(inputs,
-                                                               ys_array,
-                                                               norm)
+    model_inputs, model_outputs = DataPreparation.normalize(
+        inputs,
+        ys_array,
+        norm)
     x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
         model_inputs, model_outputs, val_proportion=val_prop, random_state=rs
     )
     trainData = TensorDataset(torch.Tensor(x_train), torch.Tensor(y_train))
-    trainDataLoader = DataLoader(trainData,
-                                 batch_size=BATCH_SIZE,
-                                 shuffle=True)
+    trainDataLoader = DataLoader(
+        trainData,
+        batch_size=BATCH_SIZE,
+        shuffle=True)
     # set the device we will be using to train the model
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model_name = config.get_item("model", "model_type", "DE") + "_noise_" + noise
-    model, lossFn = models.model_setup_DE(config.get_item("model",
-                                                          "loss_type",
-                                                          "DE"),
-                                          DEVICE)
-    print('save final checkpoint has this value',
-          config.get_item("model",
-                          "save_final_checkpoint",
-                          "DE"))
+    model_name = config.get_item(
+        "model",
+        "model_type",
+        "DE") + "_noise_" + noise
+    model, lossFn = models.model_setup_DE(
+        config.get_item("model", "loss_type", "DE"), DEVICE
+    )
+    print(
+        "save final checkpoint has this value",
+        config.get_item("model", "save_final_checkpoint", "DE"),
+    )
     model_ensemble = train.train_DE(
         trainDataLoader,
         x_val,
@@ -311,15 +327,21 @@ if __name__ == "__main__":
         model_name,
         BETA=config.get_item("model", "BETA", "DE"),
         EPOCHS=config.get_item("model", "n_epochs", "DE"),
-        path_to_model=config.get_item("common", "out_dir", "DE"),
-        save_all_checkpoints=config.get_item("model", "save_all_checkpoints",
-                                             "DE"),
-        save_final_checkpoint=config.get_item("model",
-                                              "save_final_checkpoint",
-                                              "DE"),
-        overwrite_final_checkpoint=config.get_item("model",
-                                                   "overwrite_final_checkpoint",
-                                                   "DE"),
+        path_to_model=config.get_item(
+            "common",
+            "out_dir",
+            "DE"),
+        save_all_checkpoints=config.get_item(
+            "model",
+            "save_all_checkpoints",
+            "DE"),
+        save_final_checkpoint=config.get_item(
+            "model",
+            "save_final_checkpoint",
+            "DE"),
+        overwrite_final_checkpoint=config.get_item(
+            "model", "overwrite_final_checkpoint", "DE"
+        ),
         plot=config.get_item("model", "plot", "DE"),
         savefig=config.get_item("model", "savefig", "DE"),
         verbose=config.get_item("model", "verbose", "DE"),

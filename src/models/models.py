@@ -1,10 +1,7 @@
 # Contains modules used to prepare a dataset
 # with varying noise properties
 import numpy as np
-from sklearn.model_selection import train_test_split
 import pickle
-from torch.distributions import Uniform
-from torch.utils.data import TensorDataset
 import torch
 import torch.nn as nn
 import math
@@ -251,27 +248,3 @@ def loss_bnll(mean, variance, target, beta):  # beta=0.5):
     if beta > 0:
         loss = loss * (variance.detach() ** beta)
     return loss.sum(axis=-1)
-
-
-'''
-def get_loss(transform, beta=None):
-    if beta:
-        def beta_nll_loss(targets, outputs, beta=beta):
-            """Compute beta-NLL loss
-            """
-            mu = outputs[..., 0:1]
-            var = transform(outputs[..., 1:2])
-            loss = (K.square((targets - mu)) / var + K.log(var))
-            loss = loss * K.stop_gradient(var) ** beta
-            return loss
-        return beta_nll_loss
-    else:
-        def negative_log_likelihood(targets, outputs):
-            """Calculate the negative loglikelihood."""
-            mu = outputs[..., 0:1]
-            var = transform(outputs[..., 1:2])
-            y = targets[..., 0:1]
-            loglik = - K.log(var) - K.square((y - mu)) / var
-            return - loglik
-    return negative_log_likelihood
-'''
