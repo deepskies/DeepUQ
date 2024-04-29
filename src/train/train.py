@@ -1,10 +1,9 @@
-import argparse
 import torch
 import time
 import glob
 import numpy as np
 import matplotlib.pyplot as plt
-from scripts import models
+from models import models
 
 
 def train_DER(
@@ -15,7 +14,6 @@ def train_DER(
     DEVICE,
     COEFF,
     loss_type,
-    wd,
     model_name="DER",
     EPOCHS=100,
     path_to_model="models/",
@@ -31,7 +29,8 @@ def train_DER(
         # option to skip running the model if you don't care about
         # saving all checkpoints and only want to save the final
         final_chk = (
-            path_to_model
+            str(path_to_model)
+            + "checkpoints/"
             + str(model_name)
             + "_loss_"
             + str(loss_type)
@@ -226,8 +225,9 @@ def train_DER(
             if savefig:
                 # ax1.errorbar(200, 600, yerr=5,
                 #                color='red', capsize=2)
+                print('path to model', path_to_model)
                 plt.savefig(
-                    str(wd)
+                    str(path_to_model)
                     + "images/animations/"
                     + str(model_name)
                     + "_loss_"
@@ -254,8 +254,8 @@ def train_DER(
                     "std_u_al_validation": std_u_al_val,
                     "std_u_ep_validation": std_u_ep_val,
                 },
-                str(wd)
-                + "models/"
+                str(path_to_model)
+                + "checkpoints/"
                 + str(model_name)
                 + "_loss_"
                 + str(loss_type)
@@ -278,8 +278,8 @@ def train_DER(
                     "std_u_al_validation": std_u_al_val,
                     "std_u_ep_validation": std_u_ep_val,
                 },
-                str(wd)
-                + "models/"
+                str(path_to_model)
+                + "checkpoints/"
                 + str(model_name)
                 + "_loss_"
                 + str(loss_type)
@@ -302,7 +302,6 @@ def train_DE(
     DEVICE,
     loss_type,
     n_models,
-    wd,
     model_name="DE",
     BETA=None,
     EPOCHS=100,
@@ -337,7 +336,8 @@ def train_DE(
             # saving all checkpoints and only want to save the final
             if loss_type == "bnll_loss":
                 final_chk = (
-                    path_to_model
+                    str(path_to_model)
+                    + "checkpoints/"
                     + str(model_name)
                     + "_beta_"
                     + str(BETA)
@@ -349,7 +349,8 @@ def train_DE(
                 )
             else:
                 final_chk = (
-                    path_to_model
+                    str(path_to_model)
+                    + "checkpoints/"
                     + str(model_name)
                     + "_nmodel_"
                     + str(m)
@@ -610,7 +611,7 @@ def train_DE(
                     # ax1.errorbar(200, 600, yerr=5,
                     #                color='red', capsize=2)
                     plt.savefig(
-                        str(wd)
+                        str(path_to_model)
                         + "images/animations/"
                         + str(model_name)
                         + "_nmodel_"
@@ -640,8 +641,8 @@ def train_DE(
                             "x_val": x_val,
                             "y_val": y_val,
                         },
-                        str(wd)
-                        + "models/"
+                        str(path_to_model)
+                        + 'checkpoints/'
                         + str(model_name)
                         + "_beta_"
                         + str(BETA)
@@ -665,8 +666,8 @@ def train_DE(
                             "x_val": x_val,
                             "y_val": y_val,
                         },
-                        str(wd)
-                        + "models/"
+                        str(path_to_model)
+                        + "checkpoints/"
                         + str(model_name)
                         + "_nmodel_"
                         + str(m)
@@ -690,8 +691,8 @@ def train_DE(
                             "x_val": x_val,
                             "y_val": y_val,
                         },
-                        str(wd)
-                        + "models/"
+                        str(path_to_model)
+                        + "checkpoints/"
                         + str(model_name)
                         + "_beta_"
                         + str(BETA)
@@ -715,8 +716,8 @@ def train_DE(
                             "x_val": x_val,
                             "y_val": y_val,
                         },
-                        str(wd)
-                        + "models/"
+                        str(path_to_model)
+                        + "checkpoints/"
                         + str(model_name)
                         + "_nmodel_"
                         + str(m)
@@ -734,21 +735,3 @@ def train_DE(
         print(endTime - startTime)
 
     return model_ensemble
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--data_source",
-                        type=str,
-                        help="Data used to train the model")
-    parser.add_argument(
-        "--n_epochs",
-        type=int,
-        help="Integer number of epochs to train the model"
-    )
-
-    args = parser.parse_args()
-
-    # eventually change the bottom to train_model,
-    # which will contain train_DE and train_DER
-    train_DER(data_source=args.data_source, n_epochs=args.n_epochs)

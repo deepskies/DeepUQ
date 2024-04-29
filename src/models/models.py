@@ -1,7 +1,46 @@
+# Contains modules used to prepare a dataset
+# with varying noise properties
 import numpy as np
-import torch.nn as nn
+import pickle
 import torch
+import torch.nn as nn
 import math
+
+
+class ModelLoader:
+    def save_model_pkl(self, path, model_name, posterior):
+        """
+        Save the pkl'ed saved posterior model
+
+        :param path: Location to save the model
+        :param model_name: Name of the model
+        :param posterior: Model object to be saved
+        """
+        file_name = path + model_name + ".pkl"
+        with open(file_name, "wb") as file:
+            pickle.dump(posterior, file)
+
+    def load_model_pkl(self, path, model_name):
+        """
+        Load the pkl'ed saved posterior model
+
+        :param path: Location to load the model from
+        :param model_name: Name of the model
+        :return: Loaded model object that can be used with the predict function
+        """
+        print(path)
+        with open(path + model_name + ".pkl", "rb") as file:
+            posterior = pickle.load(file)
+        return posterior
+
+    def predict(input, model):
+        """
+
+        :param input: loaded object used for inference
+        :param model: loaded model
+        :return: Prediction
+        """
+        return 0
 
 
 class DERLayer(nn.Module):
@@ -209,27 +248,3 @@ def loss_bnll(mean, variance, target, beta):  # beta=0.5):
     if beta > 0:
         loss = loss * (variance.detach() ** beta)
     return loss.sum(axis=-1)
-
-
-'''
-def get_loss(transform, beta=None):
-    if beta:
-        def beta_nll_loss(targets, outputs, beta=beta):
-            """Compute beta-NLL loss
-            """
-            mu = outputs[..., 0:1]
-            var = transform(outputs[..., 1:2])
-            loss = (K.square((targets - mu)) / var + K.log(var))
-            loss = loss * K.stop_gradient(var) ** beta
-            return loss
-        return beta_nll_loss
-    else:
-        def negative_log_likelihood(targets, outputs):
-            """Calculate the negative loglikelihood."""
-            mu = outputs[..., 0:1]
-            var = transform(outputs[..., 1:2])
-            y = targets[..., 0:1]
-            loglik = - K.log(var) - K.square((y - mu)) / var
-            return - loglik
-    return negative_log_likelihood
-'''

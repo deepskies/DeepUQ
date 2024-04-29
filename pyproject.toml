@@ -7,6 +7,10 @@ authors = ["beckynevin <beckynevin@gmail.com>"]
 readme = "README.md"
 license = "MIT"
 
+[tool.poetry.scripts]
+ensamble = "src.scripts.DeepEnsemble:main"
+der = "src.scripts.DeepEvidentialRegression:main"
+
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
 jupyter = "^1.0.0"

@@ -1,107 +1,17 @@
 # Contains modules used to prepare a dataset
 # with varying noise properties
-import argparse
 import numpy as np
 from sklearn.model_selection import train_test_split
 import pickle
 from torch.distributions import Uniform
-from torch.utils.data import TensorDataset
 import torch
 import h5py
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(description="data handling module")
-    parser.add_argument(
-        "size_df",
-        type=float,
-        required=False,
-        default=1000,
-        help="Used to load the associated .h5 data file",
-    )
-    parser.add_argument(
-        "noise_level",
-        type=str,
-        required=False,
-        default="low",
-        help="low, medium, high or vhigh, \
-              used to look up associated sigma value",
-    )
-    parser.add_argument(
-        "size_df",
-        type=str,
-        nargs="?",
-        default="/repo/embargo",
-        help="Butler Repository path from which data is transferred. \
-            Input str. Default = '/repo/embargo'",
-    )
-    parser.add_argument(
-        "--normalize",
-        required=False,
-        action="store_true",
-        help="If true theres an option to normalize the dataset",
-    )
-    parser.add_argument(
-        "--val_proportion",
-        type=float,
-        required=False,
-        default=0.1,
-        help="Proportion of the dataset to use as validation",
-    )
-    parser.add_argument(
-        "--randomseed",
-        type=float,
-        required=False,
-        default=42,
-        help="Random seed used for shuffling the training and validation set",
-    )
-    parser.add_argument(
-        "--batchsize",
-        type=float,
-        required=False,
-        default=100,
-        help="Size of batched used in the traindataloader",
-    )
-    return parser.parse_args()
+class MyDataLoader:
+    def __init__(self):
+        self.data = None
 
-
-class ModelLoader:
-    def save_model_pkl(self, path, model_name, posterior):
-        """
-        Save the pkl'ed saved posterior model
-
-        :param path: Location to save the model
-        :param model_name: Name of the model
-        :param posterior: Model object to be saved
-        """
-        file_name = path + model_name + ".pkl"
-        with open(file_name, "wb") as file:
-            pickle.dump(posterior, file)
-
-    def load_model_pkl(self, path, model_name):
-        """
-        Load the pkl'ed saved posterior model
-
-        :param path: Location to load the model from
-        :param model_name: Name of the model
-        :return: Loaded model object that can be used with the predict function
-        """
-        print(path)
-        with open(path + model_name + ".pkl", "rb") as file:
-            posterior = pickle.load(file)
-        return posterior
-
-    def predict(input, model):
-        """
-
-        :param input: loaded object used for inference
-        :param model: loaded model
-        :return: Prediction
-        """
-        return 0
-
-
-class DataLoader:
     def save_data_pkl(self, data_name, data, path="../data/"):
         """
         Save and load the pkl'ed training/test set
@@ -197,7 +107,7 @@ class DataPreparation:
         sigma,
         simulation_name,
         x=np.linspace(0, 100, 101),
-        seed=13
+        seed=42
     ):
         if simulation_name == "linear_homogeneous":
             # convert to numpy array (if tensor):
@@ -300,35 +210,3 @@ class DataPreparation:
             random_state=random_state,
         )
         return x_train, x_val, y_train, y_val
-
-
-# Example usage:
-if __name__ == "__main__":
-    namespace = parse_args()
-    size_df = namespace.size_df
-    noise = namespace.noise_level
-    norm = namespace.normalize
-    val_prop = namespace.val_proportion
-    rs = namespace.randomseed
-    BATCH_SIZE = namespace.batchsize
-    sigma = DataPreparation.get_sigma(noise)
-    loader = DataLoader()
-    data = loader.load_data_h5("linear_sigma_" + str(sigma) +
-                               "_size_" + str(size_df))
-    len_df = len(data["params"][:, 0].numpy())
-    len_x = len(data["inputs"].numpy())
-    ms_array = np.repeat(data["params"][:, 0].numpy(), len_x)
-    bs_array = np.repeat(data["params"][:, 1].numpy(), len_x)
-    xs_array = np.tile(data["inputs"].numpy(), len_df)
-    ys_array = np.reshape(data["output"].numpy(), (len_df * len_x))
-    inputs = np.array([xs_array, ms_array, bs_array]).T
-    model_inputs, model_outputs = DataPreparation.normalize(inputs,
-                                                            ys_array,
-                                                            norm)
-    x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
-        model_inputs, model_outputs, test_size=val_prop, random_state=rs
-    )
-    trainData = TensorDataset(torch.Tensor(x_train), torch.Tensor(y_train))
-    trainDataLoader = DataLoader(trainData,
-                                 batch_size=BATCH_SIZE,
-                                 shuffle=True)
