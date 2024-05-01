@@ -252,7 +252,7 @@ def beta_type(value):
 
 if __name__ == "__main__":
     config = parse_args()
-    size_df = config.get_item("data", "size_df", "DE")
+    size_df = int(config.get_item("data", "size_df", "DE"))
     noise = config.get_item("data", "noise_level", "DE")
     norm = config.get_item("data", "normalize", "DE", raise_exception=False)
     val_prop = config.get_item("data", "val_proportion", "DE")
@@ -278,10 +278,10 @@ if __name__ == "__main__":
                 df[key] = torch.tensor(value)
     else:
         loader = MyDataLoader()
-        print('attempting to load data')
-        df = loader.load_data_h5("linear_sigma_" + str(sigma) + "_size_" + str(size_df),
-                path=path_to_data,
-            )
+        df = loader.load_data_h5(
+            "linear_sigma_" + str(sigma) + "_size_" + str(size_df),
+            path=path_to_data,
+        )
     len_df = len(df["params"][:, 0].numpy())
     len_x = len(df["inputs"].numpy())
     ms_array = np.repeat(df["params"][:, 0].numpy(), len_x)
@@ -290,25 +290,22 @@ if __name__ == "__main__":
     ys_array = np.reshape(df["output"].numpy(), (len_df * len_x))
 
     inputs = np.array([xs_array, ms_array, bs_array]).T
-    model_inputs, model_outputs = DataPreparation.normalize(
-        inputs,
-        ys_array,
-        norm)
+    model_inputs, model_outputs = DataPreparation.normalize(inputs,
+                                                            ys_array,
+                                                            norm)
     x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
         model_inputs, model_outputs, val_proportion=val_prop, random_state=rs
     )
     trainData = TensorDataset(torch.Tensor(x_train), torch.Tensor(y_train))
-    trainDataLoader = DataLoader(
-        trainData,
-        batch_size=BATCH_SIZE,
-        shuffle=True)
+    trainDataLoader = DataLoader(trainData,
+                                 batch_size=BATCH_SIZE,
+                                 shuffle=True)
     # set the device we will be using to train the model
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model_name = config.get_item(
-        "model",
-        "model_type",
-        "DE") + "_noise_" + noise
+    model_name = config.get_item("model",
+                                 "model_type",
+                                 "DE") + "_noise_" + noise
     model, lossFn = models.model_setup_DE(
         config.get_item("model", "loss_type", "DE"), DEVICE
     )
@@ -327,18 +324,13 @@ if __name__ == "__main__":
         model_name,
         BETA=config.get_item("model", "BETA", "DE"),
         EPOCHS=config.get_item("model", "n_epochs", "DE"),
-        path_to_model=config.get_item(
-            "common",
-            "out_dir",
-            "DE"),
-        save_all_checkpoints=config.get_item(
-            "model",
-            "save_all_checkpoints",
-            "DE"),
-        save_final_checkpoint=config.get_item(
-            "model",
-            "save_final_checkpoint",
-            "DE"),
+        path_to_model=config.get_item("common", "out_dir", "DE"),
+        save_all_checkpoints=config.get_item("model",
+                                             "save_all_checkpoints",
+                                             "DE"),
+        save_final_checkpoint=config.get_item("model",
+                                              "save_final_checkpoint",
+                                              "DE"),
         overwrite_final_checkpoint=config.get_item(
             "model", "overwrite_final_checkpoint", "DE"
         ),

@@ -7,10 +7,10 @@ import yaml
 from data.data import MyDataLoader, DataPreparation
 
 
-#@pytest.fixture(params=["low", "medium", "high", "vhigh"],
+# @pytest.fixture(params=["low", "medium", "high", "vhigh"],
 #                name=["noise_level"])
 @pytest.fixture()
-def temp_data():#noise_level, size_df):
+def temp_data():  # noise_level, size_df):
     # setup: Create a temporary directory with one folder level
     temp_dir = tempfile.mkdtemp()
 
@@ -20,31 +20,29 @@ def temp_data():#noise_level, size_df):
 
     # now create
     data = DataPreparation()
-    noise_level = 'low'
+    noise_level = "low"
     size_df = 10
     data.sample_params_from_prior(size_df)
-    if noise_level == 'low':
+    if noise_level == "low":
         sigma = 1
-    if noise_level == 'medium':
+    if noise_level == "medium":
         sigma = 5
-    if noise_level == 'high':
+    if noise_level == "high":
         sigma = 10
-    if noise_level == 'vhigh':
+    if noise_level == "vhigh":
         sigma = 100
-    data.simulate_data(data.params,
-                       sigma,
-                       'linear_homogeneous'
-                       )
+    data.simulate_data(data.params, sigma, "linear_homogeneous")
     dict = data.get_dict()
     saver = MyDataLoader()
     # save the dataframe
-    filename = 'linear_sigma_'+str(sigma)+'_size_'+str(size_df)
+    filename = "linear_sigma_" + str(sigma) + "_size_" + str(size_df)
     saver.save_data_h5(filename, dict, path=data_dir)
 
     yield data_dir  # provide the temporary directory path to the test function
 
     # teardown: Remove the temporary directory and its contents
     shutil.rmtree(temp_dir)
+
 
 @pytest.fixture
 def temp_directory():
@@ -61,17 +59,16 @@ def temp_directory():
     animations_dir = os.path.join(temp_dir_root, "images", "animations")
     os.makedirs(animations_dir)
 
-    yield temp_dir_root  # provide the temporary directory path to the test function
+    yield temp_dir_root
+    # provide the temporary directory path to the test function
 
     # teardown: Remove the temporary directory and its contents
     shutil.rmtree(temp_dir_root)
 
 
-def create_test_config(temp_directory,
-                       temp_data,
-                       n_epochs,
-                       noise_level="low",
-                       size_df=10):
+def create_test_config(
+    temp_directory, temp_data, n_epochs, noise_level="low", size_df=10
+):
     input_yaml = {
         "common": {"out_dir": str(temp_directory)},
         "model": {
@@ -103,36 +100,25 @@ def create_test_config(temp_directory,
     yaml.dump(input_yaml, open(str(temp_directory) + "yamls/DE.yaml", "w"))
 
 
-class TestDE():
-    #@pytest.mark.parametrize("noise_level, size_df",
+class TestDE:
+    # @pytest.mark.parametrize("noise_level, size_df",
     #                        [(noise_level, size_df)])
-    #@pytest.mark.parametrize("size_df", [size_df])  # Add more values as needed
+    # @pytest.mark.parametrize("size_df", [size_df])
+    # Add more values as needed
 
-    def test_DE_from_config(self,
-                            temp_directory,
-                            temp_data,
-                            noise_level="low",
-                            size_df=10):
+    def test_DE_from_config(
+        self, temp_directory, temp_data, noise_level="low", size_df=10
+    ):
         # create the test config dynamically
         # make the temporary config file
         n_epochs = 2
         n_models = 2
-        create_test_config(temp_directory + "/",
-                           temp_data,
-                           n_epochs)
+        create_test_config(temp_directory + "/", temp_data, n_epochs)
         subprocess_args = [
             "python",
             "src/scripts/DeepEnsemble.py",
             "--config",
-            str(temp_directory) + "/yamls/DE.yaml",
-            "--data_path",
-            str(temp_data),
-            "--noise_level",
-            str(noise_level),
-            "--size_df",
-            str(size_df)
-
-
+            str(temp_directory) + "/yamls/DE.yaml"
         ]
         # now run the subprocess
         subprocess.run(subprocess_args, check=True)
@@ -167,21 +153,16 @@ class TestDE():
                 expected_substring in file_name
             ), f"File '{file_name}' does not contain the expected substring"
 
-    '''
-
-    def test_DE_chkpt_saved(temp_directory, temp_data):
-        noise_level = "low"
+    def test_DE_chkpt_saved(
+        self, temp_directory, temp_data, noise_level="low", size_df=10
+    ):
         n_models = 2
         n_epochs = 2
-        noise_level = 'low'
-        size_df = 10
-        temp_data_directory = temp_data(noise_level, size_df)
-        
         subprocess_args = [
             "python",
             "src/scripts/DeepEnsemble.py",
             "--data_path",
-            str(temp_data_directory),
+            str(temp_data),
             "--size_df",
             str(size_df),
             "--noise_level",
@@ -195,7 +176,6 @@ class TestDE():
             "--save_final_checkpoint",
             "--savefig",
             "--generatedata",
-            
         ]
         # now run the subprocess
         subprocess.run(subprocess_args, check=True)
@@ -229,17 +209,21 @@ class TestDE():
                 expected_substring in file_name
             ), f"File '{file_name}' does not contain the expected substring"
 
-
     @pytest.mark.xfail(strict=True)
-    def test_DE_no_chkpt_saved_xfail(temp_directory, temp_data):
-        noise_level = "low"
+    def test_DE_no_chkpt_saved_xfail(
+        self, temp_directory, temp_data, noise_level="low", size_df=10
+    ):
         n_models = 2
         n_epochs = 2
         subprocess_args = [
             "python",
             "src/scripts/DeepEnsemble.py",
+            "--path_to_data",
+            str(temp_data),
             "--noise_level",
             noise_level,
+            "--size_df",
+            str(size_df),
             "--n_models",
             str(n_models),
             "--out_dir",
@@ -259,16 +243,20 @@ class TestDE():
             len(files_in_models_folder) == n_models
         ), f"Expected {n_models} files in the 'models' folder"
 
-
-    def test_DE_no_chkpt_saved(temp_directory, temp_data):
-        noise_level = "low"
+    def test_DE_no_chkpt_saved(
+        self, temp_directory, temp_data, noise_level="low", size_df=10
+    ):
         n_models = 2
         n_epochs = 2
         subprocess_args = [
             "python",
             "src/scripts/DeepEnsemble.py",
+            "--data_path",
+            temp_data,
             "--noise_level",
             noise_level,
+            "--size_df",
+            str(size_df),
             "--n_models",
             str(n_models),
             "--out_dir",
@@ -287,15 +275,19 @@ class TestDE():
         assert len(files_in_models_folder) == 0, \
             "Expect 0 files in the 'models' folder"
 
-
-    def test_DE_run_simple_ensemble(temp_directory, temp_data):
-        noise_level = "low"
+    def test_DE_run_simple_ensemble(
+        self, temp_directory, temp_data, noise_level="low", size_df=10
+    ):
         n_models = 2
         subprocess_args = [
             "python",
             "src/scripts/DeepEnsemble.py",
+            "--data_path",
+            temp_data,
             "--noise_level",
             noise_level,
+            "--size_df",
+            str(size_df),
             "--n_models",
             str(n_models),
             "--out_dir",
@@ -306,4 +298,3 @@ class TestDE():
         ]
         # now run the subprocess
         subprocess.run(subprocess_args, check=True)
-    '''
