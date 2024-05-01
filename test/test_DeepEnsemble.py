@@ -4,14 +4,52 @@ import subprocess
 import tempfile
 import shutil
 import yaml
+from scripts.io import DataLoader, DataPreparation
 
 
 @pytest.fixture
-def temp_directory():
-    # Setup: Create a temporary directory with one folder level
+def temp_data():
+    # setup: Create a temporary directory with one folder level
     temp_dir = tempfile.mkdtemp()
 
-    # Create subdirectories within the temporary directory
+    # create subdirectories within the temporary directory
+    data_dir = os.path.join(temp_dir, "data")
+    os.makedirs(data_dir)
+
+    # now create
+    data = DataPreparation()
+    size_df = 10
+    noise = 'low'
+    data.sample_params_from_prior(size_df) 
+    if noise == 'low':
+    sigma = 1
+    if noise == 'medium':
+        sigma = 5
+    if noise == 'high':
+        sigma = 10
+    if noise == 'vhigh':
+        sigma = 100
+    data.simulate_data(data.params,
+                    sigma, 
+                    'linear_homogeneous'
+                        )  
+    dict = data.get_dict()
+    saver = DataLoader()  
+    # save the dataframe
+    filename = data_dir + 'linear_sigma_'+str(sigma)+'_size_'+str(size_df)
+    saver.save_data_h5(filename, dict) 
+
+    yield filename  # provide the temporary directory path to the test function
+
+    # teardown: Remove the temporary directory and its contents
+    shutil.rmtree(temp_dir)
+
+@pytest.fixture
+def temp_directory():
+    # setup: Create a temporary directory with one folder level
+    temp_dir = tempfile.mkdtemp()
+
+    # create subdirectories within the temporary directory
     yaml_dir = os.path.join(temp_dir, "yamls")
     os.makedirs(yaml_dir)
 
@@ -21,14 +59,9 @@ def temp_directory():
     animations_dir = os.path.join(temp_dir, "images", "animations")
     os.makedirs(animations_dir)
 
-    yield temp_dir  # Provide the temporary directory path to the test function
+    yield temp_dir  # provide the temporary directory path to the test function
 
-    # Teardown: Remove the temporary directory and its contents
-    """
-    for dir_path in [models_dir, animations_dir, temp_dir]:
-        os.rmdir(dir_path)
-        # Teardown: Remove the temporary directory and its contents
-    """
+    # teardown: Remove the temporary directory and its contents
     shutil.rmtree(temp_dir)
 
 
@@ -66,7 +99,7 @@ def create_test_config(temp_directory, n_epochs):
     yaml.dump(input_yaml, open(str(temp_directory) + "yamls/DE.yaml", "w"))
 
 
-def test_DE_from_config(temp_directory):
+def test_DE_from_config(temp_directory, temp_data):
     # create the test config dynamically
     # make the temporary config file
     n_epochs = 2
@@ -112,7 +145,7 @@ def test_DE_from_config(temp_directory):
         ), f"File '{file_name}' does not contain the expected substring"
 
 
-def test_DE_chkpt_saved(temp_directory):
+def test_DE_chkpt_saved(temp_directory, temp_data):
     noise_level = "low"
     n_models = 2
     n_epochs = 2
@@ -165,7 +198,7 @@ def test_DE_chkpt_saved(temp_directory):
 
 
 @pytest.mark.xfail(strict=True)
-def test_DE_no_chkpt_saved_xfail(temp_directory):
+def test_DE_no_chkpt_saved_xfail(temp_directory, temp_data):
     noise_level = "low"
     n_models = 2
     n_epochs = 2
@@ -194,7 +227,7 @@ def test_DE_no_chkpt_saved_xfail(temp_directory):
     ), f"Expected {n_models} files in the 'models' folder"
 
 
-def test_DE_no_chkpt_saved(temp_directory):
+def test_DE_no_chkpt_saved(temp_directory, temp_data):
     noise_level = "low"
     n_models = 2
     n_epochs = 2
@@ -222,7 +255,7 @@ def test_DE_no_chkpt_saved(temp_directory):
         "Expect 0 files in the 'models' folder"
 
 
-def test_DE_run_simple_ensemble(temp_directory):
+def test_DE_run_simple_ensemble(temp_directory, temp_data):
     noise_level = "low"
     n_models = 2
     subprocess_args = [
