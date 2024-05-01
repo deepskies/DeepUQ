@@ -32,7 +32,6 @@ def parse_args():
         "--data_path",
         "-d",
         default=DefaultsDE["data"]["data_path"],
-        choices=DataModules.keys(),
     )
     parser.add_argument(
         "--data_engine",
@@ -260,6 +259,7 @@ if __name__ == "__main__":
     rs = config.get_item("data", "randomseed", "DE")
     BATCH_SIZE = config.get_item("data", "batchsize", "DE")
     sigma = DataPreparation.get_sigma(noise)
+    path_to_data = config.get_item("data", "data_path", "DE")
     if config.get_item("data", "generatedata", "DE", raise_exception=False):
         # generate the df
         data = DataPreparation()
@@ -278,10 +278,10 @@ if __name__ == "__main__":
                 df[key] = torch.tensor(value)
     else:
         loader = MyDataLoader()
-        df = loader.load_data_h5(
-            "linear_sigma_" + str(sigma) + "_size_" + str(size_df),
-            path="/Users/rnevin/Documents/DeepUQ/data/",
-        )
+        print('attempting to load data')
+        df = loader.load_data_h5("linear_sigma_" + str(sigma) + "_size_" + str(size_df),
+                path=path_to_data,
+            )
     len_df = len(df["params"][:, 0].numpy())
     len_x = len(df["inputs"].numpy())
     ms_array = np.repeat(df["params"][:, 0].numpy(), len_x)
