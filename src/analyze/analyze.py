@@ -24,7 +24,6 @@ class AggregateCheckpoints:
     #def load_all_checkpoints():
     # functions for loading model checkpoints
     def load_DE_checkpoint(self,
-                           model,
                            model_name,
                            nmodel,
                            epoch,
@@ -64,24 +63,55 @@ class AggregateCheckpoints:
         loaded_epoch = checkpoint.get('epoch', None)
         mean_validation = checkpoint.get('valid_mean', None)
         sigma_validation = checkpoint.get('valid_sigma', None)
-
-        
         return model, loaded_epoch, mean_validation, sigma_validation
-    def plot_ep_al():
+
+    def measure_ep_al_final_epoch(self,
+                   model_name,
+                   nmodels,
+                   nepochs):
         list_mus = []
         list_vars = []
         for n in range(nmodels):
-
-            chk = load_DE_checkpoint(model, model_name, 'step_decrease_to_0.5', n, 99, DEVICE)
+            chk = load_DE_checkpoint(model_name,
+                                     n,
+                                     nepochs-1,
+                                     BETA,
+                                     DEVICE)
             _, _, mu_vals, var_vals = ep_al_checkpoint_DE(chk)
             list_mus.append(mu_vals.detach().numpy())
             list_vars.append(var_vals.detach().numpy())
-    
-        ep = np.median(np.std(list_mus, axis = 0))
-        al_var = np.median(np.mean(list_vars, axis = 0))
-        print(np.shape(np.mean(list_vars, axis = 0)), np.mean(list_vars, axis = 0))
-        ep_std = np.std(np.std(list_mus, axis = 0))
-        al_var_var = np.std(np.mean(list_vars, axis = 0))
+        ep = np.median(np.std(list_mus, axis=0))
+        al_var = np.median(np.mean(list_vars, axis=0))
+        print(np.shape(np.mean(list_vars, axis=0)), np.mean(list_vars, axis = 0))
+        ep_std = np.std(np.std(list_mus, axis=0))
+        al_var_var = np.std(np.mean(list_vars, axis=0))
+        return al_var, al_var_var, ep, ep_std
+
+    def measure_ep_al_all_epochs(self,
+                   model_name,
+                   nmodels,
+                   nepochs):
+        ep_with_epoch = []
+        ep_std_with_epoch = []
+        al_with_epoch = []
+        al_std_with_epoch = []
+        for e in range(nepochs):
+            list_mus = []
+            list_vars = []
+            for n in range(nmodels):
+                chk = load_DE_checkpoint(model_name,
+                                        n,
+                                        e,
+                                        BETA,
+                                        DEVICE)
+                _, _, mu_vals, var_vals = ep_al_checkpoint_DE(chk)
+                list_mus.append(mu_vals.detach().numpy())
+                list_vars.append(var_vals.detach().numpy())
+            ep_with_epoch.append(np.median(np.std(list_mus, axis=0)))
+            al_with_epoch.append(np.median(np.mean(list_vars, axis=0)))
+            ep_std_with_epoch.append(np.std(np.std(list_mus, axis=0)))
+            al_std_with_epoch.append(np.std(np.mean(list_vars, axis=0)))
+
         return al_var, al_var_var, ep, ep_std
 
 '''
