@@ -13,6 +13,7 @@ from models import ModelModules
 from utils.config import Config
 from utils.defaults import DefaultsDE
 from data.data import DataPreparation, MyDataLoader
+from analyze.analyze import AggregateCheckpoints
 
 # from plots import Plots
 
@@ -309,6 +310,7 @@ if __name__ == "__main__":
     model, lossFn = models.model_setup_DE(
         config.get_item("model", "loss_type", "DE"), DEVICE
     )
+    '''
     print(
         "save final checkpoint has this value",
         config.get_item("model", "save_final_checkpoint", "DE"),
@@ -338,3 +340,18 @@ if __name__ == "__main__":
         savefig=config.get_item("model", "savefig", "DE"),
         verbose=config.get_item("model", "verbose", "DE"),
     )
+    '''
+    # now run the analysis on the resulting checkpoints
+    chk_module = AggregateCheckpoints()
+    print('n_models', config.get_item("model", "n_models", "DE"))
+    print('n_epochs', config.get_item("model", "n_epochs", "DE"))
+    for nmodel in range(config.get_item("model", "n_models", "DE")):
+        for epoch in range(config.get_item("model", "n_epochs", "DE")):
+            chk = chk_module.load_DE_checkpoint(model,
+                            model_name,
+                            nmodel,
+                            epoch,
+                            config.get_item("model", "BETA", "DE"),
+                            DEVICE)
+            print(chk)
+            STOP

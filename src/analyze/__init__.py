@@ -1,5 +1,5 @@
-from models.models import ModelLoader
+from analyze.analyze import AggregateCheckpoints
 
 ModelModules = {
-    "ModelLoader": ModelLoader
+    "AggregateCheckpoints": AggregateCheckpoints
 }
