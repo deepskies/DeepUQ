@@ -156,12 +156,25 @@ class DataPreparation:
         self.output_err = ε[:, i]
         # self.data = simulated_data
 
-    def sample_params_from_prior(self, n_samples):
+    def sample_params_from_prior(self,
+                                 n_samples,
+                                 seed=42):
         low_bounds = torch.tensor([0, -10], dtype=torch.float32)
         high_bounds = torch.tensor([10, 10], dtype=torch.float32)
-        prior = Uniform(low=low_bounds, high=high_bounds)
-        params = prior.sample((n_samples,))
-        self.params = params
+        rs = np.random.RandomState(seed)  # 2147483648)#
+        prior = rs.uniform(low=low_bounds,
+                           high=high_bounds,
+                           size=(n_samples, 2))
+        '''
+        the prior way of doing this (lol)
+        #print(np.shape(prior), prior)
+        #prior = Uniform(low=low_bounds,
+        #                high=high_bounds,
+        #                seed=seed)
+        # not random_seed, rs, or seed
+        #params = prior.sample((n_samples,))
+        '''
+        self.params = prior
 
     def get_dict(self):
         data_dict = {
