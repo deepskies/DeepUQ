@@ -176,6 +176,12 @@ def parse_args():
         help="option to save a figure of the true and predicted values",
     )
     parser.add_argument(
+        "--run_analysis",
+        action="store_true",
+        default=DefaultsDE["analysis"]["run_analysis"],
+        help="option to run analysis on saved checkpoints",
+    )
+    parser.add_argument(
         "--verbose",
         action="store_true",
         default=DefaultsDE["model"]["verbose"],
@@ -224,6 +230,7 @@ def parse_args():
                 "randomseed": args.randomseed,
                 "batchsize": args.batchsize,
             },
+            "analysis": {"run_analysis": args.run_analysis}
             # "plots": {key: {} for key in args.plots},
             # "metrics": {key: {} for key in args.metrics},
         }
@@ -310,7 +317,7 @@ if __name__ == "__main__":
     model, lossFn = models.model_setup_DE(
         config.get_item("model", "loss_type", "DE"), DEVICE
     )
-    '''
+    
     print(
         "save final checkpoint has this value",
         config.get_item("model", "save_final_checkpoint", "DE"),
@@ -340,18 +347,19 @@ if __name__ == "__main__":
         savefig=config.get_item("model", "savefig", "DE"),
         verbose=config.get_item("model", "verbose", "DE"),
     )
-    '''
-    # now run the analysis on the resulting checkpoints
-    chk_module = AggregateCheckpoints()
-    print('n_models', config.get_item("model", "n_models", "DE"))
-    print('n_epochs', config.get_item("model", "n_epochs", "DE"))
-    for nmodel in range(config.get_item("model", "n_models", "DE")):
-        for epoch in range(config.get_item("model", "n_epochs", "DE")):
-            chk = chk_module.load_DE_checkpoint(model,
-                            model_name,
-                            nmodel,
-                            epoch,
-                            config.get_item("model", "BETA", "DE"),
-                            DEVICE)
-            print(chk)
-            STOP
+    if config.get_item("analysis", "run_analysis", "DE"):
+        # now run the analysis on the resulting checkpoints
+        chk_module = AggregateCheckpoints()
+        print('n_models', config.get_item("model", "n_models", "DE"))
+        print('n_epochs', config.get_item("model", "n_epochs", "DE"))
+        for nmodel in range(config.get_item("model", "n_models", "DE")):
+            for epoch in range(config.get_item("model", "n_epochs", "DE")):
+                chk = chk_module.load_DE_checkpoint(
+                                model_name,
+                                nmodel,
+                                epoch,
+                                config.get_item("model", "BETA", "DE"),
+                                DEVICE)
+                # things to grab: 'valid_mse' and 'valid_bnll'
+                print(chk)
+                STOP

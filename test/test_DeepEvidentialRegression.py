@@ -94,6 +94,7 @@ def create_test_config(
             "randomseed": 42,
             "batchsize": 100,
         },
+        "analysis": {"run_analysis": False}
     }
     print("theoretically dumping here", str(temp_directory) + "yamls/DER.yaml")
     print('this is the yaml', input_yaml)
@@ -156,7 +157,6 @@ class TestDE:
             assert (
                 expected_substring in file_name
             ), f"File '{file_name}' does not contain the expected substring"
-
     def test_DER_from_config(self,
                              temp_directory,
                              temp_data,

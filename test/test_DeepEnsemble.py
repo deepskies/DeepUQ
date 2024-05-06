@@ -95,6 +95,9 @@ def create_test_config(
             "randomseed": 42,
             "batchsize": 100,
         },
+        "analysis": {
+            "run_analysis": False
+        }
     }
     print("theoretically dumping here", str(temp_directory) + "yamls/DE.yaml")
     yaml.dump(input_yaml, open(str(temp_directory) + "yamls/DE.yaml", "w"))
@@ -152,7 +155,7 @@ class TestDE:
             assert (
                 expected_substring in file_name
             ), f"File '{file_name}' does not contain the expected substring"
-
+    
     def test_DE_chkpt_saved(
         self, temp_directory, temp_data, noise_level="low", size_df=10
     ):
