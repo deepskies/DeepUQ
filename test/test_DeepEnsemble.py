@@ -95,9 +95,7 @@ def create_test_config(
             "randomseed": 42,
             "batchsize": 100,
         },
-        "analysis": {
-            "run_analysis": False
-        }
+        "analysis": {"run_analysis": False},
     }
     print("theoretically dumping here", str(temp_directory) + "yamls/DE.yaml")
     yaml.dump(input_yaml, open(str(temp_directory) + "yamls/DE.yaml", "w"))
@@ -121,7 +119,7 @@ class TestDE:
             "python",
             "src/scripts/DeepEnsemble.py",
             "--config",
-            str(temp_directory) + "/yamls/DE.yaml"
+            str(temp_directory) + "/yamls/DE.yaml",
         ]
         # now run the subprocess
         subprocess.run(subprocess_args, check=True)
@@ -155,7 +153,7 @@ class TestDE:
             assert (
                 expected_substring in file_name
             ), f"File '{file_name}' does not contain the expected substring"
-    '''
+
     def test_DE_chkpt_saved(
         self, temp_directory, temp_data, noise_level="low", size_df=10
     ):
@@ -301,4 +299,4 @@ class TestDE:
         ]
         # now run the subprocess
         subprocess.run(subprocess_args, check=True)
-    '''
+

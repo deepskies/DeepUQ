@@ -65,9 +65,7 @@ def temp_directory():
 
 
 def create_test_config(
-    temp_directory, temp_data, n_epochs,
-    noise_level="low",
-    size_df=10
+    temp_directory, temp_data, n_epochs, noise_level="low", size_df=10
 ):
     input_yaml = {
         "common": {"out_dir": str(temp_directory)},  # +"results/"},
@@ -94,10 +92,10 @@ def create_test_config(
             "randomseed": 42,
             "batchsize": 100,
         },
-        "analysis": {"run_analysis": False}
+        "analysis": {"run_analysis": False},
     }
     print("theoretically dumping here", str(temp_directory) + "yamls/DER.yaml")
-    print('this is the yaml', input_yaml)
+    print("this is the yaml", input_yaml)
     yaml.dump(input_yaml, open(str(temp_directory) + "yamls/DER.yaml", "w"))
 
 
@@ -107,11 +105,9 @@ class TestDER:
     # @pytest.mark.parametrize("size_df", [size_df])
     # Add more values as needed
 
-    def test_DER_chkpt_saved(self,
-                             temp_directory,
-                             temp_data,
-                             noise_level="low",
-                             size_df=10):
+    def test_DER_chkpt_saved(
+        self, temp_directory, temp_data, noise_level="low", size_df=10
+    ):
         noise_level = "low"
         n_epochs = 2
         subprocess_args = [
@@ -138,8 +134,9 @@ class TestDER:
         # list all files in the "models" folder
         files_in_models_folder = os.listdir(models_folder)
         # assert that the number of files is equal to 10
-        assert len(files_in_models_folder) == 1, \
-            "Expected 1 file in the 'models' folder"
+        assert (
+            len(files_in_models_folder) == 1
+        ), "Expected 1 file in the 'models' folder"
 
         # check if the right number of images were saved
         animations_folder = os.path.join(temp_directory, "images/animations")
@@ -161,18 +158,14 @@ class TestDER:
             assert (
                 expected_substring in file_name
             ), f"File '{file_name}' does not contain the expected substring"
-    
-    def test_DER_from_config(self,
-                             temp_directory,
-                             temp_data,
-                             noise_level="low",
-                             size_df=10):
+
+    def test_DER_from_config(
+        self, temp_directory, temp_data, noise_level="low", size_df=10
+    ):
         # create the test config dynamically
         # make the temporary config file
         n_epochs = 2
-        create_test_config(temp_directory + "/",
-                           temp_data,
-                           n_epochs)
+        create_test_config(temp_directory + "/", temp_data, n_epochs)
         subprocess_args = [
             "python",
             "src/scripts/DeepEvidentialRegression.py",
@@ -186,8 +179,9 @@ class TestDER:
         # list all files in the "models" folder
         files_in_models_folder = os.listdir(models_folder)
         # assert that the number of files is equal to 10
-        assert len(files_in_models_folder) == 1, \
-            "Expected 1 file in the 'models' folder"
+        assert (
+            len(files_in_models_folder) == 1
+        ), "Expected 1 file in the 'models' folder"
         # check if the right number of images were saved
         animations_folder = os.path.join(temp_directory, "images/animations")
         files_in_animations_folder = os.listdir(animations_folder)
