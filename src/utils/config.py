@@ -57,7 +57,8 @@ class Config:
             else:
                 return {
                     "DER": DefaultsDER,
-                    "DE": DefaultsDE
+                    "DE": DefaultsDE,
+                    "Analysis": DefaultsAnalysis
                 }[defaulttype][section][item]
 
     def get_section(self, section, defaulttype, raise_exception=True):
@@ -69,5 +70,6 @@ class Config:
             else:
                 return {
                     "DER": DefaultsDER,
-                    "DE": DefaultsDE
+                    "DE": DefaultsDE,
+                    "Analysis": DefaultsAnalysis
                 }[defaulttype][section]

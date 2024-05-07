@@ -23,8 +23,14 @@ class AggregateCheckpoints:
     # def load_final_checkpoints():
     # def load_all_checkpoints():
     # functions for loading model checkpoints
-    def load_DE_checkpoint(
-        self, model_name, nmodel, epoch, beta, device, path="models/checkpoints/"
+    def load_checkpoint(
+        self,
+        model_name,
+        noise, 
+        nmodel, 
+        epoch, 
+        beta, device,
+        path="models/"
     ):
         """
         Load PyTorch model checkpoint from a .pt file.
@@ -36,8 +42,11 @@ class AggregateCheckpoints:
         :param model: PyTorch model to load the checkpoint into
         :return: Loaded model
         """
-        file_name = path + f"{model_name}_beta_{beta}_nmodel_{nmodel}_epoch_{epoch}.pt"
-        checkpoint = torch.load(file_name, map_location=device)
+        if model_name[0:2] == "DE":
+            file_name = str(path) + "checkpoints/" + f"{model_name}_noise_{noise}_beta_{beta}_nmodel_{nmodel}_epoch_{epoch}.pt"
+            checkpoint = torch.load(file_name, map_location=device)
+        else:
+            STOP
         return checkpoint
 
     def ep_al_checkpoint_DE(checkpoint):
