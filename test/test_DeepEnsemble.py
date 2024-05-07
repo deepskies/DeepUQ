@@ -243,7 +243,7 @@ class TestDE:
         assert (
             len(files_in_models_folder) == n_models
         ), f"Expected {n_models} files in the 'models' folder"
-    
+
     def test_DE_no_chkpt_saved(
         self, temp_directory, temp_data, noise_level="low", size_df=10
     ):
@@ -299,4 +299,3 @@ class TestDE:
         ]
         # now run the subprocess
         subprocess.run(subprocess_args, check=True)
-

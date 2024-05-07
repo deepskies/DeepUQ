@@ -13,7 +13,7 @@ from models import ModelModules
 from utils.config import Config
 from utils.defaults import DefaultsDE
 from data.data import DataPreparation, MyDataLoader
-from analyze.analyze import AggregateCheckpoints
+# from analyze.analyze import AggregateCheckpoints
 
 # from plots import Plots
 
@@ -317,7 +317,6 @@ if __name__ == "__main__":
     model, lossFn = models.model_setup_DE(
         config.get_item("model", "loss_type", "DE"), DEVICE
     )
-    
     print(
         "save final checkpoint has this value",
         config.get_item("model", "save_final_checkpoint", "DE"),
@@ -347,6 +346,7 @@ if __name__ == "__main__":
         savefig=config.get_item("model", "savefig", "DE"),
         verbose=config.get_item("model", "verbose", "DE"),
     )
+    '''
     if config.get_item("analysis", "run_analysis", "DE"):
         # now run the analysis on the resulting checkpoints
         chk_module = AggregateCheckpoints()
@@ -362,4 +362,4 @@ if __name__ == "__main__":
                                 DEVICE)
                 # things to grab: 'valid_mse' and 'valid_bnll'
                 print(chk)
-                STOP
+    '''
