@@ -101,7 +101,7 @@ def create_test_config(
     yaml.dump(input_yaml, open(str(temp_directory) + "yamls/DER.yaml", "w"))
 
 
-class TestDE:
+class TestDER:
     # @pytest.mark.parametrize("noise_level, size_df",
     #                        [(noise_level, size_df)])
     # @pytest.mark.parametrize("size_df", [size_df])
@@ -122,7 +122,7 @@ class TestDE:
             "--noise_level",
             noise_level,
             "--size_df",
-            size_df,
+            str(size_df),
             "--out_dir",
             str(temp_directory) + "/",
             "--n_epochs",
@@ -161,6 +161,7 @@ class TestDE:
             assert (
                 expected_substring in file_name
             ), f"File '{file_name}' does not contain the expected substring"
+    
     def test_DER_from_config(self,
                              temp_directory,
                              temp_data,
