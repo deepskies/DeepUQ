@@ -39,6 +39,7 @@ DefaultsDE = {
         "line_style_cycle": ["-", "-."],
         "figure_size": [6, 6],
     },
+    "analysis": {"run_analysis": False},
     "plots": {"CDFRanks": {},
               "Ranks": {"num_bins": None},
               "CoverageFraction": {}},
@@ -83,6 +84,7 @@ DefaultsDER = {
         "savefig": False,
         "verbose": False,
     },
+    "analysis": {"run_analysis": False},
     "plots_common": {
         "axis_spines": False,
         "tight_layout": True,

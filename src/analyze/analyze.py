@@ -1,3 +1,5 @@
+# Contains modules to analyze the output checkpoints
+# from a trained model and make plots for the paper
 import os
 import yaml
 import argparse
@@ -13,18 +15,92 @@ from models import ModelModules
 from utils.config import Config
 from utils.defaults import DefaultsDE
 from data.data import DataPreparation, MyDataLoader
-# from analyze.analyze import AggregateCheckpoints
 
 # from plots import Plots
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(description="data handling module")
-    # there are three options with the parser:
-    # 1) Read from a yaml
-    # 2) Reads from the command line and default file
-    # and dumps to yaml
+class AggregateCheckpoints:
+    # def load_final_checkpoints():
+    # def load_all_checkpoints():
+    # functions for loading model checkpoints
+    def load_DE_checkpoint(
+        self, model_name, nmodel, epoch, beta, device, path="models/checkpoints/"
+    ):
+        """
+        Load PyTorch model checkpoint from a .pt file.
 
+        :param path: Location to load the model from
+        :param DER_type: Type of your model
+        :param epoch: Epoch to load
+        :param device: Device to load the model onto ('cuda' or 'cpu')
+        :param model: PyTorch model to load the checkpoint into
+        :return: Loaded model
+        """
+        file_name = path + f"{model_name}_beta_{beta}_nmodel_{nmodel}_epoch_{epoch}.pt"
+        checkpoint = torch.load(file_name, map_location=device)
+        return checkpoint
+
+    def ep_al_checkpoint_DE(checkpoint):
+        # Handle the case where extra information is present in the state_dict
+        """
+        if 'model_state_dict' in checkpoint:
+            try:
+                model.load_state_dict(checkpoint['model_state_dict'])
+            except RuntimeError:
+                print('cannot load via state dict')
+                #print('checkpoint', checkpoint)
+                #print('attempting to load', model.load_state_dict(checkpoint))
+                #model.load_state_dict(checkpoint)
+        else:
+            model.load_state_dict(checkpoint)
+        """
+
+        # Extract additional information
+        loaded_epoch = checkpoint.get("epoch", None)
+        mean_validation = checkpoint.get("valid_mean", None)
+        sigma_validation = checkpoint.get("valid_sigma", None)
+        return model, loaded_epoch, mean_validation, sigma_validation
+
+    def measure_ep_al_final_epoch(self, model_name, nmodels, nepochs):
+        list_mus = []
+        list_vars = []
+        for n in range(nmodels):
+            chk = load_DE_checkpoint(model_name, n, nepochs - 1, BETA, DEVICE)
+            _, _, mu_vals, var_vals = ep_al_checkpoint_DE(chk)
+            list_mus.append(mu_vals.detach().numpy())
+            list_vars.append(var_vals.detach().numpy())
+        ep = np.median(np.std(list_mus, axis=0))
+        al_var = np.median(np.mean(list_vars, axis=0))
+        print(np.shape(np.mean(list_vars, axis=0)), np.mean(list_vars, axis=0))
+        ep_std = np.std(np.std(list_mus, axis=0))
+        al_var_var = np.std(np.mean(list_vars, axis=0))
+        return al_var, al_var_var, ep, ep_std
+
+    def measure_ep_al_all_epochs(self, model_name, nmodels, nepochs):
+        ep_with_epoch = []
+        ep_std_with_epoch = []
+        al_with_epoch = []
+        al_std_with_epoch = []
+        for e in range(nepochs):
+            list_mus = []
+            list_vars = []
+            for n in range(nmodels):
+                chk = load_DE_checkpoint(model_name, n, e, BETA, DEVICE)
+                _, _, mu_vals, var_vals = ep_al_checkpoint_DE(chk)
+                list_mus.append(mu_vals.detach().numpy())
+                list_vars.append(var_vals.detach().numpy())
+            ep_with_epoch.append(np.median(np.std(list_mus, axis=0)))
+            al_with_epoch.append(np.median(np.mean(list_vars, axis=0)))
+            ep_std_with_epoch.append(np.std(np.std(list_mus, axis=0)))
+            al_std_with_epoch.append(np.std(np.mean(list_vars, axis=0)))
+
+        return al_var, al_var_var, ep, ep_std
+
+
+"""
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="analysis module")
     # option to pass name of config
     parser.add_argument("--config", "-c", default=None)
 
@@ -176,12 +252,6 @@ def parse_args():
         help="option to save a figure of the true and predicted values",
     )
     parser.add_argument(
-        "--run_analysis",
-        action="store_true",
-        default=DefaultsDE["analysis"]["run_analysis"],
-        help="option to run analysis on saved checkpoints",
-    )
-    parser.add_argument(
         "--verbose",
         action="store_true",
         default=DefaultsDE["model"]["verbose"],
@@ -230,7 +300,6 @@ def parse_args():
                 "randomseed": args.randomseed,
                 "batchsize": args.batchsize,
             },
-            "analysis": {"run_analysis": args.run_analysis}
             # "plots": {key: {} for key in args.plots},
             # "metrics": {key: {} for key in args.metrics},
         }
@@ -346,20 +415,4 @@ if __name__ == "__main__":
         savefig=config.get_item("model", "savefig", "DE"),
         verbose=config.get_item("model", "verbose", "DE"),
     )
-    '''
-    if config.get_item("analysis", "run_analysis", "DE"):
-        # now run the analysis on the resulting checkpoints
-        chk_module = AggregateCheckpoints()
-        print('n_models', config.get_item("model", "n_models", "DE"))
-        print('n_epochs', config.get_item("model", "n_epochs", "DE"))
-        for nmodel in range(config.get_item("model", "n_models", "DE")):
-            for epoch in range(config.get_item("model", "n_epochs", "DE")):
-                chk = chk_module.load_DE_checkpoint(
-                                model_name,
-                                nmodel,
-                                epoch,
-                                config.get_item("model", "BETA", "DE"),
-                                DEVICE)
-                # things to grab: 'valid_mse' and 'valid_bnll'
-                print(chk)
-    '''
+"""

@@ -31,8 +31,7 @@ def parse_args():
     parser.add_argument(
         "--data_path",
         "-d",
-        default=DefaultsDER["data"]["data_path"],
-        choices=DataModules.keys(),
+        default=DefaultsDER["data"]["data_path"]
     )
     parser.add_argument(
         "--data_engine",
@@ -217,17 +216,14 @@ def parse_args():
 
 if __name__ == "__main__":
     config = parse_args()
-    size_df = config.get_item("data", "size_df", "DER")
+    size_df = int(config.get_item("data", "size_df", "DER"))
     noise = config.get_item("data", "noise_level", "DER")
     norm = config.get_item("data", "normalize", "DER", raise_exception=False)
     val_prop = config.get_item("data", "val_proportion", "DER")
     rs = config.get_item("data", "randomseed", "DER")
     BATCH_SIZE = config.get_item("data", "batchsize", "DER")
     sigma = DataPreparation.get_sigma(noise)
-    print(
-        "generated data",
-        config.get_item("data", "generatedata", "DER", raise_exception=False),
-    )
+    path_to_data = config.get_item("data", "data_path", "DER")
     if config.get_item("data", "generatedata", "DER", raise_exception=False):
         # generate the df
         data = DataPreparation()
@@ -248,7 +244,7 @@ if __name__ == "__main__":
         loader = MyDataLoader()
         df = loader.load_data_h5(
             "linear_sigma_" + str(sigma) + "_size_" + str(size_df),
-            path="/Users/rnevin/Documents/DeepUQ/data/",
+            path=path_to_data,
         )
     len_df = len(df["params"][:, 0].numpy())
     len_x = len(df["inputs"].numpy())
