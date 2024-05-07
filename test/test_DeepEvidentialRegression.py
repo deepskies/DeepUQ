@@ -117,8 +117,12 @@ class TestDE:
         subprocess_args = [
             "python",
             "src/scripts/DeepEvidentialRegression.py",
+            "--data_path",
+            str(temp_data),
             "--noise_level",
             noise_level,
+            "--size_df",
+            size_df,
             "--out_dir",
             str(temp_directory) + "/",
             "--n_epochs",
