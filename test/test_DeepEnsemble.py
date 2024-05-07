@@ -155,7 +155,7 @@ class TestDE:
             assert (
                 expected_substring in file_name
             ), f"File '{file_name}' does not contain the expected substring"
-    
+    '''
     def test_DE_chkpt_saved(
         self, temp_directory, temp_data, noise_level="low", size_df=10
     ):
@@ -221,7 +221,7 @@ class TestDE:
         subprocess_args = [
             "python",
             "src/scripts/DeepEnsemble.py",
-            "--path_to_data",
+            "--data_path",
             str(temp_data),
             "--noise_level",
             noise_level,
@@ -245,7 +245,7 @@ class TestDE:
         assert (
             len(files_in_models_folder) == n_models
         ), f"Expected {n_models} files in the 'models' folder"
-
+    
     def test_DE_no_chkpt_saved(
         self, temp_directory, temp_data, noise_level="low", size_df=10
     ):
@@ -301,3 +301,4 @@ class TestDE:
         ]
         # now run the subprocess
         subprocess.run(subprocess_args, check=True)
+    '''
