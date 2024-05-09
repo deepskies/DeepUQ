@@ -176,12 +176,6 @@ def parse_args():
         help="option to save a figure of the true and predicted values",
     )
     parser.add_argument(
-        "--run_analysis",
-        action="store_true",
-        default=DefaultsDE["analysis"]["run_analysis"],
-        help="option to run analysis on saved checkpoints",
-    )
-    parser.add_argument(
         "--verbose",
         action="store_true",
         default=DefaultsDE["model"]["verbose"],
@@ -230,7 +224,6 @@ def parse_args():
                 "randomseed": args.randomseed,
                 "batchsize": args.batchsize,
             },
-            "analysis": {"run_analysis": args.run_analysis}
             # "plots": {key: {} for key in args.plots},
             # "metrics": {key: {} for key in args.metrics},
         }

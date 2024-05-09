@@ -26,10 +26,12 @@ class AggregateCheckpoints:
     def load_checkpoint(
         self,
         model_name,
-        noise, 
-        nmodel, 
-        epoch, 
-        beta, device,
+        noise,
+        epoch,
+        beta,
+        device,
+        loss = "DER",
+        nmodel = None, 
         path="models/"
     ):
         """
@@ -42,14 +44,17 @@ class AggregateCheckpoints:
         :param model: PyTorch model to load the checkpoint into
         :return: Loaded model
         """
-        if model_name[0:2] == "DE":
+        if model_name[0:3] == "DER":
+            file_name = str(path) + "checkpoints/" + f"{model_name}_noise_{noise}_loss_{loss}_epoch_{epoch}.pt"
+            checkpoint = torch.load(file_name, map_location=device)
+        elif model_name[0:2] == "DE":
             file_name = str(path) + "checkpoints/" + f"{model_name}_noise_{noise}_beta_{beta}_nmodel_{nmodel}_epoch_{epoch}.pt"
             checkpoint = torch.load(file_name, map_location=device)
         else:
             STOP
         return checkpoint
 
-    def ep_al_checkpoint_DE(checkpoint):
+    def ep_al_checkpoint_DE(self, checkpoint):
         # Handle the case where extra information is present in the state_dict
         """
         if 'model_state_dict' in checkpoint:
@@ -65,10 +70,28 @@ class AggregateCheckpoints:
         """
 
         # Extract additional information
-        loaded_epoch = checkpoint.get("epoch", None)
+        # loaded_epoch = checkpoint.get("epoch", None)
         mean_validation = checkpoint.get("valid_mean", None)
         sigma_validation = checkpoint.get("valid_sigma", None)
-        return model, loaded_epoch, mean_validation, sigma_validation
+        return mean_validation, sigma_validation
+
+    def ep_al_checkpoint_DER(self, checkpoint):    
+        '''
+        # Handle the case where extra information is present in the state_dict
+        if 'model_state_dict' in checkpoint:
+            model.load_state_dict(checkpoint['model_state_dict'])
+        else:
+            model.load_state_dict(checkpoint)
+        '''
+
+        # Extract additional information
+        med_u_ep = checkpoint.get('med_u_ep_validation', None)
+        med_u_al = checkpoint.get('med_u_al_validation', None)
+        std_u_ep = checkpoint.get('std_u_ep_validation', None)
+        std_u_al = checkpoint.get('std_u_al_validation', None)
+
+        return med_u_ep, med_u_al, std_u_ep, std_u_al
+
 
     def measure_ep_al_final_epoch(self, model_name, nmodels, nepochs):
         list_mus = []

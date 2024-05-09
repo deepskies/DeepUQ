@@ -3,6 +3,7 @@ import yaml
 import argparse
 import numpy as np
 import torch
+import matplotlib.pyplot as plt
 from torch.utils.data import TensorDataset, DataLoader
 
 
@@ -62,14 +63,14 @@ def parse_args():
     )
     parser.add_argument(
         "--noise_level_list",
-        type=str,
+        type=list,
         required=False,
         default=DefaultsAnalysis["analysis"]["noise_level_list"],
         help="Noise levels to compare",
     )
     parser.add_argument(
         "--model_names_list",
-        type=str,
+        type=list,
         required=False,
         default=DefaultsAnalysis["analysis"]["model_names_list"],
         help="Beginning of name for saved checkpoints and figures",
@@ -167,24 +168,97 @@ if __name__ == "__main__":
     print('noise list', noise_list)
     print('sigma list', sigma_list)
     path_to_chk = config.get_item("common", "out_dir", "Analysis")
-    model_name_list = config.get_item("analysis", "model_names_list", "Analysis")
-    for noise in noise_list:
-        for model in model_name_list:
+    model_name_list = config.get_item("analysis",
+                                      "model_names_list",
+                                      "Analysis")
+    print('model list', model_name_list, len(model_name_list))
+    chk_module = AggregateCheckpoints()
+    # make an empty nested dictionary with keys for
+    # model names followed by noise levels
+    ep_dict = {model_name: {noise: [] for noise in noise_list} for model_name in model_name_list}
+    al_var_dict = {model_name: {noise: [] for noise in noise_list} for model_name in model_name_list}
+
+    ep_std_dict = {model_name: {noise: [] for noise in noise_list} for model_name in model_name_list}
+    al_var_std_dict = {model_name: {noise: [] for noise in noise_list} for model_name in model_name_list}
+
+    for model in model_name_list:
+        for noise in noise_list:
+            # append a noise key
             # now run the analysis on the resulting checkpoints
-            chk_module = AggregateCheckpoints()
-            print('n_models', config.get_item("model", "n_models", "DE"))
-            print('n_epochs', config.get_item("analysis", "n_epochs", "Analysis"))
-            for nmodel in range(config.get_item("model", "n_models", "DE")):
-                for epoch in range(config.get_item("analysis", "n_epochs", "Analysis")):
+            if model[0:3] == "DER":
+                for epoch in range(config.get_item("analysis",
+                                                   "n_epochs",
+                                                   "Analysis")):
                     chk = chk_module.load_checkpoint(
                                     model,
                                     noise,
-                                    nmodel,
                                     epoch,
                                     config.get_item("model", "BETA", "DE"),
                                     DEVICE,
                     )
                                     #path=path_to_chk)
                     # things to grab: 'valid_mse' and 'valid_bnll'
-                    print(chk)
+                    epistemic_m, aleatoric_m, e_std, a_std = chk_module.ep_al_checkpoint_DER(chk)
+                    ep_dict[model][noise].append(epistemic_m)
+                    al_var_dict[model][noise].append(aleatoric_m)
+                    ep_std_dict[model][noise].append(e_std)
+                    al_var_std_dict[model][noise].append(a_std)
+
+            elif model[0:2] == "DE":
+                n_epochs = config.get_item("analysis",
+                                                    "n_epochs",
+                                                    "Analysis")
+                n_models = config.get_item("model", "n_models", "DE")
+                print('n_models', n_models)
+                print('n_epochs', n_epochs)
+
+                
+                for epoch in range(n_epochs):
+                    list_mus = []
+                    list_sigs = []
+                    for nmodels in range(n_models):
+                        chk = chk_module.load_checkpoint(model,
+                                    noise,
+                                    epoch,
+                                    config.get_item("model", "BETA", "DE"),
+                                    DEVICE,
+                                    nmodel=nmodels
+                        )
+                        mu_vals, sig_vals = chk_module.ep_al_checkpoint_DE(chk)
+                        list_mus.append(mu_vals.detach().numpy())
+                        list_sigs.append(sig_vals.detach().numpy()**2)
+                    ep_dict[model][noise].append(np.median(np.std(list_mus, axis = 0)))
+                    al_var_dict[model][noise].append(np.median(np.mean(list_sigs, axis = 0)))
+                    ep_std_dict[model][noise].append(np.std(np.std(list_mus, axis = 0)))
+                    al_var_std_dict[model][noise].append(np.std(np.mean(list_sigs, axis = 0)))
+
+                continue
+                plt.clf()
+                for i in range(n_models):
+                    plt.scatter(range(n_epochs),
+                                np.sqrt(al_var_dict[model][noise]),
+                                label='Aleatoric', color='purple')
+                    plt.errorbar(range(n_epochs),
+                                 np.sqrt(al_var_dict[model][noise]),
+                                 yerr=al_var_std_dict[model][noise],
+                                 color='purple')
+                plt.xlabel('epochs')
+                plt.legend()
+                plt.show()
+                plt.clf()
+                for i in range(n_models):
+                    plt.scatter(range(n_epochs),
+                                ep_dict[model][noise],
+                                label='Epistemic',
+                                color='blue')
+                    plt.errorbar(range(n_epochs),
+                                 ep_dict[model][noise],
+                                 yerr=ep_std_dict[model][noise],
+                                 color='blue')
+                plt.xlabel('epochs')
+                plt.legend()
+                plt.show()
+
+                STOP
+    print(ep_dict)
     
