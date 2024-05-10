@@ -1,3 +1,4 @@
+import time
 import os
 import yaml
 import argparse
@@ -188,7 +189,14 @@ def parse_args():
         config = Config(args.config)
 
     else:
-        temp_config = DefaultsDE["common"]["temp_config"]
+        temp_config_prefix = DefaultsDE["common"]["temp_config"]
+        # modify this to also have a timestamp
+        # Get current timestamp
+        timestamp = time.strftime("%Y%m%d%H%M%S")
+
+        # Modify name with timestamp
+        temp_config = temp_config_prefix.replace(".yml", f"_{timestamp}.yml")
+
         print(
             "Reading settings from cli and default, \
               dumping to temp config: ",

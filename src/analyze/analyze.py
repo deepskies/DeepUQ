@@ -30,7 +30,7 @@ class AggregateCheckpoints:
         epoch,
         beta,
         device,
-        loss = "DER",
+        loss = "SDER",
         nmodel = None, 
         path="models/"
     ):

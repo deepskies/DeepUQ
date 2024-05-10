@@ -260,87 +260,35 @@ if __name__ == "__main__":
 
                 STOP
     # make a two-paneled plot for the different noise levels
-    # make one plot per model
-    for model in model_name_list:
-        plt.clf()
-        fig = plt.figure(figsize = (10,4))
-        ax1 = fig.add_subplot(121)
-        color_list = ['#8EA8C3', '#406E8E', '#23395B']
-        for i, noise in enumerate(noise_list):
-            ax1.errorbar(range(n_epochs),
-                        ep_dict[model][noise],
-                        yerr = ep_std_dict[model][noise],
-                        color = color_list[i],
-                        capsize = 5,
-                        ls = None)
-            ax1.scatter(range(n_epochs),
-                        ep_dict[model][noise],
-                        color = color_list[i])
-            ax1.axhline(y = sigma_list[i], color = color_list[i])
-        ax1.set_ylabel('Epistemic Uncertainty')
-        ax1.set_xlabel('Epoch')
-        ax2 = fig.add_subplot(122)
-        for i, noise in enumerate(noise_list):
-            ax2.errorbar(range(n_epochs),
-                        np.sqrt(al_var_dict[model][noise]),
-                        yerr = np.sqrt(al_var_std_dict[model][noise]),
-                        color = color_list[i],
-                        capsize = 5,
-                        ls = None)
-            ax2.scatter(range(n_epochs),
-                        np.sqrt(al_var_dict[model][noise]),
-                        color = color_list[i],
-                        label = f'$\sigma = {sigma_list[i]}$')
-            ax2.axhline(y = sigma_list[i], color = color_list[i])
-        ax2.set_ylabel('Aleatoric Uncertainty')
-        ax2.set_xlabel('Epoch')
-        fig.suptitle(model)
-        plt.legend()
-        plt.show()
-
+    # make one panel per model
+    # for the noise levels:
+    color_list = ['#8EA8C3', '#406E8E', '#23395B']
+    plt.clf()
+    fig = plt.figure(figsize=(10,4))
     # try this instead with a fill_between method
-    for model in model_name_list:
-        plt.clf()
-        fig = plt.figure(figsize = (10,4))
-        ax1 = fig.add_subplot(121)
-        color_list = ['#8EA8C3', '#406E8E', '#23395B']
-        for i, noise in enumerate(noise_list):
-            ep = np.array(ep_dict[model][noise])
-            ep_std = np.array(ep_std_dict[model][noise])
-            #list_minus = [ep[i] - ep_std[i] for i in range(len(ep))]
-            #list_plus = [ep[i] + ep_std[i] for i in range(len(ep))]
-            ax1.fill_between(range(n_epochs),
-                        ep - ep_std,
-                        ep + ep_std,
-                        color = color_list[i],
-                        alpha = 0.5)
-            ax1.scatter(range(n_epochs),
-                        ep_dict[model][noise],
-                        color = color_list[i],
-                        edgecolors = 'black')
-            ax1.axhline(y = sigma_list[i], color = color_list[i])
-        ax1.set_ylabel('Epistemic Uncertainty')
-        ax1.set_xlabel('Epoch')
-        ax2 = fig.add_subplot(122)
+    for i, model in enumerate(model_name_list):
+        ax = fig.add_subplot(1, len(model_name_list), i+1)
+        # Your plotting code for each model here
+        ax.set_title(model)  # Set title for each subplot
         for i, noise in enumerate(noise_list):
             al = np.array(np.sqrt(al_var_dict[model][noise]))
             al_std = np.array(np.sqrt(al_var_std_dict[model][noise]))
-            ax2.fill_between(range(n_epochs),
+            ax.fill_between(range(n_epochs),
                         al - al_std,
                         al + al_std,
                         color=color_list[i],
                         alpha=0.5)
-            ax2.scatter(range(n_epochs),
+            ax.scatter(range(n_epochs),
                         np.sqrt(al_var_dict[model][noise]),
                         color=color_list[i],
                         edgecolors='black',
                         label=f'$\sigma = {sigma_list[i]}$')
-            ax2.axhline(y=sigma_list[i],
+            ax.axhline(y=sigma_list[i],
                         color=color_list[i])
-        ax2.set_ylabel('Aleatoric Uncertainty')
-        ax2.set_xlabel('Epoch')
-        fig.suptitle(model)
-        plt.legend()
-        plt.show()
+        ax.set_ylabel('Aleatoric Uncertainty')
+        ax.set_xlabel('Epoch')
+        ax.set_title(model)
+    plt.legend()
+    plt.show()
 
     
