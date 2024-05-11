@@ -39,18 +39,6 @@ DefaultsDE = {
         "line_style_cycle": ["-", "-."],
         "figure_size": [6, 6],
     },
-    "plots": {"CDFRanks": {},
-              "Ranks": {"num_bins": None},
-              "CoverageFraction": {}},
-    "metrics_common": {
-        "use_progress_bar": False,
-        "samples_per_inference": 1000,
-        "percentiles": [75, 85, 95],
-    },
-    "metrics": {
-        "AllSBC": {},
-        "CoverageFraction": {},
-    },
 }
 DefaultsDER = {
     "common": {
@@ -93,18 +81,6 @@ DefaultsDER = {
         "line_style_cycle": ["-", "-."],
         "figure_size": [6, 6],
     },
-    "plots": {"CDFRanks": {},
-              "Ranks": {"num_bins": None},
-              "CoverageFraction": {}},
-    "metrics_common": {
-        "use_progress_bar": False,
-        "samples_per_inference": 1000,
-        "percentiles": [75, 85, 95],
-    },
-    "metrics": {
-        "AllSBC": {},
-        "CoverageFraction": {},
-    },
 }
 DefaultsAnalysis = {
     "common": {
@@ -125,16 +101,16 @@ DefaultsAnalysis = {
         "line_style_cycle": ["-", "-."],
         "figure_size": [6, 6],
     },
-    "analysis": {"run_analysis": False,
-                 "noise_level_list": ["low","medium","high"],
-                 "model_names_list": ["DER_desiderata_2"],#"DE_desiderata_2", 
-                 "n_epochs": 100,
-                 "plot": False,
-                 "savefig": False,
-                 "verbose": False},
-    "plots": {"CDFRanks": {},
-              "Ranks": {"num_bins": None},
-              "CoverageFraction": {}},
+    "analysis": {
+        "run_analysis": False,
+        "noise_level_list": ["low", "medium", "high"],
+        "model_names_list": ["DER_desiderata_2", "DE_desiderata_2"],
+        "n_epochs": 100,
+        "plot": False,
+        "savefig": False,
+        "verbose": False,
+    },
+    "plots": {"color_list": ["#8EA8C3", "#406E8E", "#23395B"]},
     "metrics_common": {
         "use_progress_bar": False,
         "samples_per_inference": 1000,
