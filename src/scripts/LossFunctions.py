@@ -1,17 +1,12 @@
 import os
 import yaml
 import argparse
-import numpy as np
 import torch
 import matplotlib.pyplot as plt
-from torch.utils.data import TensorDataset, DataLoader
-
-
 from data import DataModules
-from models import ModelModules
+from data.data import DataPreparation
 from utils.config import Config
 from utils.defaults import DefaultsAnalysis, DefaultsDE
-from data.data import DataPreparation, MyDataLoader
 from analyze.analyze import AggregateCheckpoints
 
 # from plots import Plots
@@ -89,6 +84,12 @@ def parse_args():
         help="option to plot in notebook",
     )
     parser.add_argument(
+        "--color_list",
+        type=list,
+        default=DefaultsAnalysis["plots"]["color_list"],
+        help="list of named or hexcode colors to use for the noise levels",
+    )
+    parser.add_argument(
         "--savefig",
         action="store_true",
         default=DefaultsAnalysis["analysis"]["savefig"],
@@ -123,15 +124,16 @@ def parse_args():
                 "data_path": args.data_path,
                 "data_engine": args.data_engine,
             },
-            "model": {"n_models": args.n_models,
-                      "BETA": args.BETA},
-            "analysis": {"noise_level_list": args.noise_level_list,
-                         "model_names_list": args.model_names_list,
-                         "n_epochs": args.n_epochs,
-                         "plot": args.plot,
-                         "savefig": args.savefig,
-                         "verbose": args.verbose,}
-            # "plots": {key: {} for key in args.plots},
+            "model": {"n_models": args.n_models, "BETA": args.BETA},
+            "analysis": {
+                "noise_level_list": args.noise_level_list,
+                "model_names_list": args.model_names_list,
+                "n_epochs": args.n_epochs,
+                "plot": args.plot,
+                "savefig": args.savefig,
+                "verbose": args.verbose,
+            },
+            "plots": {"color_list": args.color_list},
             # "metrics": {key: {} for key in args.metrics},
         }
 
@@ -140,6 +142,7 @@ def parse_args():
 
     return config
     # return parser.parse_args()
+
 
 def beta_type(value):
     if isinstance(value, float):
@@ -157,79 +160,102 @@ def beta_type(value):
         )
 
 
-
 if __name__ == "__main__":
     config = parse_args()
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     noise_list = config.get_item("analysis", "noise_level_list", "Analysis")
+    color_list = config.get_item("plots", "color_list", "Analysis")
     sigma_list = []
     for noise in noise_list:
         sigma_list.append(DataPreparation.get_sigma(noise))
-    print('noise list', noise_list)
-    print('sigma list', sigma_list)
     path_to_chk = config.get_item("common", "out_dir", "Analysis")
     model_name_list = config.get_item("analysis",
                                       "model_names_list",
                                       "Analysis")
-    print('model list', model_name_list)
-    for noise in noise_list:
-        for model in model_name_list:
+    print("model list", model_name_list)
+    print("noise list", noise_list)
+    loss = {
+        model_name: {noise: [] for noise in noise_list}
+        for model_name in model_name_list
+    }
+    mse_loss = {
+        model_name: {noise: [] for noise in noise_list}
+        for model_name in model_name_list
+    }
+    chk_module = AggregateCheckpoints()
+    n_epochs = config.get_item("analysis", "n_epochs", "Analysis")
+    n_models = config.get_item("model", "n_models", "DE")
+    for model in model_name_list:
+        for noise in noise_list:
             # now run the analysis on the resulting checkpoints
-            chk_module = AggregateCheckpoints()
-            if model == "DER":
-                for epoch in range(config.get_item("analysis",
-                                                   "n_epochs",
-                                                   "Analysis")):
+            if model[0:3] == "DER":
+                for epoch in range(n_epochs):
                     chk = chk_module.load_checkpoint(
-                                    model,
-                                    noise,
-                                    epoch,
-                                    config.get_item("model", "BETA", "DE"),
-                                    DEVICE,
+                        model,
+                        noise,
+                        epoch,
+                        config.get_item("model", "BETA", "DE"),
+                        DEVICE,
                     )
-                                    #path=path_to_chk)
+                    # path=path_to_chk)
                     # things to grab: 'valid_mse' and 'valid_bnll'
-                    print(chk)
-                    mse_loss.append(chk['valid_mse'])
-                    loss.append(chk['valid_loss'])
+                    mse_loss[model][noise].append(chk["valid_mse"])
+                    loss[model][noise].append(chk["valid_loss"])
             elif model[0:2] == "DE":
-                loss = []
-                mse_loss = []
-                n_epochs = config.get_item("analysis",
-                                                    "n_epochs",
-                                                    "Analysis")
-                n_models = config.get_item("model", "n_models", "DE")
-                print('n_models', n_models)
-                print('n_epochs', n_epochs)
                 for nmodel in range(n_models):
                     mse_loss_one_model = []
                     loss_one_model = []
                     for epoch in range(n_epochs):
                         try:
                             chk = chk_module.load_checkpoint(
-                                            model,
-                                            noise,
-                                            epoch,
-                                            config.get_item("model", "BETA", "DE"),
-                                            DEVICE,
-                                            nmodel=nmodel,
+                                model,
+                                noise,
+                                epoch,
+                                config.get_item("model", "BETA", "DE"),
+                                DEVICE,
+                                nmodel=nmodel,
                             )
                         except FileNotFoundError:
                             continue
-                                        #path=path_to_chk)
+                            # path=path_to_chk)
                         # things to grab: 'valid_mse' and 'valid_bnll'
                         # print(chk)
-                        mse_loss_one_model.append(chk['valid_mse'])
-                        loss_one_model.append(chk['valid_loss'])
-                    mse_loss.append(mse_loss_one_model)
-                    loss.append(loss_one_model)
-                print('loss', loss, loss[0], len(loss[0]))
-                print('shape of loss', np.shape(loss))
-                plt.clf()
-                for i in range(n_models):
-                    plt.scatter(range(n_epochs), mse_loss[i], label = 'Model '+str(i))
-                plt.ylabel('MSE')
-                plt.xlabel('epochs')
-                plt.show()
-                STOP
-    
+                        mse_loss_one_model.append(chk["valid_mse"])
+                        loss_one_model.append(chk["valid_loss"])
+                    mse_loss[model][noise].append(mse_loss_one_model)
+                    loss[model][noise].append(loss_one_model)
+    # make a two-paneled plot for the different noise levels
+    # make one panel per model
+    # for the noise levels:
+    plt.clf()
+    fig = plt.figure(figsize=(10, 4))
+    # try this instead with a fill_between method
+    for i, model in enumerate(model_name_list):
+        ax = fig.add_subplot(1, len(model_name_list), i + 1)
+        # Your plotting code for each model here
+        ax.set_title(model)  # Set title for each subplot
+        for i, noise in enumerate(noise_list):
+            if model[0:3] == "DER":
+                im = ax.scatter(
+                    range(n_epochs),
+                    mse_loss[model][noise],
+                    color=color_list[i],
+                    edgecolors="black",
+                    label=r"$\sigma = $"+str(sigma_list[i]),
+                )
+                ax.set_title("Deep Evidential Regression")
+                ax.legend(im)
+            elif model[0:2] == "DE":
+                for n in range(n_models):
+                    ax.scatter(
+                        range(n_epochs),
+                        mse_loss[model][noise][n],
+                        color=color_list[i],
+                        edgecolors="black",
+                    )
+                ax.set_title("Deep Ensemble (100 models)")
+        ax.set_ylabel("MSE")
+        ax.set_xlabel("Epoch")
+        ax.set_ylim([0, 250])
+
+    plt.show()

@@ -156,6 +156,7 @@ def train_DER(
             best_loss = NIGloss_val
             if verbose:
                 print("new best loss", NIGloss_val, "in epoch", epoch)
+                print("meanwhile mse is", mse)
             # best_weights = copy.deepcopy(model.state_dict())
         if (plot or savefig) and (e % (EPOCHS - 1) == 0) and (e != 0):
             ax1.plot(range(0, 1000), range(0, 1000), color="black", ls="--")
