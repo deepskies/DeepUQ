@@ -40,8 +40,8 @@ class AggregateCheckpoints:
             file_name = (
                 str(path)
                 + "checkpoints/"
-                + f"{model_name}_noise_\
-                    {noise}_beta_{beta}_nmodel_{nmodel}_epoch_{epoch}.pt"
+                + f"{model_name}_noise_{noise}_beta_{beta}_"
+                  f"nmodel_{nmodel}_epoch_{epoch}.pt"
             )
             checkpoint = torch.load(file_name, map_location=device)
         return checkpoint
