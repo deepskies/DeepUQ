@@ -4,9 +4,8 @@ import argparse
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
-from data import DataModules
 from utils.config import Config
-from utils.defaults import DefaultsAnalysis, DefaultsDE
+from utils.defaults import DefaultsAnalysis
 from data.data import DataPreparation
 from analyze.analyze import AggregateCheckpoints
 
@@ -23,20 +22,8 @@ def parse_args():
     # option to pass name of config
     parser.add_argument("--config", "-c", default=None)
 
-    # data info
-    parser.add_argument(
-        "--data_path",
-        "-d",
-        default=DefaultsAnalysis["data"]["data_path"],
-    )
-    parser.add_argument(
-        "--data_engine",
-        "-dl",
-        default=DefaultsAnalysis["data"]["data_engine"],
-        choices=DataModules.keys(),
-    )
-
     # model
+    # we need some info about the model to run this analysis
     # path to save the model results
     parser.add_argument("--out_dir",
                         default=DefaultsAnalysis["common"]["out_dir"])
@@ -45,14 +32,14 @@ def parse_args():
     parser.add_argument(
         "--n_models",
         type=int,
-        default=DefaultsDE["model"]["n_models"],
+        default=DefaultsAnalysis["model"]["n_models"],
         help="Number of MVEs in the ensemble",
     )
     parser.add_argument(
         "--BETA",
         type=beta_type,
         required=False,
-        default=DefaultsDE["model"]["BETA"],
+        default=DefaultsAnalysis["model"]["BETA"],
         help="If loss_type is bnn_loss, specify a beta as a float or \
             there are string options: linear_decrease, \
             step_decrease_to_0.5, and step_decrease_to_1.0",
@@ -75,7 +62,7 @@ def parse_args():
         "--n_epochs",
         type=int,
         required=False,
-        default=DefaultsAnalysis["analysis"]["n_epochs"],
+        default=DefaultsAnalysis["model"]["n_epochs"],
         help="number of epochs",
     )
     parser.add_argument(
@@ -118,14 +105,9 @@ def parse_args():
         os.makedirs(os.path.dirname(temp_config), exist_ok=True)
 
         # check if args were specified in cli
-        # if not, default is from DefaultsDE dictionary
         input_yaml = {
             "common": {"out_dir": args.out_dir},
-            "data": {
-                "data_path": args.data_path,
-                "data_engine": args.data_engine,
-            },
-            "model": {"n_models": args.n_models, "BETA": args.BETA},
+            "model": {"n_models": args.n_models},
             "analysis": {
                 "noise_level_list": args.noise_level_list,
                 "model_names_list": args.model_names_list,
@@ -166,6 +148,7 @@ if __name__ == "__main__":
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     noise_list = config.get_item("analysis", "noise_level_list", "Analysis")
     color_list = config.get_item("plots", "color_list", "Analysis")
+    BETA = config.get_item("model", "BETA", "Analysis")
     sigma_list = []
     for noise in noise_list:
         sigma_list.append(DataPreparation.get_sigma(noise))
@@ -195,8 +178,7 @@ if __name__ == "__main__":
         model_name: {noise: [] for noise in noise_list}
         for model_name in model_name_list
     }
-
-    n_epochs = config.get_item("analysis", "n_epochs", "Analysis")
+    n_epochs = config.get_item("model", "n_epochs", "Analysis")
     for model in model_name_list:
         for noise in noise_list:
             # append a noise key
@@ -207,8 +189,9 @@ if __name__ == "__main__":
                         model,
                         noise,
                         epoch,
-                        config.get_item("model", "BETA", "DE"),
+                        BETA,
                         DEVICE,
+                        path=path_to_chk,
                     )
                     # path=path_to_chk)
                     # things to grab: 'valid_mse' and 'valid_bnll'
@@ -230,9 +213,10 @@ if __name__ == "__main__":
                             model,
                             noise,
                             epoch,
-                            config.get_item("model", "BETA", "DE"),
+                            BETA,
                             DEVICE,
                             nmodel=nmodels,
+                            path=path_to_chk,
                         )
                         mu_vals, sig_vals = chk_module.ep_al_checkpoint_DE(chk)
                         list_mus.append(mu_vals)
@@ -270,7 +254,7 @@ if __name__ == "__main__":
                 np.sqrt(al_dict[model][noise]),
                 color=color_list[i],
                 edgecolors="black",
-                label=r"$\sigma = "+str(sigma_list[i]),
+                label=r"$\sigma = " + str(sigma_list[i]),
             )
             ax.axhline(y=sigma_list[i], color=color_list[i])
         ax.set_ylabel("Aleatoric Uncertainty")
@@ -281,4 +265,18 @@ if __name__ == "__main__":
             ax.set_title("Deep Ensemble (100 models)")
         ax.set_ylim([-1, 15])
     plt.legend()
-    plt.show()
+    if config.get_item("analysis", "savefig", "Analysis"):
+        plt.savefig(
+            str(path_to_chk)
+            + "analysis/"
+            + "aleatoric_uncertainty_"
+            + str(n_epochs)
+            + ".png"
+        )
+        print(
+            "saving the file here",
+            str(path_to_chk) + "aleatoric_uncertainty_"
+            + str(n_epochs) + ".png",
+        )
+    if config.get_item("analysis", "plot", "Analysis"):
+        plt.show()
