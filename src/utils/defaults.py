@@ -39,19 +39,6 @@ DefaultsDE = {
         "line_style_cycle": ["-", "-."],
         "figure_size": [6, 6],
     },
-    "analysis": {"run_analysis": False},
-    "plots": {"CDFRanks": {},
-              "Ranks": {"num_bins": None},
-              "CoverageFraction": {}},
-    "metrics_common": {
-        "use_progress_bar": False,
-        "samples_per_inference": 1000,
-        "percentiles": [75, 85, 95],
-    },
-    "metrics": {
-        "AllSBC": {},
-        "CoverageFraction": {},
-    },
 }
 DefaultsDER = {
     "common": {
@@ -84,7 +71,6 @@ DefaultsDER = {
         "savefig": False,
         "verbose": False,
     },
-    "analysis": {"run_analysis": False},
     "plots_common": {
         "axis_spines": False,
         "tight_layout": True,
@@ -95,9 +81,27 @@ DefaultsDER = {
         "line_style_cycle": ["-", "-."],
         "figure_size": [6, 6],
     },
-    "plots": {"CDFRanks": {},
-              "Ranks": {"num_bins": None},
-              "CoverageFraction": {}},
+}
+DefaultsAnalysis = {
+    "common": {
+        "out_dir": "./DeepUQResources/results/",
+        "temp_config": "./DeepUQResources/temp/temp_config_analysis.yml",
+    },
+    "model": {
+        "model_engine": "DE",
+        "model_type": "DE",
+        "n_models": 100,
+        "n_epochs": 100,
+        "BETA": 0.5,
+    },
+    "analysis": {
+        "noise_level_list": ["low", "medium", "high"],
+        "model_names_list": ["DER_desiderata_2", "DE_desiderata_2"],
+        "plot": True,
+        "savefig": False,
+        "verbose": False,
+    },
+    "plots": {"color_list": ["#8EA8C3", "#406E8E", "#23395B"]},
     "metrics_common": {
         "use_progress_bar": False,
         "samples_per_inference": 1000,

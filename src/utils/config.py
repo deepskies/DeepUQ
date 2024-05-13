@@ -1,7 +1,7 @@
 from typing import Optional
 import os
 import yaml
-from utils.defaults import DefaultsDE, DefaultsDER
+from utils.defaults import DefaultsDE, DefaultsDER, DefaultsAnalysis
 
 
 def get_item(section, item, raise_exception=True):
@@ -57,7 +57,8 @@ class Config:
             else:
                 return {
                     "DER": DefaultsDER,
-                    "DE": DefaultsDE
+                    "DE": DefaultsDE,
+                    "Analysis": DefaultsAnalysis
                 }[defaulttype][section][item]
 
     def get_section(self, section, defaulttype, raise_exception=True):
@@ -69,5 +70,6 @@ class Config:
             else:
                 return {
                     "DER": DefaultsDER,
-                    "DE": DefaultsDE
+                    "DE": DefaultsDE,
+                    "Analysis": DefaultsAnalysis
                 }[defaulttype][section]

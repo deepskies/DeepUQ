@@ -190,12 +190,14 @@ class DataPreparation:
     def get_sigma(noise):
         if noise == "low":
             sigma = 1
-        if noise == "medium":
+        elif noise == "medium":
             sigma = 5
-        if noise == "high":
+        elif noise == "high":
             sigma = 10
-        if noise == "vhigh":
+        elif noise == "vhigh":
             sigma = 100
+        else:
+            print('cannot find a match for this noise', noise)
         return sigma
 
     def normalize(inputs, ys_array, norm=False):
