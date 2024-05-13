@@ -84,7 +84,7 @@ DefaultsDER = {
 }
 DefaultsAnalysis = {
     "common": {
-        "out_dir": "./DeepUQResources/results/",
+        "dir": "./DeepUQResources/",
         "temp_config": "./DeepUQResources/temp/temp_config_analysis.yml",
     },
     "model": {
@@ -98,7 +98,7 @@ DefaultsAnalysis = {
         "noise_level_list": ["low", "medium", "high"],
         "model_names_list": ["DER_desiderata_2", "DE_desiderata_2"],
         "plot": True,
-        "savefig": False,
+        "savefig": True,
         "verbose": False,
     },
     "plots": {"color_list": ["#8EA8C3", "#406E8E", "#23395B"]},

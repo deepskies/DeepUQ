@@ -70,7 +70,7 @@ def create_test_config_aleatoric(
     model_names_list=["DER", "DE"],
 ):
     input_yaml = {
-        "common": {"out_dir": str(temp_directory)},
+        "common": {"dir": str(temp_directory)},
         "analysis": {
             "noise_level_list": noise_level_list,
             "model_names_list": model_names_list,
@@ -221,3 +221,28 @@ class TestAleatoric:
         assert (
             len(files_in_analysis_folder) == 1
         ), "Expected 1 file in the 'analysis' folder"
+        # now change the number of models
+        n_models = 1
+        create_test_config_aleatoric(temp_directory + "/",
+                                     n_models,
+                                     n_epochs)
+        subprocess_args = [
+            "python",
+            "src/scripts/Aleatoric.py",
+            "--config",
+            str(temp_directory) + "/yamls/Aleatoric.yaml",
+            "--n_models",
+            str(n_models)
+        ]
+        # now run the subprocess
+        subprocess.run(subprocess_args, check=True)
+        # check if the right number of checkpoints are saved
+        analysis_folder = os.path.join(temp_directory, "analysis")
+        print("this is the analysis folder", analysis_folder)
+        # list all files in the "models" folder
+        files_in_analysis_folder = os.listdir(analysis_folder)
+        print("files in analysis folder", files_in_analysis_folder)
+        # assert that the number of files is equal to 10
+        assert (
+            len(files_in_analysis_folder) == 2
+        ), "Expected 2 file in the 'analysis' folder"

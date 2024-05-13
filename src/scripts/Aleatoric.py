@@ -25,9 +25,8 @@ def parse_args():
     # model
     # we need some info about the model to run this analysis
     # path to save the model results
-    parser.add_argument("--out_dir",
-                        default=DefaultsAnalysis["common"]["out_dir"])
-
+    parser.add_argument("--dir",
+                        default=DefaultsAnalysis["common"]["dir"])
     # now args for model
     parser.add_argument(
         "--n_models",
@@ -106,12 +105,13 @@ def parse_args():
 
         # check if args were specified in cli
         input_yaml = {
-            "common": {"out_dir": args.out_dir},
-            "model": {"n_models": args.n_models},
+            "common": {"dir": args.dir},
+            "model": {"n_models": args.n_models,
+                      "n_epochs": args.n_epochs,
+                      "BETA": args.BETA},
             "analysis": {
                 "noise_level_list": args.noise_level_list,
                 "model_names_list": args.model_names_list,
-                "n_epochs": args.n_epochs,
                 "plot": args.plot,
                 "savefig": args.savefig,
                 "verbose": args.verbose,
@@ -152,7 +152,15 @@ if __name__ == "__main__":
     sigma_list = []
     for noise in noise_list:
         sigma_list.append(DataPreparation.get_sigma(noise))
-    path_to_chk = config.get_item("common", "out_dir", "Analysis")
+    root_dir = config.get_item("common", "dir", "Analysis")
+    path_to_chk = root_dir + "checkpoints/"
+    path_to_out = root_dir + "analysis/"
+    # check that this exists and if not make it
+    if not os.path.isdir(path_to_out):
+        print('does not exist, making dir', path_to_out)
+        os.mkdir(path_to_out)
+    else:
+        print('already exists', path_to_out)
     model_name_list = config.get_item("analysis",
                                       "model_names_list",
                                       "Analysis")
@@ -267,16 +275,12 @@ if __name__ == "__main__":
     plt.legend()
     if config.get_item("analysis", "savefig", "Analysis"):
         plt.savefig(
-            str(path_to_chk)
-            + "analysis/"
-            + "aleatoric_uncertainty_"
+            str(path_to_out)
+            + "aleatoric_uncertainty_n_epochs_"
             + str(n_epochs)
+            + "_n_models_DE_"
+            + str(n_models)
             + ".png"
-        )
-        print(
-            "saving the file here",
-            str(path_to_chk) + "aleatoric_uncertainty_"
-            + str(n_epochs) + ".png",
         )
     if config.get_item("analysis", "plot", "Analysis"):
         plt.show()
