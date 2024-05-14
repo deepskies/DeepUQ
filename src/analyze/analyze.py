@@ -13,11 +13,12 @@ class AggregateCheckpoints:
         model_name,
         noise,
         epoch,
-        beta,
         device,
-        loss="SDER",
-        nmodel=None,
         path="models/",
+        BETA=0.5,
+        nmodel=None,
+        COEFF=0.5,
+        loss="SDER",
     ):
         """
         Load PyTorch model checkpoint from a .pt file.
@@ -32,13 +33,14 @@ class AggregateCheckpoints:
         if model_name[0:3] == "DER":
             file_name = (
                 str(path)
-                + f"{model_name}_noise_{noise}_loss_{loss}_epoch_{epoch}.pt"
+                + f"{model_name}_noise_{noise}_loss_{loss}"
+                + f"_COEFF_{COEFF}_epoch_{epoch}.pt"
             )
             checkpoint = torch.load(file_name, map_location=device)
         elif model_name[0:2] == "DE":
             file_name = (
                 str(path)
-                + f"{model_name}_noise_{noise}_beta_{beta}_"
+                + f"{model_name}_noise_{noise}_beta_{BETA}_"
                   f"nmodel_{nmodel}_epoch_{epoch}.pt"
             )
             checkpoint = torch.load(file_name, map_location=device)

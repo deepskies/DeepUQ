@@ -55,7 +55,7 @@ def parse_args():
         type=str,
         required=False,
         default=DefaultsAnalysis["model"]["loss_type"],
-        help="loss_type for DER, either SDER or DER",
+        help="loss_type for DER, either DER or SDER",
     )
     parser.add_argument(
         "--noise_level_list",
@@ -220,7 +220,6 @@ if __name__ == "__main__":
                         COEFF=COEFF,
                         loss=loss_type
                     )
-                    # path=path_to_chk)
                     # things to grab: 'valid_mse' and 'valid_bnll'
                     epistemic_m, aleatoric_m, e_std, a_std = (
                         chk_module.ep_al_checkpoint_DER(chk)
@@ -267,40 +266,40 @@ if __name__ == "__main__":
         # Your plotting code for each model here
         ax.set_title(model)  # Set title for each subplot
         for i, noise in enumerate(noise_list):
-            al = np.array(np.sqrt(al_dict[model][noise]))
-            al_std = np.array(np.sqrt(al_std_dict[model][noise]))
+            ep = np.array(ep_dict[model][noise])
+            ep_std = np.array(ep_std_dict[model][noise])
             ax.fill_between(
                 range(n_epochs),
-                al - al_std,
-                al + al_std,
+                ep - ep_std,
+                ep + ep_std,
                 color=color_list[i],
                 alpha=0.25,
                 edgecolor=None
             )
             ax.plot(
                 range(n_epochs),
-                np.sqrt(al_dict[model][noise]),
+                ep_dict[model][noise],
                 color=color_list[i],
                 #edgecolors="black",
                 label=r"$\sigma = $" + str(sigma_list[i]),
             )
-            ax.axhline(y=sigma_list[i], color=color_list[i], ls='--')
-        ax.set_ylabel("Aleatoric Uncertainty")
+            ax.axhline(y=sigma_list[i], color=color_list[i])
+        ax.set_ylabel("Epistemic Uncertainty")
         ax.set_xlabel("Epoch")
         if model[0:3] == "DER":
             ax.set_title("Deep Evidential Regression")
         elif model[0:2] == "DE":
             ax.set_title("Deep Ensemble (100 models)")
-        ax.set_ylim([0, 14])
+        #ax.set_ylim([-1, 15])
     plt.legend()
     if config.get_item("analysis", "savefig", "Analysis"):
         plt.savefig(
-                str(path_to_out)
-                + "aleatoric_uncertainty_n_epochs_"
-                + str(n_epochs)
-                + "_n_models_DE_"
-                + str(n_models)
-                + ".png"
-            )
+            str(path_to_out)
+            + "epistemic_uncertainty_n_epochs_"
+            + str(n_epochs)
+            + "_n_models_DE_"
+            + str(n_models)
+            + ".png"
+        )
     if config.get_item("analysis", "plot", "Analysis"):
         plt.show()

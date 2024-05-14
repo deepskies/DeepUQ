@@ -4,10 +4,8 @@ import argparse
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
-
-from data import DataModules
 from utils.config import Config
-from utils.defaults import DefaultsAnalysis, DefaultsDE
+from utils.defaults import DefaultsAnalysis
 from data.data import DataPreparation
 from analyze.analyze import AggregateCheckpoints
 
@@ -24,39 +22,40 @@ def parse_args():
     # option to pass name of config
     parser.add_argument("--config", "-c", default=None)
 
-    # data info
-    parser.add_argument(
-        "--data_path",
-        "-d",
-        default=DefaultsAnalysis["data"]["data_path"],
-    )
-    parser.add_argument(
-        "--data_engine",
-        "-dl",
-        default=DefaultsAnalysis["data"]["data_engine"],
-        choices=DataModules.keys(),
-    )
-
     # model
+    # we need some info about the model to run this analysis
     # path to save the model results
-    parser.add_argument("--out_dir",
-                        default=DefaultsAnalysis["common"]["out_dir"])
-
+    parser.add_argument("--dir",
+                        default=DefaultsAnalysis["common"]["dir"])
     # now args for model
     parser.add_argument(
         "--n_models",
         type=int,
-        default=DefaultsDE["model"]["n_models"],
+        default=DefaultsAnalysis["model"]["n_models"],
         help="Number of MVEs in the ensemble",
     )
     parser.add_argument(
         "--BETA",
         type=beta_type,
         required=False,
-        default=DefaultsDE["model"]["BETA"],
+        default=DefaultsAnalysis["model"]["BETA"],
         help="If loss_type is bnn_loss, specify a beta as a float or \
             there are string options: linear_decrease, \
             step_decrease_to_0.5, and step_decrease_to_1.0",
+    )
+    parser.add_argument(
+        "--COEFF",
+        type=float,
+        required=False,
+        default=DefaultsAnalysis["model"]["COEFF"],
+        help="COEFF for DER",
+    )
+    parser.add_argument(
+        "--loss_type",
+        type=str,
+        required=False,
+        default=DefaultsAnalysis["model"]["loss_type"],
+        help="loss_type for DER",
     )
     parser.add_argument(
         "--noise_level_list",
@@ -76,7 +75,7 @@ def parse_args():
         "--n_epochs",
         type=int,
         required=False,
-        default=DefaultsAnalysis["analysis"]["n_epochs"],
+        default=DefaultsAnalysis["model"]["n_epochs"],
         help="number of epochs",
     )
     parser.add_argument(
@@ -84,6 +83,12 @@ def parse_args():
         action="store_true",
         default=DefaultsAnalysis["analysis"]["plot"],
         help="option to plot in notebook",
+    )
+    parser.add_argument(
+        "--color_list",
+        type=list,
+        default=DefaultsAnalysis["plots"]["color_list"],
+        help="list of named or hexcode colors to use for the noise levels",
     )
     parser.add_argument(
         "--savefig",
@@ -113,23 +118,21 @@ def parse_args():
         os.makedirs(os.path.dirname(temp_config), exist_ok=True)
 
         # check if args were specified in cli
-        # if not, default is from DefaultsDE dictionary
         input_yaml = {
-            "common": {"out_dir": args.out_dir},
-            "data": {
-                "data_path": args.data_path,
-                "data_engine": args.data_engine,
-            },
-            "model": {"n_models": args.n_models, "BETA": args.BETA},
+            "common": {"dir": args.dir},
+            "model": {"n_models": args.n_models,
+                      "n_epochs": args.n_epochs,
+                      "BETA": args.BETA,
+                      "COEFF": args.COEFF,
+                      "loss_type": args.loss_type},
             "analysis": {
                 "noise_level_list": args.noise_level_list,
                 "model_names_list": args.model_names_list,
-                "n_epochs": args.n_epochs,
                 "plot": args.plot,
                 "savefig": args.savefig,
                 "verbose": args.verbose,
             },
-            # "plots": {key: {} for key in args.plots},
+            "plots": {"color_list": args.color_list},
             # "metrics": {key: {} for key in args.metrics},
         }
 
@@ -160,16 +163,27 @@ if __name__ == "__main__":
     config = parse_args()
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     noise_list = config.get_item("analysis", "noise_level_list", "Analysis")
+    color_list = config.get_item("plots", "color_list", "Analysis")
+    BETA = config.get_item("model", "BETA", "Analysis")
+    COEFF = config.get_item("model", "COEFF", "Analysis")
+    loss_type = config.get_item("model", "loss_type", "Analysis")
     sigma_list = []
     for noise in noise_list:
         sigma_list.append(DataPreparation.get_sigma(noise))
-    print("noise list", noise_list)
-    print("sigma list", sigma_list)
-    path_to_chk = config.get_item("common", "out_dir", "Analysis")
+    root_dir = config.get_item("common", "dir", "Analysis")
+    path_to_chk = root_dir + "checkpoints/"
+    path_to_out = root_dir + "analysis/"
+    # check that this exists and if not make it
+    if not os.path.isdir(path_to_out):
+        print('does not exist, making dir', path_to_out)
+        os.mkdir(path_to_out)
+    else:
+        print('already exists', path_to_out)
     model_name_list = config.get_item("analysis",
                                       "model_names_list",
                                       "Analysis")
-    print("model list", model_name_list, len(model_name_list))
+    print("model list", model_name_list)
+    print("noise list", noise_list)
     chk_module = AggregateCheckpoints()
     # make an empty nested dictionary with keys for
     # model names followed by noise levels
@@ -177,7 +191,7 @@ if __name__ == "__main__":
         model_name: {noise: [] for noise in noise_list}
         for model_name in model_name_list
     }
-    al_var_dict = {
+    al_dict = {
         model_name: {noise: [] for noise in noise_list}
         for model_name in model_name_list
     }
@@ -186,12 +200,11 @@ if __name__ == "__main__":
         model_name: {noise: [] for noise in noise_list}
         for model_name in model_name_list
     }
-    al_var_std_dict = {
+    al_std_dict = {
         model_name: {noise: [] for noise in noise_list}
         for model_name in model_name_list
     }
-
-    n_epochs = config.get_item("analysis", "n_epochs", "Analysis")
+    n_epochs = config.get_item("model", "n_epochs", "Analysis")
     for model in model_name_list:
         for noise in noise_list:
             # append a noise key
@@ -202,8 +215,10 @@ if __name__ == "__main__":
                         model,
                         noise,
                         epoch,
-                        config.get_item("model", "BETA", "DE"),
                         DEVICE,
+                        path=path_to_chk,
+                        COEFF=COEFF,
+                        loss=loss_type,
                     )
                     # path=path_to_chk)
                     # things to grab: 'valid_mse' and 'valid_bnll'
@@ -211,16 +226,12 @@ if __name__ == "__main__":
                         chk_module.ep_al_checkpoint_DER(chk)
                     )
                     ep_dict[model][noise].append(epistemic_m)
-                    al_var_dict[model][noise].append(aleatoric_m)
+                    al_dict[model][noise].append(aleatoric_m)
                     ep_std_dict[model][noise].append(e_std)
-                    al_var_std_dict[model][noise].append(a_std)
+                    al_std_dict[model][noise].append(a_std)
 
             elif model[0:2] == "DE":
-
                 n_models = config.get_item("model", "n_models", "DE")
-                print("n_models", n_models)
-                print("n_epochs", n_epochs)
-
                 for epoch in range(n_epochs):
                     list_mus = []
                     list_sigs = []
@@ -229,116 +240,70 @@ if __name__ == "__main__":
                             model,
                             noise,
                             epoch,
-                            config.get_item("model", "BETA", "DE"),
                             DEVICE,
+                            path=path_to_chk,
+                            BETA=BETA,
                             nmodel=nmodels,
                         )
                         mu_vals, sig_vals = chk_module.ep_al_checkpoint_DE(chk)
-                        list_mus.append(mu_vals.detach().numpy())
-                        list_sigs.append(sig_vals.detach().numpy() ** 2)
+                        list_mus.append(mu_vals)
+                        list_sigs.append(sig_vals)
                     ep_dict[model][noise].append(np.median(np.std(list_mus,
                                                                   axis=0)))
-                    al_var_dict[model][noise].append(
-                        np.median(np.mean(list_sigs, axis=0))
-                    )
+                    al_dict[model][noise].append(np.median(np.mean(list_sigs,
+                                                                   axis=0)))
                     ep_std_dict[model][noise].append(np.std(np.std(list_mus,
                                                                    axis=0)))
-                    al_var_std_dict[model][noise].append(
-                        np.std(np.mean(list_sigs, axis=0))
-                    )
+                    al_std_dict[model][noise].append(np.std(np.mean(list_sigs,
+                                                                    axis=0)))
     # make a two-paneled plot for the different noise levels
-    # make one plot per model
-    for model in model_name_list:
-        plt.clf()
-        fig = plt.figure(figsize=(10, 4))
-        ax1 = fig.add_subplot(121)
-        color_list = ["#8EA8C3", "#406E8E", "#23395B"]
-        for i, noise in enumerate(noise_list):
-            ax1.errorbar(
-                range(n_epochs),
-                ep_dict[model][noise],
-                yerr=ep_std_dict[model][noise],
-                color=color_list[i],
-                capsize=5,
-                ls=None,
-            )
-            ax1.scatter(range(n_epochs),
-                        ep_dict[model][noise],
-                        color=color_list[i])
-            ax1.axhline(y=sigma_list[i], color=color_list[i])
-        ax1.set_ylabel("Epistemic Uncertainty")
-        ax1.set_xlabel("Epoch")
-        ax2 = fig.add_subplot(122)
-        for i, noise in enumerate(noise_list):
-            ax2.errorbar(
-                range(n_epochs),
-                np.sqrt(al_var_dict[model][noise]),
-                yerr=np.sqrt(al_var_std_dict[model][noise]),
-                color=color_list[i],
-                capsize=5,
-                ls=None,
-            )
-            ax2.scatter(
-                range(n_epochs),
-                np.sqrt(al_var_dict[model][noise]),
-                color=color_list[i],
-                label=r"$\sigma = $"+str(sigma_list[i]),
-            )
-            ax2.axhline(y=sigma_list[i], color=color_list[i])
-        ax2.set_ylabel("Aleatoric Uncertainty")
-        ax2.set_xlabel("Epoch")
-        fig.suptitle(model)
-        plt.legend()
-        plt.show()
-
+    # make one panel per model
+    # for the noise levels:
+    plt.clf()
+    fig = plt.figure(figsize=(10, 4))
     # try this instead with a fill_between method
-    for model in model_name_list:
-        plt.clf()
-        fig = plt.figure(figsize=(10, 4))
-        ax1 = fig.add_subplot(121)
-        color_list = ["#8EA8C3", "#406E8E", "#23395B"]
+    for i, model in enumerate(model_name_list):
+        ax = fig.add_subplot(1, len(model_name_list), i + 1)
+        # Your plotting code for each model here
+        ax.set_title(model)  # Set title for each subplot
         for i, noise in enumerate(noise_list):
+            al = np.array(np.sqrt(al_dict[model][noise]))
+            al_std = np.array(np.sqrt(al_std_dict[model][noise]))
             ep = np.array(ep_dict[model][noise])
             ep_std = np.array(ep_std_dict[model][noise])
-            # list_minus = [ep[i] - ep_std[i] for i in range(len(ep))]
-            # list_plus = [ep[i] + ep_std[i] for i in range(len(ep))]
-            ax1.fill_between(
+            total = np.sqrt(al**2 + ep**2)
+            total_std = np.sqrt(al_std**2 + ep_std**2)
+            ax.fill_between(
                 range(n_epochs),
-                ep - ep_std,
-                ep + ep_std,
+                total - total_std,
+                total + total_std,
                 color=color_list[i],
-                alpha=0.5,
+                alpha=0.25,
+                edgecolor=None
             )
-            ax1.scatter(
+            ax.plot(
                 range(n_epochs),
-                ep_dict[model][noise],
+                total,
                 color=color_list[i],
-                edgecolors="black",
+                label=r"$\sigma = $" + str(sigma_list[i]),
             )
-            ax1.axhline(y=sigma_list[i], color=color_list[i])
-        ax1.set_ylabel("Epistemic Uncertainty")
-        ax1.set_xlabel("Epoch")
-        ax2 = fig.add_subplot(122)
-        for i, noise in enumerate(noise_list):
-            al = np.array(np.sqrt(al_var_dict[model][noise]))
-            al_std = np.array(np.sqrt(al_var_std_dict[model][noise]))
-            ax2.fill_between(
-                range(n_epochs),
-                al - al_std,
-                al + al_std,
-                color=color_list[i],
-                alpha=0.5,
-            )
-            ax2.scatter(
-                range(n_epochs),
-                np.sqrt(al_var_dict[model][noise]),
-                color=color_list[i],
-                edgecolors="black",
-                label=r"$\sigma = $"+str(sigma_list[i]),
-            )
-            ax2.axhline(y=sigma_list[i], color=color_list[i])
-        ax2.set_ylabel("Aleatoric Uncertainty")
-        ax2.set_xlabel("Epoch")
-        fig.suptitle(model)
-        plt.legend()
+            ax.axhline(y=sigma_list[i], color=color_list[i])
+        ax.set_ylabel("Total Uncertainty")
+        ax.set_xlabel("Epoch")
+        if model[0:3] == "DER":
+            ax.set_title("Deep Evidential Regression")
+        elif model[0:2] == "DE":
+            ax.set_title("Deep Ensemble (100 models)")
+        #ax.set_ylim([-1, 15])
+    plt.legend()
+    if config.get_item("analysis", "savefig", "Analysis"):
+        plt.savefig(
+            str(path_to_out)
+            + "aleatoric_and_epistemic_uncertainty_n_epochs_"
+            + str(n_epochs)
+            + "_n_models_DE_"
+            + str(n_models)
+            + ".png"
+        )
+    if config.get_item("analysis", "plot", "Analysis"):
         plt.show()

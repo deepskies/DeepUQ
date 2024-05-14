@@ -42,7 +42,7 @@ DefaultsDE = {
 }
 DefaultsDER = {
     "common": {
-        "out_dir": "./DeepUQResources/results/",
+        "out_dir": "./DeepUQResources/",
         "temp_config": "./DeepUQResources/temp/temp_config_DER.yml",
     },
     "data": {
@@ -93,15 +93,20 @@ DefaultsAnalysis = {
         "n_models": 100,
         "n_epochs": 100,
         "BETA": 0.5,
+        "COEFF": 0.5,
+        "loss_type": "SDER"
     },
     "analysis": {
         "noise_level_list": ["low", "medium", "high"],
-        "model_names_list": ["DER_desiderata_2", "DE_desiderata_2"],
+        "model_names_list": ["DER", "DE_desiderata_2"],
+        #["DER_desiderata_2", "DE_desiderata_2"]
         "plot": True,
-        "savefig": True,
+        "savefig": False,
         "verbose": False,
     },
-    "plots": {"color_list": ["#8EA8C3", "#406E8E", "#23395B"]},
+    "plots": {"color_list": ["#F4D58D", "#339989", "#292F36"]},
+    # Pinks ["#EC4067", "#A01A7D", "#311847"]},
+    # Blues: ["#8EA8C3", "#406E8E", "#23395B"]},
     "metrics_common": {
         "use_progress_bar": False,
         "samples_per_inference": 1000,
