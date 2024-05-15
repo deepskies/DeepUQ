@@ -19,6 +19,8 @@ class AggregateCheckpoints:
         nmodel=None,
         COEFF=0.5,
         loss="SDER",
+        load_rs_chk=False,
+        rs=42
     ):
         """
         Load PyTorch model checkpoint from a .pt file.
@@ -31,7 +33,14 @@ class AggregateCheckpoints:
         :return: Loaded model
         """
         if model_name[0:3] == "DER":
-            file_name = (
+            if load_rs_chk:
+                file_name = (
+                    str(path)
+                    + f"{model_name}_noise_{noise}_loss_{loss}"
+                    + f"_COEFF_{COEFF}_epoch_{epoch}_rs_{rs}.pt"
+                )
+            else:
+                file_name = (
                 str(path)
                 + f"{model_name}_noise_{noise}_loss_{loss}"
                 + f"_COEFF_{COEFF}_epoch_{epoch}.pt"
