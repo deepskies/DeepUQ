@@ -166,6 +166,18 @@ def parse_args():
         help="option to save a figure of the true and predicted values",
     )
     parser.add_argument(
+        "--save_chk_random_seed_init",
+        action="store_true",
+        default=DefaultsDER["model"]["save_chk_random_seed_init"],
+        help="option to save the chk with a random seed",
+    )
+    parser.add_argument(
+        "--rs",
+        type=int,
+        default=DefaultsDER["model"]["rs"],
+        help="define a random seed to save",
+    )
+    parser.add_argument(
         "--verbose",
         action="store_true",
         default=DefaultsDER["model"]["verbose"],
@@ -201,6 +213,8 @@ def parse_args():
                 "overwrite_final_checkpoint": args.overwrite_final_checkpoint,
                 "plot": args.plot,
                 "savefig": args.savefig,
+                "save_chk_random_seed_init": args.save_chk_random_seed_init,
+                "rs": args.rs,
                 "verbose": args.verbose,
             },
             "data": {
@@ -307,5 +321,9 @@ if __name__ == "__main__":
         ),
         plot=config.get_item("model", "plot", "DER"),
         savefig=config.get_item("model", "savefig", "DER"),
+        set_and_save_rs=config.get_item("model",
+                                        "save_chk_random_seed_init",
+                                        "DER"),
+        rs=config.get_item("model", "rs", "DER"),
         verbose=config.get_item("model", "verbose", "DER"),
     )

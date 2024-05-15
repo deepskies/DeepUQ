@@ -69,6 +69,8 @@ DefaultsDER = {
         "overwrite_final_checkpoint": False,
         "plot": False,
         "savefig": False,
+        "save_chk_random_seed_init": False,
+        "rs": 42,
         "verbose": False,
     },
     "plots_common": {

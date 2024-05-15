@@ -6,6 +6,14 @@ import matplotlib.pyplot as plt
 from models import models
 
 
+def set_random_seeds(seed_value=42):
+    torch.manual_seed(seed_value)
+    torch.cuda.manual_seed_all(seed_value)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    np.random.seed(seed_value)
+
+
 def train_DER(
     trainDataLoader,
     x_val,
@@ -22,6 +30,8 @@ def train_DER(
     overwrite_final_checkpoint=False,
     plot=True,
     savefig=True,
+    set_and_save_rs=False,
+    rs=42,
     verbose=True,
 ):
     # first determine if you even need to run anything
@@ -65,6 +75,10 @@ def train_DER(
 
     startTime = time.time()
     start_epoch = 0
+
+    if set_and_save_rs:
+        # Set the random seed
+        set_random_seeds(seed_value=rs)
 
     best_loss = np.inf  # init to infinity
     model, lossFn = models.model_setup_DER(loss_type, DEVICE)
@@ -266,6 +280,8 @@ def train_DER(
                 + str(COEFF)
                 + "_epoch_"
                 + str(epoch)
+                + "_rs_"
+                + str(rs)
                 + ".pt",
             )
         if save_final_checkpoint and (e % (EPOCHS - 1) == 0) and (e != 0):
@@ -310,7 +326,7 @@ def train_DE(
     loss_type,
     n_models,
     model_name="DE",
-    BETA=None,
+    BETA=0.5,
     EPOCHS=100,
     path_to_model="models/",
     save_all_checkpoints=False,
