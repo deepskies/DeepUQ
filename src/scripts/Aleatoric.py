@@ -44,6 +44,20 @@ def parse_args():
             step_decrease_to_0.5, and step_decrease_to_1.0",
     )
     parser.add_argument(
+        "--COEFF",
+        type=float,
+        required=False,
+        default=DefaultsAnalysis["model"]["COEFF"],
+        help="COEFF for DER",
+    )
+    parser.add_argument(
+        "--loss_type",
+        type=str,
+        required=False,
+        default=DefaultsAnalysis["model"]["loss_type"],
+        help="loss_type for DER, either SDER or DER",
+    )
+    parser.add_argument(
         "--noise_level_list",
         type=list,
         required=False,
@@ -108,7 +122,9 @@ def parse_args():
             "common": {"dir": args.dir},
             "model": {"n_models": args.n_models,
                       "n_epochs": args.n_epochs,
-                      "BETA": args.BETA},
+                      "BETA": args.BETA,
+                      "COEFF": args.COEFF,
+                      "loss_type": args.loss_type},
             "analysis": {
                 "noise_level_list": args.noise_level_list,
                 "model_names_list": args.model_names_list,
@@ -149,6 +165,8 @@ if __name__ == "__main__":
     noise_list = config.get_item("analysis", "noise_level_list", "Analysis")
     color_list = config.get_item("plots", "color_list", "Analysis")
     BETA = config.get_item("model", "BETA", "Analysis")
+    COEFF = config.get_item("model", "COEFF", "Analysis")
+    loss_type = config.get_item("model", "loss_type", "Analysis")
     sigma_list = []
     for noise in noise_list:
         sigma_list.append(DataPreparation.get_sigma(noise))
@@ -197,9 +215,10 @@ if __name__ == "__main__":
                         model,
                         noise,
                         epoch,
-                        BETA,
                         DEVICE,
                         path=path_to_chk,
+                        COEFF=COEFF,
+                        loss=loss_type
                     )
                     # path=path_to_chk)
                     # things to grab: 'valid_mse' and 'valid_bnll'
@@ -221,10 +240,10 @@ if __name__ == "__main__":
                             model,
                             noise,
                             epoch,
-                            BETA,
                             DEVICE,
-                            nmodel=nmodels,
                             path=path_to_chk,
+                            BETA=BETA,
+                            nmodel=nmodels,
                         )
                         mu_vals, sig_vals = chk_module.ep_al_checkpoint_DE(chk)
                         list_mus.append(mu_vals)
@@ -255,32 +274,32 @@ if __name__ == "__main__":
                 al - al_std,
                 al + al_std,
                 color=color_list[i],
-                alpha=0.5,
+                alpha=0.25,
+                edgecolor=None
             )
-            ax.scatter(
+            ax.plot(
                 range(n_epochs),
                 np.sqrt(al_dict[model][noise]),
                 color=color_list[i],
-                edgecolors="black",
-                label=r"$\sigma = " + str(sigma_list[i]),
+                label=r"$\sigma = $" + str(sigma_list[i]),
             )
-            ax.axhline(y=sigma_list[i], color=color_list[i])
+            ax.axhline(y=sigma_list[i], color=color_list[i], ls='--')
         ax.set_ylabel("Aleatoric Uncertainty")
         ax.set_xlabel("Epoch")
         if model[0:3] == "DER":
             ax.set_title("Deep Evidential Regression")
         elif model[0:2] == "DE":
             ax.set_title("Deep Ensemble (100 models)")
-        ax.set_ylim([-1, 15])
+        ax.set_ylim([0, 14])
     plt.legend()
     if config.get_item("analysis", "savefig", "Analysis"):
         plt.savefig(
-            str(path_to_out)
-            + "aleatoric_uncertainty_n_epochs_"
-            + str(n_epochs)
-            + "_n_models_DE_"
-            + str(n_models)
-            + ".png"
-        )
+                str(path_to_out)
+                + "aleatoric_uncertainty_n_epochs_"
+                + str(n_epochs)
+                + "_n_models_DE_"
+                + str(n_models)
+                + ".png"
+            )
     if config.get_item("analysis", "plot", "Analysis"):
         plt.show()

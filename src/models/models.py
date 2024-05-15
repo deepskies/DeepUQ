@@ -211,6 +211,7 @@ def loss_der(y, y_pred, coeff):
     )
 
 
+# simplified DER loss (from Meinert)
 def loss_sder(y, y_pred, coeff):
     gamma, nu, alpha, beta = y[:, 0], y[:, 1], y[:, 2], y[:, 3]
     error = gamma - y_pred
@@ -218,8 +219,8 @@ def loss_sder(y, y_pred, coeff):
 
     # define aleatoric and epistemic uncert
     u_al = np.sqrt(
-        beta.detach().numpy()
-        * (1 + nu.detach().numpy())
+        (beta.detach().numpy()
+         * (1 + nu.detach().numpy()))
         / (alpha.detach().numpy() * nu.detach().numpy())
     )
     u_ep = 1 / np.sqrt(nu.detach().numpy())

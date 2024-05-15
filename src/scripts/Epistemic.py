@@ -55,7 +55,7 @@ def parse_args():
         type=str,
         required=False,
         default=DefaultsAnalysis["model"]["loss_type"],
-        help="loss_type for DER",
+        help="loss_type for DER, either DER or SDER",
     )
     parser.add_argument(
         "--noise_level_list",
@@ -218,9 +218,8 @@ if __name__ == "__main__":
                         DEVICE,
                         path=path_to_chk,
                         COEFF=COEFF,
-                        loss=loss_type,
+                        loss=loss_type
                     )
-                    # path=path_to_chk)
                     # things to grab: 'valid_mse' and 'valid_bnll'
                     epistemic_m, aleatoric_m, e_std, a_std = (
                         chk_module.ep_al_checkpoint_DER(chk)
@@ -267,28 +266,24 @@ if __name__ == "__main__":
         # Your plotting code for each model here
         ax.set_title(model)  # Set title for each subplot
         for i, noise in enumerate(noise_list):
-            al = np.array(np.sqrt(al_dict[model][noise]))
-            al_std = np.array(np.sqrt(al_std_dict[model][noise]))
             ep = np.array(ep_dict[model][noise])
             ep_std = np.array(ep_std_dict[model][noise])
-            total = np.sqrt(al**2 + ep**2)
-            total_std = np.sqrt(al_std**2 + ep_std**2)
             ax.fill_between(
                 range(n_epochs),
-                total - total_std,
-                total + total_std,
+                ep - ep_std,
+                ep + ep_std,
                 color=color_list[i],
                 alpha=0.25,
                 edgecolor=None
             )
             ax.plot(
                 range(n_epochs),
-                total,
+                ep_dict[model][noise],
                 color=color_list[i],
                 label=r"$\sigma = $" + str(sigma_list[i]),
             )
             ax.axhline(y=sigma_list[i], color=color_list[i])
-        ax.set_ylabel("Total Uncertainty")
+        ax.set_ylabel("Epistemic Uncertainty")
         ax.set_xlabel("Epoch")
         if model[0:3] == "DER":
             ax.set_title("Deep Evidential Regression")
@@ -299,7 +294,7 @@ if __name__ == "__main__":
     if config.get_item("analysis", "savefig", "Analysis"):
         plt.savefig(
             str(path_to_out)
-            + "aleatoric_and_epistemic_uncertainty_n_epochs_"
+            + "epistemic_uncertainty_n_epochs_"
             + str(n_epochs)
             + "_n_models_DE_"
             + str(n_models)

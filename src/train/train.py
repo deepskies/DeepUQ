@@ -233,6 +233,8 @@ def train_DER(
                     + str(model_name)
                     + "_loss_"
                     + str(loss_type)
+                    + "_COEFF_"
+                    + str(COEFF)
                     + "_epoch_"
                     + str(epoch)
                     + ".png"
@@ -260,6 +262,8 @@ def train_DER(
                 + str(model_name)
                 + "_loss_"
                 + str(loss_type)
+                + "_COEFF_"
+                + str(COEFF)
                 + "_epoch_"
                 + str(epoch)
                 + ".pt",
@@ -284,6 +288,8 @@ def train_DER(
                 + str(model_name)
                 + "_loss_"
                 + str(loss_type)
+                + "_COEFF_"
+                + str(COEFF)
                 + "_epoch_"
                 + str(epoch)
                 + ".pt",
