@@ -82,6 +82,8 @@ def create_test_config_aleatoric(
             "n_models": n_models,
             "n_epochs": n_epochs,
             "BETA": 0.5,
+            "COEFF": 0.01,
+            "loss_type": "DER",
         },
         "plots": {"color_list": ["#8EA8C3", "#406E8E", "#23395B"]},
     }
@@ -135,9 +137,9 @@ def create_test_config_DER(
         "model": {
             "model_engine": "DER",
             "model_type": "DER",
-            "loss_type": "SDER",
+            "loss_type": "DER",
             "init_lr": 0.001,
-            "COEFF": 0.5,
+            "COEFF": 0.01,
             "n_epochs": n_epochs,
             "save_all_checkpoints": True,
             "save_final_checkpoint": True,
