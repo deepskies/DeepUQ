@@ -294,7 +294,7 @@ if __name__ == "__main__":
             ax.set_title("Deep Evidential Regression")
         elif model[0:2] == "DE":
             ax.set_title("Deep Ensemble (100 models)")
-        #ax.set_ylim([-1, 15])
+        # ax.set_ylim([-1, 15])
     plt.legend()
     if config.get_item("analysis", "savefig", "Analysis"):
         plt.savefig(

@@ -280,7 +280,6 @@ if __name__ == "__main__":
                 range(n_epochs),
                 ep_dict[model][noise],
                 color=color_list[i],
-                #edgecolors="black",
                 label=r"$\sigma = $" + str(sigma_list[i]),
             )
             ax.axhline(y=sigma_list[i], color=color_list[i])
@@ -290,7 +289,7 @@ if __name__ == "__main__":
             ax.set_title("Deep Evidential Regression")
         elif model[0:2] == "DE":
             ax.set_title("Deep Ensemble (100 models)")
-        #ax.set_ylim([-1, 15])
+        # ax.set_ylim([-1, 15])
     plt.legend()
     if config.get_item("analysis", "savefig", "Analysis"):
         plt.savefig(

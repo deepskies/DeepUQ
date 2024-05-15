@@ -281,7 +281,6 @@ if __name__ == "__main__":
                 range(n_epochs),
                 np.sqrt(al_dict[model][noise]),
                 color=color_list[i],
-                #edgecolors="black",
                 label=r"$\sigma = $" + str(sigma_list[i]),
             )
             ax.axhline(y=sigma_list[i], color=color_list[i], ls='--')
