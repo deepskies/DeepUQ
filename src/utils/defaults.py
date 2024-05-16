@@ -100,13 +100,14 @@ DefaultsAnalysis = {
     },
     "analysis": {
         "noise_level_list": ["low", "medium", "high"],
-        "model_names_list": ["DER"],#, "DE_desiderata_2"],
+        "model_names_list": ["DER", "DE_desiderata_2"],
         # ["DER_desiderata_2", "DE_desiderata_2"]
         "plot": True,
         "savefig": False,
         "verbose": False,
     },
-    "plots": {"color_list": ["#F4D58D", "#339989", "#292F36", "#04A777", "#DF928E"]},
+    "plots": {"color_list":
+              ["#F4D58D", "#339989", "#292F36", "#04A777", "#DF928E"]},
     # Pinks ["#EC4067", "#A01A7D", "#311847"]},
     # Blues: ["#8EA8C3", "#406E8E", "#23395B"]},
     "metrics_common": {

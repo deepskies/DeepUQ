@@ -41,10 +41,10 @@ class AggregateCheckpoints:
                 )
             else:
                 file_name = (
-                str(path)
-                + f"{model_name}_noise_{noise}_loss_{loss}"
-                + f"_COEFF_{COEFF}_epoch_{epoch}.pt"
-            )
+                    str(path)
+                    + f"{model_name}_noise_{noise}_loss_{loss}"
+                    + f"_COEFF_{COEFF}_epoch_{epoch}.pt"
+                )
             checkpoint = torch.load(file_name, map_location=device)
         elif model_name[0:2] == "DE":
             file_name = (

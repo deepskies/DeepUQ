@@ -225,28 +225,29 @@ if __name__ == "__main__":
                         al_dict[model][noise][rs].append(aleatoric_m)
                         al_std_dict[model][noise][rs].append(a_std)
 
-                elif model[0:2] == "DE":
-                    n_models = config.get_item("model", "n_models", "DE")
-                    for epoch in range(n_epochs):
-                        list_mus = []
-                        list_sigs = []
-                        for nmodels in range(n_models):
-                            chk = chk_module.load_checkpoint(
-                                model,
-                                noise,
-                                epoch,
-                                DEVICE,
-                                path=path_to_chk,
-                                BETA=BETA,
-                                nmodel=nmodels,
-                            )
-                            mu_vals, sig_vals = chk_module.ep_al_checkpoint_DE(chk)
-                            list_mus.append(mu_vals)
-                            list_sigs.append(sig_vals)
-                        al_dict[model][noise][rs].append(np.median(np.mean(list_sigs,
-                                                                    axis=0)))
-                        al_std_dict[model][noise][rs].append(np.std(np.mean(list_sigs,
-                                                                        axis=0)))
+            if model[0:3] == "DE_":
+                n_models = config.get_item("model", "n_models", "DE")
+                for epoch in range(n_epochs):
+                    list_mus = []
+                    list_sigs = []
+                    for nmodels in range(n_models):
+                        chk = chk_module.load_checkpoint(
+                            model,
+                            noise,
+                            epoch,
+                            DEVICE,
+                            path=path_to_chk,
+                            BETA=BETA,
+                            nmodel=nmodels,
+                        )
+                        mu_vals, sig_vals = chk_module.ep_al_checkpoint_DE(chk)
+                        list_mus.append(mu_vals)
+                        list_sigs.append(sig_vals)
+                        try:
+                            al_dict[model][noise][nmodels + 1].append(
+                                np.mean(list_sigs))
+                        except KeyError:
+                            continue
     # make a two-paneled plot for the different noise levels
     # make one panel per model
     # for the noise levels:
@@ -260,6 +261,7 @@ if __name__ == "__main__":
         for n, noise in enumerate(noise_list):
             for r, rs in enumerate(rs_list):
                 al = np.array(np.sqrt(al_dict[model][noise][rs]))
+                '''
                 al_std = np.array(np.sqrt(al_std_dict[model][noise][rs]))
                 ax.fill_between(
                     range(n_epochs),
@@ -269,6 +271,7 @@ if __name__ == "__main__":
                     alpha=0.0,
                     edgecolor=None
                 )
+                '''
                 if r == 0:
                     ax.plot(
                         range(n_epochs),
