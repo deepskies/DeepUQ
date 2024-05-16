@@ -81,6 +81,8 @@ def create_test_config(
             "overwrite_final_checkpoint": True,
             "plot": False,
             "savefig": True,
+            "save_chk_random_seed_init": False,
+            "rs": 42,
             "verbose": False,
         },
         "data": {
