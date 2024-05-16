@@ -69,6 +69,8 @@ DefaultsDER = {
         "overwrite_final_checkpoint": False,
         "plot": False,
         "savefig": False,
+        "save_chk_random_seed_init": False,
+        "rs": 42,
         "verbose": False,
     },
     "plots_common": {
@@ -104,7 +106,8 @@ DefaultsAnalysis = {
         "savefig": False,
         "verbose": False,
     },
-    "plots": {"color_list": ["#F4D58D", "#339989", "#292F36"]},
+    "plots": {"color_list":
+              ["#F4D58D", "#339989", "#292F36", "#04A777", "#DF928E"]},
     # Pinks ["#EC4067", "#A01A7D", "#311847"]},
     # Blues: ["#8EA8C3", "#406E8E", "#23395B"]},
     "metrics_common": {
