@@ -189,7 +189,7 @@ def loss_der(y, y_pred, coeff):
     gamma, nu, alpha, beta = y[:, 0], y[:, 1], y[:, 2], y[:, 3]
     error = gamma - y_pred
     omega = 2.0 * beta * (1.0 + nu)
-
+    w_st = torch.sqrt(beta * (1 + nu) / (alpha * nu))
     # define aleatoric and epistemic uncert
     u_al = np.sqrt(
         beta.detach().numpy()
@@ -204,7 +204,7 @@ def loss_der(y, y_pred, coeff):
             + (alpha + 0.5) * torch.log(error**2 * nu + omega)
             + torch.lgamma(alpha)
             - torch.lgamma(alpha + 0.5)
-            + coeff * torch.abs(error) * (2.0 * nu + alpha)
+            + (coeff * torch.abs(error / w_st) * (2.0 * nu + alpha))
         ),
         u_al,
         u_ep,
