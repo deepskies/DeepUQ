@@ -100,7 +100,7 @@ DefaultsAnalysis = {
     },
     "analysis": {
         "noise_level_list": ["low", "medium", "high"],
-        "model_names_list": ["DER", "DE_desiderata_2"],
+        "model_names_list": ["DER_wst", "DE_desiderata_2"],
         # ["DER_desiderata_2", "DE_desiderata_2"]
         "plot": True,
         "savefig": False,
