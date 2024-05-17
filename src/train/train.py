@@ -132,12 +132,6 @@ def train_DER(
                         zorder=100,
                         ls="None",
                     )
-                    ax1.annotate(
-                        r"med $u_{ep} = $" + str(np.median(loss[2])),
-                        xy=(0.03, 0.93),
-                        xycoords="axes fraction",
-                        color="black",
-                    )
                 """
                 else:
                     ax1.scatter(y,
