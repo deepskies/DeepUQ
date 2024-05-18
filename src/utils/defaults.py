@@ -60,9 +60,9 @@ DefaultsDER = {
         # the engines are the classes, defined
         "model_engine": "DER",
         "model_type": "DER",
-        "loss_type": "SDER",
+        "loss_type": "DER",
         "init_lr": 0.001,
-        "COEFF": 0.5,
+        "COEFF": 0.01,
         "n_epochs": 100,
         "save_all_checkpoints": False,
         "save_final_checkpoint": False,
@@ -95,8 +95,8 @@ DefaultsAnalysis = {
         "n_models": 100,
         "n_epochs": 100,
         "BETA": 0.5,
-        "COEFF": 0.5,
-        "loss_type": "SDER"
+        "COEFF": 0.01,
+        "loss_type": "DER"
     },
     "analysis": {
         "noise_level_list": ["low", "medium", "high"],
