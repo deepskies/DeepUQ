@@ -55,7 +55,8 @@ def parse_args():
         type=float,
         required=False,
         default=DefaultsDER["data"]["size_df"],
-        help="Used to load the associated .h5 data file",
+        help="Used to load the associated .h5 data file,\
+            number of lines generated",
     )
     parser.add_argument(
         "--noise_level",
@@ -297,6 +298,8 @@ if __name__ == "__main__":
     x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
         model_inputs, model_outputs, val_proportion=val_prop, random_state=rs
     )
+    print('train', np.shape(x_train), 'val', np.shape(x_val))
+    STOP
     trainData = TensorDataset(torch.Tensor(x_train), torch.Tensor(y_train))
     trainDataLoader = DataLoader(
         trainData,

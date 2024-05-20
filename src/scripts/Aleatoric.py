@@ -230,11 +230,11 @@ if __name__ == "__main__":
                     ep_std_dict[model][noise].append(e_std)
                     al_std_dict[model][noise].append(a_std)
 
-            elif model[0:2] == "DE":
+            elif model[0:3] == "DE_":
                 n_models = config.get_item("model", "n_models", "DE")
                 for epoch in range(n_epochs):
                     list_mus = []
-                    list_sigs = []
+                    list_vars = []
                     for nmodels in range(n_models):
                         chk = chk_module.load_checkpoint(
                             model,
@@ -245,16 +245,16 @@ if __name__ == "__main__":
                             BETA=BETA,
                             nmodel=nmodels,
                         )
-                        mu_vals, sig_vals = chk_module.ep_al_checkpoint_DE(chk)
+                        mu_vals, var_vals = chk_module.ep_al_checkpoint_DE(chk)
                         list_mus.append(mu_vals)
-                        list_sigs.append(sig_vals)
+                        list_vars.append(var_vals)
                     ep_dict[model][noise].append(np.median(np.std(list_mus,
                                                                   axis=0)))
-                    al_dict[model][noise].append(np.median(np.mean(list_sigs,
+                    al_dict[model][noise].append(np.median(np.mean(list_vars,
                                                                    axis=0)))
                     ep_std_dict[model][noise].append(np.std(np.std(list_mus,
                                                                    axis=0)))
-                    al_std_dict[model][noise].append(np.std(np.mean(list_sigs,
+                    al_std_dict[model][noise].append(np.std(np.mean(list_vars,
                                                                     axis=0)))
     # make a two-paneled plot for the different noise levels
     # make one panel per model
@@ -267,8 +267,14 @@ if __name__ == "__main__":
         # Your plotting code for each model here
         ax.set_title(model)  # Set title for each subplot
         for i, noise in enumerate(noise_list):
-            al = np.array(np.sqrt(al_dict[model][noise]))
-            al_std = np.array(np.sqrt(al_std_dict[model][noise]))
+            if model[0:3] == "DE_":
+                # only take the sqrt for the case of DE,
+                # which is the variance
+                al = np.array(np.sqrt(al_dict[model][noise]))
+                al_std = np.array(np.sqrt(al_std_dict[model][noise]))
+            else:
+                al = np.array(al_dict[model][noise])
+                al_std = np.array(al_std_dict[model][noise])
             ax.fill_between(
                 range(n_epochs),
                 al - al_std,
@@ -279,7 +285,7 @@ if __name__ == "__main__":
             )
             ax.plot(
                 range(n_epochs),
-                np.sqrt(al_dict[model][noise]),
+                al,
                 color=color_list[i],
                 label=r"$\sigma = $" + str(sigma_list[i]),
             )
@@ -290,7 +296,7 @@ if __name__ == "__main__":
             ax.set_title("Deep Evidential Regression")
         elif model[0:2] == "DE":
             ax.set_title("Deep Ensemble (100 models)")
-        ax.set_ylim([0, 11])
+        ax.set_ylim([0, 15])
     plt.legend()
     if config.get_item("analysis", "savefig", "Analysis"):
         plt.savefig(

@@ -59,11 +59,9 @@ class AggregateCheckpoints:
         # Extract additional information
         # loaded_epoch = checkpoint.get("epoch", None)
         mean_validation = checkpoint.get("valid_mean", None).detach().numpy()
-        # this valid_sigma is actually the variance so you'll need to take
-        # the sqrt of this
-        sigma_validation = np.sqrt(
-            checkpoint.get("valid_sigma", None).detach().numpy())
-        return mean_validation, sigma_validation
+        # valid_sigma is technically the variance
+        var_validation = checkpoint.get("valid_sigma", None).detach().numpy()
+        return mean_validation, var_validation
 
     def ep_al_checkpoint_DER(self, checkpoint):
         """

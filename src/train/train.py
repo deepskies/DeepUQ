@@ -679,6 +679,8 @@ def train_DE(
                             "valid_loss": loss,
                             "valid_mse": mse,
                             "valid_mean": y_pred[:, 0].flatten(),
+                            # annoying, this "valid_sigma" is technically
+                            # a variance
                             "valid_sigma": y_pred[:, 1].flatten(),
                             "x_val": x_val,
                             "y_val": y_val,
