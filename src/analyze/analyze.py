@@ -20,7 +20,9 @@ class AggregateCheckpoints:
         COEFF=0.5,
         loss="SDER",
         load_rs_chk=False,
-        rs=42
+        rs=42,
+        load_nh_chk=False,
+        nh=64,
     ):
         """
         Load PyTorch model checkpoint from a .pt file.
@@ -33,18 +35,16 @@ class AggregateCheckpoints:
         :return: Loaded model
         """
         if model_name[0:3] == "DER":
+            file_name = (
+                    str(path)
+                    + f"{model_name}_noise_{noise}_loss_{loss}"
+                    + f"_COEFF_{COEFF}_epoch_{epoch}"
+                    )
             if load_rs_chk:
-                file_name = (
-                    str(path)
-                    + f"{model_name}_noise_{noise}_loss_{loss}"
-                    + f"_COEFF_{COEFF}_epoch_{epoch}_rs_{rs}.pt"
-                )
-            else:
-                file_name = (
-                    str(path)
-                    + f"{model_name}_noise_{noise}_loss_{loss}"
-                    + f"_COEFF_{COEFF}_epoch_{epoch}.pt"
-                )
+                file_name += (f"_rs_{rs}")
+            if load_nh_chk:
+                file_name += (f"_n_hidden_{nh}")
+            file_name += ".pt"
             checkpoint = torch.load(file_name, map_location=device)
         elif model_name[0:2] == "DE":
             file_name = (
