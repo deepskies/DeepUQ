@@ -115,7 +115,7 @@ def model_setup_DE(loss_type, DEVICE):
         # model = de_var().to(DEVICE)
         Layer = MuVarLayer
         lossFn = loss_bnll
-    model = torch.nn.Sequential(Model(2), Layer())
+    model = torch.nn.Sequential(Model(2, 64), Layer())
     model = model.to(DEVICE)
     return model, lossFn
 

@@ -316,7 +316,8 @@ if __name__ == "__main__":
                                  "model_type",
                                  "DE") + "_noise_" + noise
     model, lossFn = models.model_setup_DE(
-        config.get_item("model", "loss_type", "DE"), DEVICE
+        config.get_item("model", "loss_type", "DE"),
+        DEVICE,
     )
     print(
         "save final checkpoint has this value",

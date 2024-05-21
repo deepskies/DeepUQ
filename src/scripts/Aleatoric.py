@@ -187,16 +187,7 @@ if __name__ == "__main__":
     chk_module = AggregateCheckpoints()
     # make an empty nested dictionary with keys for
     # model names followed by noise levels
-    ep_dict = {
-        model_name: {noise: [] for noise in noise_list}
-        for model_name in model_name_list
-    }
     al_dict = {
-        model_name: {noise: [] for noise in noise_list}
-        for model_name in model_name_list
-    }
-
-    ep_std_dict = {
         model_name: {noise: [] for noise in noise_list}
         for model_name in model_name_list
     }
@@ -225,12 +216,10 @@ if __name__ == "__main__":
                     epistemic_m, aleatoric_m, e_std, a_std = (
                         chk_module.ep_al_checkpoint_DER(chk)
                     )
-                    ep_dict[model][noise].append(epistemic_m)
                     al_dict[model][noise].append(aleatoric_m)
-                    ep_std_dict[model][noise].append(e_std)
                     al_std_dict[model][noise].append(a_std)
 
-            elif model[0:3] == "DE_":
+            else:
                 n_models = config.get_item("model", "n_models", "DE")
                 for epoch in range(n_epochs):
                     list_mus = []
@@ -248,11 +237,7 @@ if __name__ == "__main__":
                         mu_vals, var_vals = chk_module.ep_al_checkpoint_DE(chk)
                         list_mus.append(mu_vals)
                         list_vars.append(var_vals)
-                    ep_dict[model][noise].append(np.median(np.std(list_mus,
-                                                                  axis=0)))
                     al_dict[model][noise].append(np.median(np.mean(list_vars,
-                                                                   axis=0)))
-                    ep_std_dict[model][noise].append(np.std(np.std(list_mus,
                                                                    axis=0)))
                     al_std_dict[model][noise].append(np.std(np.mean(list_vars,
                                                                     axis=0)))

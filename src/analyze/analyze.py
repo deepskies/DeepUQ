@@ -45,14 +45,13 @@ class AggregateCheckpoints:
             if load_nh_chk:
                 file_name += (f"_n_hidden_{nh}")
             file_name += ".pt"
-            checkpoint = torch.load(file_name, map_location=device)
         elif model_name[0:2] == "DE":
             file_name = (
                 str(path)
                 + f"{model_name}_noise_{noise}_beta_{BETA}_"
                   f"nmodel_{nmodel}_epoch_{epoch}.pt"
             )
-            checkpoint = torch.load(file_name, map_location=device)
+        checkpoint = torch.load(file_name, map_location=device)
         return checkpoint
 
     def ep_al_checkpoint_DE(self, checkpoint):
