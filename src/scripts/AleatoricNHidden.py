@@ -234,7 +234,7 @@ if __name__ == "__main__":
                 n_models = config.get_item("model", "n_models", "DE")
                 for epoch in range(n_epochs):
                     list_mus = []
-                    list_sigs = []
+                    list_vars = []
                     for nmodels in range(n_models):
                         chk = chk_module.load_checkpoint(
                             model,
@@ -245,12 +245,12 @@ if __name__ == "__main__":
                             BETA=BETA,
                             nmodel=nmodels,
                         )
-                        mu_vals, sig_vals = chk_module.ep_al_checkpoint_DE(chk)
+                        mu_vals, var_vals = chk_module.ep_al_checkpoint_DE(chk)
                         list_mus.append(mu_vals)
-                        list_sigs.append(sig_vals)
+                        list_vars.append(var_vals)
                         try:
                             al_dict[model][noise][nmodels + 1].append(
-                                np.mean(list_sigs))
+                                np.mean(list_vars))
                         except KeyError:
                             continue
     # make a two-paneled plot for the different noise levels
@@ -265,18 +265,21 @@ if __name__ == "__main__":
         ax.set_title(model)  # Set title for each subplot
         for n, noise in enumerate(noise_list):
             for h, nh in enumerate(n_hidden_list):
-                al = np.array(np.sqrt(al_dict[model][noise][nh]))
-                '''
-                al_std = np.array(np.sqrt(al_std_dict[model][noise][rs]))
+                if model[0:3] == "DE_":
+                    al = np.array(np.sqrt(al_dict[model][noise][nh]))
+                    al_std = np.array(np.sqrt(al_std_dict[model][noise][nh]))
+                else:
+                    al = np.array(al_dict[model][noise][nh])
+                    al_std = np.array(al_std_dict[model][noise][nh])
                 ax.fill_between(
                     range(n_epochs),
                     al - al_std,
                     al + al_std,
                     color=color_list[n],
-                    alpha=0.0,
+                    alpha=0.1,
                     edgecolor=None
                 )
-                '''
+                
                 if h == 0:
                     ax.plot(
                         range(n_epochs),

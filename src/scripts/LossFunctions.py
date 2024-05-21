@@ -193,6 +193,14 @@ if __name__ == "__main__":
         model_name: {noise: [] for noise in noise_list}
         for model_name in model_name_list
     }
+    mse_loss_train = {
+        model_name: {noise: [] for noise in noise_list}
+        for model_name in model_name_list
+    }
+    loss_train = {
+        model_name: {noise: [] for noise in noise_list}
+        for model_name in model_name_list
+    }
     n_epochs = config.get_item("model", "n_epochs", "Analysis")
     n_models = config.get_item("model", "n_models", "Analysis")
     for model in model_name_list:
@@ -213,6 +221,8 @@ if __name__ == "__main__":
                     # things to grab: 'valid_mse' and 'valid_bnll'
                     mse_loss[model][noise].append(chk["valid_mse"])
                     loss[model][noise].append(chk["valid_loss"])
+                    mse_loss_train[model][noise].append(chk["train_mse"])
+                    loss_train[model][noise].append(chk["train_loss"])
             elif model[0:3] == "DE_":
                 for nmodel in range(n_models):
                     mse_loss_one_model = []
