@@ -25,8 +25,7 @@ def parse_args():
     # model
     # we need some info about the model to run this analysis
     # path to save the model results
-    parser.add_argument("--dir",
-                        default=DefaultsAnalysis["common"]["dir"])
+    parser.add_argument("--dir", default=DefaultsAnalysis["common"]["dir"])
     # now args for model
     parser.add_argument(
         "--n_models",
@@ -120,11 +119,13 @@ def parse_args():
         # check if args were specified in cli
         input_yaml = {
             "common": {"dir": args.dir},
-            "model": {"n_models": args.n_models,
-                      "n_epochs": args.n_epochs,
-                      "BETA": args.BETA,
-                      "COEFF": args.COEFF,
-                      "loss_type": args.loss_type},
+            "model": {
+                "n_models": args.n_models,
+                "n_epochs": args.n_epochs,
+                "BETA": args.BETA,
+                "COEFF": args.COEFF,
+                "loss_type": args.loss_type,
+            },
             "analysis": {
                 "noise_level_list": args.noise_level_list,
                 "model_names_list": args.model_names_list,
@@ -175,13 +176,12 @@ if __name__ == "__main__":
     path_to_out = root_dir + "analysis/"
     # check that this exists and if not make it
     if not os.path.isdir(path_to_out):
-        print('does not exist, making dir', path_to_out)
+        print("does not exist, making dir", path_to_out)
         os.mkdir(path_to_out)
     else:
-        print('already exists', path_to_out)
-    model_name_list = config.get_item("analysis",
-                                      "model_names_list",
-                                      "Analysis")
+        print("already exists", path_to_out)
+    model_name_list = config.get_item(
+        "analysis", "model_names_list", "Analysis")
     print("model list", model_name_list)
     print("noise list", noise_list)
     chk_module = AggregateCheckpoints()
@@ -209,7 +209,7 @@ if __name__ == "__main__":
                         DEVICE,
                         path=path_to_chk,
                         COEFF=COEFF,
-                        loss=loss_type
+                        loss=loss_type,
                     )
                     # path=path_to_chk)
                     # things to grab: 'valid_mse' and 'valid_bnll'
@@ -237,18 +237,18 @@ if __name__ == "__main__":
                         mu_vals, var_vals = chk_module.ep_al_checkpoint_DE(chk)
                         list_mus.append(mu_vals)
                         list_vars.append(var_vals)
-                    al_dict[model][noise].append(np.median(np.mean(list_vars,
-                                                                   axis=0)))
-                    al_std_dict[model][noise].append(np.std(np.mean(list_vars,
-                                                                    axis=0)))
+                    al_dict[model][noise].append(
+                        np.median(np.mean(list_vars, axis=0)))
+                    al_std_dict[model][noise].append(
+                        np.std(np.mean(list_vars, axis=0)))
     # make a two-paneled plot for the different noise levels
     # make one panel per model
     # for the noise levels:
     plt.clf()
     fig = plt.figure(figsize=(10, 4))
-    #ax = fig.add_subplot(111)
+    # ax = fig.add_subplot(111)
     # try this instead with a fill_between method
-    sym_list = ['^', '*']
+    sym_list = ["^", "*"]
     for m, model in enumerate(model_name_list):
         ax = fig.add_subplot(1, len(model_name_list), m + 1)
         # Your plotting code for each model here
@@ -262,20 +262,24 @@ if __name__ == "__main__":
                 al = np.array(al_dict[model][noise])
                 al_std = np.array(al_std_dict[model][noise])
             # summarize the aleatoric
-            ax.errorbar(sigma_list[i],
-                        al[-1],
-                        yerr=al_std[-1],
-                        color=color_list[i],
-                        capsize=5)
-            ax.scatter(sigma_list[i],
-                       al[-1],
-                       color=color_list[i],
-                       label=r"$\sigma = $" + str(sigma_list[i]))
+            ax.errorbar(
+                sigma_list[i],
+                al[-1],
+                yerr=al_std[-1],
+                color=color_list[i],
+                capsize=5
+            )
+            ax.scatter(
+                sigma_list[i],
+                al[-1],
+                color=color_list[i],
+                label=r"$\sigma = $" + str(sigma_list[i]),
+            )
         ax.set_ylabel("Aleatoric Uncertainty")
         ax.set_xlabel("True (Injected) Uncertainty")
-        ax.plot(range(0, 14), range(0, 14), ls='--', color='black')
-        ax.set_ylim([0,14])
-        ax.set_xlim([0,14])
+        ax.plot(range(0, 14), range(0, 14), ls="--", color="black")
+        ax.set_ylim([0, 14])
+        ax.set_xlim([0, 14])
         if model[0:3] == "DER":
             ax.set_title("Deep Evidential Regression")
         elif model[0:2] == "DE":
@@ -283,12 +287,12 @@ if __name__ == "__main__":
     plt.legend()
     if config.get_item("analysis", "savefig", "Analysis"):
         plt.savefig(
-                str(path_to_out)
-                + "parity_plot_uncertainty_"
-                + str(n_epochs)
-                + "_n_models_DE_"
-                + str(n_models)
-                + ".png"
-            )
+            str(path_to_out)
+            + "parity_plot_uncertainty_"
+            + str(n_epochs)
+            + "_n_models_DE_"
+            + str(n_models)
+            + ".png"
+        )
     if config.get_item("analysis", "plot", "Analysis"):
         plt.show()
