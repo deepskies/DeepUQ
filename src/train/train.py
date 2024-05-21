@@ -91,6 +91,7 @@ def train_DER(
         print("model is", model, "lossfn", lossFn)
 
     opt = torch.optim.Adam(model.parameters(), lr=INIT_LR)
+    mse_loss = torch.nn.MSELoss(reduction="mean")
 
     # loop over our epochs
     for e in range(0, EPOCHS):
@@ -109,6 +110,7 @@ def train_DER(
         if verbose:
             print("epoch", epoch, round(e / EPOCHS, 2))
         loss_this_epoch = []
+        mse_this_epoch = []
         # randomly shuffles the training data (if shuffle = True)
         # and draws batches up to the total training size
         # (should be about 8 batches)
@@ -143,7 +145,9 @@ def train_DER(
                                 color="grey")
                 """
             loss_this_epoch.append(loss[0].item())
-
+            mse_this_epoch.append(
+                mse_loss(pred[:, 0], y).item()
+            )
             # zero out the gradients
             opt.zero_grad()
             # perform the backpropagation step
@@ -163,7 +167,6 @@ def train_DER(
         std_u_ep_val = np.std(loss[2])
 
         # lets also grab mse loss
-        mse_loss = torch.nn.MSELoss(reduction="mean")
         mse = mse_loss(y_pred[:, 0], torch.Tensor(y_val)).item()
         if NIGloss_val < best_loss:
             best_loss = NIGloss_val
@@ -283,6 +286,7 @@ def train_DER(
                     "optimizer_state_dict": opt.state_dict(),
                     "train_loss": np.mean(loss_this_epoch),
                     "valid_loss": NIGloss_val,
+                    "train_mse": np.mean(mse_this_epoch),
                     "valid_mse": mse,
                     "med_u_al_validation": med_u_al_val,
                     "med_u_ep_validation": med_u_ep_val,
@@ -320,6 +324,7 @@ def train_DER(
                         "optimizer_state_dict": opt.state_dict(),
                         "train_loss": np.mean(loss_this_epoch),
                         "valid_loss": NIGloss_val,
+                        "train_mse": np.mean(mse_this_epoch),
                         "valid_mse": mse,
                         "med_u_al_validation": med_u_al_val,
                         "med_u_ep_validation": med_u_ep_val,
@@ -361,6 +366,7 @@ def train_DE(
         print("starting here", start_epoch)
 
     loss_all_epochs = []  # this is from the training set
+    mse_all_epochs = []
     loss_validation = []
     final_mse = []
 
@@ -416,6 +422,7 @@ def train_DE(
         # initialize the model again each time from scratch
         model, lossFn = models.model_setup_DE(loss_type, DEVICE)
         opt = torch.optim.Adam(model.parameters(), lr=INIT_LR)
+        mse_loss = torch.nn.MSELoss(reduction="mean")
 
         # loop over our epochs
         for e in range(0, EPOCHS):
@@ -430,6 +437,7 @@ def train_DE(
                 print("epoch", epoch, round(e / EPOCHS, 2))
 
             loss_this_epoch = []
+            mse_this_epoch = []
             if plot or savefig:
                 plt.clf()
                 fig, (ax1, ax2) = plt.subplots(
@@ -487,6 +495,8 @@ def train_DE(
                         y,
                         beta=beta_epoch
                     )
+                    mse = mse_loss(pred[:, 0],
+                                   y)
                 if plot or savefig:
                     if (e % (EPOCHS - 1) == 0) and (e != 0):
                         if loss_type == "no_var_loss":
@@ -515,6 +525,7 @@ def train_DE(
                                 )
 
                 loss_this_epoch.append(loss.item())
+                mse_this_epoch.append(mse.item())
 
                 # zero out the gradients
                 opt.zero_grad()
@@ -528,6 +539,7 @@ def train_DE(
                 # here, its taking a step for every batch
                 opt.step()
             loss_all_epochs.append(loss_this_epoch)
+            mse_all_epochs.append(mse_this_epoch)
             # print('training loss', np.mean(loss_this_epoch))
 
             # this code from Rohan:
@@ -551,7 +563,6 @@ def train_DE(
                     beta=beta_epoch,
                 ).item()
             loss_validation.append(loss)
-            mse_loss = torch.nn.MSELoss(reduction="mean")
             mse = mse_loss(y_pred[:, 0], torch.Tensor(y_val)).item()
             if loss < best_loss:
                 best_loss = loss
@@ -668,107 +679,56 @@ def train_DE(
                 plt.close()
 
             if save_all_checkpoints:
+                filename = str(path_to_model) + 'checkpoints/' + \
+                    str(model_name)
                 if loss_type == "bnll_loss":
-                    torch.save(
-                        {
-                            "epoch": epoch,
-                            "model_state_dict": model.state_dict(),
-                            "optimizer_state_dict": opt.state_dict(),
-                            "train_loss": np.mean(loss_this_epoch),
-                            "valid_loss": loss,
-                            "valid_mse": mse,
-                            "valid_mean": y_pred[:, 0].flatten(),
-                            # annoying, this "valid_sigma" is technically
-                            # a variance
-                            "valid_sigma": y_pred[:, 1].flatten(),
-                            "x_val": x_val,
-                            "y_val": y_val,
-                        },
-                        str(path_to_model)
-                        + 'checkpoints/'
-                        + str(model_name)
-                        + "_beta_"
-                        + str(BETA)
-                        + "_nmodel_"
-                        + str(m)
-                        + "_epoch_"
-                        + str(epoch)
-                        + ".pt",
-                    )
-                else:
-                    torch.save(
-                        {
-                            "epoch": epoch,
-                            "model_state_dict": model.state_dict(),
-                            "optimizer_state_dict": opt.state_dict(),
-                            "train_loss": np.mean(loss_this_epoch),
-                            "valid_loss": loss,
-                            "valid_mse": mse,
-                            "valid_mean": y_pred[:, 0].flatten(),
-                            "valid_sigma": y_pred[:, 1].flatten(),
-                            "x_val": x_val,
-                            "y_val": y_val,
-                        },
-                        str(path_to_model)
-                        + "checkpoints/"
-                        + str(model_name)
-                        + "_nmodel_"
-                        + str(m)
-                        + "_epoch_"
-                        + str(epoch)
-                        + ".pt",
-                    )
+                    filename += "_beta_" + str(BETA)
+                filename += "_nmodel_" + str(m) + "_epoch_" + str(epoch)
+                filename += ".pt"
+                torch.save(
+                    {
+                        "epoch": epoch,
+                        "model_state_dict": model.state_dict(),
+                        "optimizer_state_dict": opt.state_dict(),
+                        "train_loss": np.mean(loss_this_epoch),
+                        "valid_loss": loss,
+                        "train_mse": np.mean(mse_this_epoch),
+                        "valid_mse": mse,
+                        "valid_mean": y_pred[:, 0].flatten(),
+                        # annoying, this "valid_sigma" is technically
+                        # a variance
+                        "valid_sigma": y_pred[:, 1].flatten(),
+                        "x_val": x_val,
+                        "y_val": y_val,
+                    },
+                    filename
+                )
             if save_final_checkpoint and (e % (EPOCHS - 1) == 0) and (e != 0):
                 # option to just save final epoch
+                filename = str(path_to_model) + 'checkpoints/' + \
+                    str(model_name)
                 if loss_type == "bnll_loss":
-                    torch.save(
-                        {
-                            "epoch": epoch,
-                            "model_state_dict": model.state_dict(),
-                            "optimizer_state_dict": opt.state_dict(),
-                            "train_loss": np.mean(loss_this_epoch),
-                            "valid_loss": loss,
-                            "valid_mse": mse,
-                            "valid_mean": y_pred[:, 0].flatten(),
-                            "valid_sigma": y_pred[:, 1].flatten(),
-                            "x_val": x_val,
-                            "y_val": y_val,
-                        },
-                        str(path_to_model)
-                        + "checkpoints/"
-                        + str(model_name)
-                        + "_beta_"
-                        + str(BETA)
-                        + "_nmodel_"
-                        + str(m)
-                        + "_epoch_"
-                        + str(epoch)
-                        + ".pt",
-                    )
-                else:
-                    torch.save(
-                        {
-                            "epoch": epoch,
-                            "model_state_dict": model.state_dict(),
-                            "optimizer_state_dict": opt.state_dict(),
-                            "train_loss": np.mean(loss_this_epoch),
-                            "valid_loss": loss,
-                            "valid_mse": mse,
-                            "valid_mean": y_pred[:, 0].flatten(),
-                            "valid_sigma": y_pred[:, 1].flatten(),
-                            "x_val": x_val,
-                            "y_val": y_val,
-                        },
-                        str(path_to_model)
-                        + "checkpoints/"
-                        + str(model_name)
-                        + "_nmodel_"
-                        + str(m)
-                        + "_epoch_"
-                        + str(epoch)
-                        + ".pt",
-                    )
-
+                    filename += "_beta_" + str(BETA)
+                filename += "_nmodel_" + str(m) + "_epoch_" + str(epoch)
+                filename += ".pt"
+                torch.save(
+                    {
+                        "epoch": epoch,
+                        "model_state_dict": model.state_dict(),
+                        "optimizer_state_dict": opt.state_dict(),
+                        "train_loss": np.mean(loss_this_epoch),
+                        "valid_loss": loss,
+                        "train_mse": np.mean(mse_this_epoch),
+                        "valid_mse": mse,
+                        "valid_mean": y_pred[:, 0].flatten(),
+                        # annoying, this "valid_sigma" is technically
+                        # a variance
+                        "valid_sigma": y_pred[:, 1].flatten(),
+                        "x_val": x_val,
+                        "y_val": y_val,
+                    },
+                    filename
+                )
         model_ensemble.append(model)
         final_mse.append(mse)
 
