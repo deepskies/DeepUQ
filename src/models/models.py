@@ -67,9 +67,7 @@ class SDERLayer(nn.Module):
         return torch.stack((gamma, nu, alpha, beta), dim=1)
 
 
-def model_setup_DER(loss_type,
-                    DEVICE,
-                    n_hidden):
+def model_setup_DER(loss_type, DEVICE, n_hidden):
     # initialize the model from scratch
     if loss_type == "SDER":
         Layer = SDERLayer
@@ -82,8 +80,7 @@ def model_setup_DER(loss_type,
 
     # from https://github.com/pasteurlabs/unreasonable_effective_der
     # /blob/main/x3_indepth.ipynb
-    model = torch.nn.Sequential(Model(4, n_hidden),
-                                Layer())
+    model = torch.nn.Sequential(Model(4, n_hidden), Layer())
     model = model.to(DEVICE)
     return model, lossFn
 
@@ -118,7 +115,6 @@ def model_setup_DE(loss_type, DEVICE):
     model = torch.nn.Sequential(Model(2, 64), Layer())
     model = model.to(DEVICE)
     return model, lossFn
-
 
 
 # This following is from PasteurLabs -
@@ -174,14 +170,13 @@ def loss_sder(y, y_pred, coeff):
 
     # define aleatoric and epistemic uncert
     u_al = np.sqrt(
-        (beta.detach().numpy()
-         * (1 + nu.detach().numpy()))
+        (beta.detach().numpy() * (1 + nu.detach().numpy()))
         / (alpha.detach().numpy() * nu.detach().numpy())
     )
     u_ep = 1 / np.sqrt(nu.detach().numpy())
 
-    return torch.mean(torch.log(var) + (1.0 + coeff * nu) * error**2 / var), \
-        u_al, u_ep
+    return torch.mean(torch.log(var) +
+                      (1.0 + coeff * nu) * error**2 / var), u_al, u_ep
 
 
 # from martius lab

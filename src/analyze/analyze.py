@@ -1,6 +1,5 @@
 # Contains modules to analyze the output checkpoints
 # from a trained model and make plots for the paper
-import numpy as np
 import torch
 
 
@@ -36,20 +35,19 @@ class AggregateCheckpoints:
         """
         if model_name[0:3] == "DER":
             file_name = (
-                    str(path)
-                    + f"{model_name}_noise_{noise}_loss_{loss}"
-                    + f"_COEFF_{COEFF}_epoch_{epoch}"
-                    )
+                str(path)
+                + f"{model_name}_noise_{noise}_loss_{loss}"
+                + f"_COEFF_{COEFF}_epoch_{epoch}"
+            )
             if load_rs_chk:
-                file_name += (f"_rs_{rs}")
+                file_name += f"_rs_{rs}"
             if load_nh_chk:
-                file_name += (f"_n_hidden_{nh}")
+                file_name += f"_n_hidden_{nh}"
             file_name += ".pt"
         elif model_name[0:2] == "DE":
             file_name = (
-                str(path)
-                + f"{model_name}_noise_{noise}_beta_{BETA}_"
-                  f"nmodel_{nmodel}_epoch_{epoch}.pt"
+                str(path) + f"{model_name}_noise_{noise}_beta_{BETA}_"
+                f"nmodel_{nmodel}_epoch_{epoch}.pt"
             )
         checkpoint = torch.load(file_name, map_location=device)
         return checkpoint

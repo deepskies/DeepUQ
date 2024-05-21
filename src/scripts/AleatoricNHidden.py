@@ -13,7 +13,8 @@ from analyze.analyze import AggregateCheckpoints
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Analyzes the aleatoric uncertainty when the model \
-        architecture is jittered")
+        architecture is jittered"
+    )
     # there are three options with the parser:
     # 1) Read from a yaml
     # 2) Reads from the command line and default file
@@ -25,8 +26,7 @@ def parse_args():
     # model
     # we need some info about the model to run this analysis
     # path to save the model results
-    parser.add_argument("--dir",
-                        default=DefaultsAnalysis["common"]["dir"])
+    parser.add_argument("--dir", default=DefaultsAnalysis["common"]["dir"])
     # now args for model
     parser.add_argument(
         "--n_models",
@@ -120,11 +120,13 @@ def parse_args():
         # check if args were specified in cli
         input_yaml = {
             "common": {"dir": args.dir},
-            "model": {"n_models": args.n_models,
-                      "n_epochs": args.n_epochs,
-                      "BETA": args.BETA,
-                      "COEFF": args.COEFF,
-                      "loss_type": args.loss_type},
+            "model": {
+                "n_models": args.n_models,
+                "n_epochs": args.n_epochs,
+                "BETA": args.BETA,
+                "COEFF": args.COEFF,
+                "loss_type": args.loss_type,
+            },
             "analysis": {
                 "noise_level_list": args.noise_level_list,
                 "model_names_list": args.model_names_list,
@@ -178,10 +180,10 @@ if __name__ == "__main__":
     rs = 1
     # check that this exists and if not make it
     if not os.path.isdir(path_to_out):
-        print('does not exist, making dir', path_to_out)
+        print("does not exist, making dir", path_to_out)
         os.mkdir(path_to_out)
     else:
-        print('already exists', path_to_out)
+        print("already exists", path_to_out)
     model_name_list = config.get_item("analysis",
                                       "model_names_list",
                                       "Analysis")
@@ -220,7 +222,7 @@ if __name__ == "__main__":
                             load_rs_chk=True,
                             rs=rs,
                             load_nh_chk=True,
-                            nh=nh
+                            nh=nh,
                         )
                         # path=path_to_chk)
                         # things to grab: 'valid_mse' and 'valid_bnll'
@@ -250,7 +252,8 @@ if __name__ == "__main__":
                         list_vars.append(var_vals)
                         try:
                             al_dict[model][noise][nmodels + 1].append(
-                                np.mean(list_vars))
+                                np.mean(list_vars)
+                            )
                         except KeyError:
                             continue
     # make a two-paneled plot for the different noise levels
@@ -277,9 +280,9 @@ if __name__ == "__main__":
                     al + al_std,
                     color=color_list[n],
                     alpha=0.1,
-                    edgecolor=None
+                    edgecolor=None,
                 )
-                
+
                 if h == 0:
                     ax.plot(
                         range(n_epochs),
@@ -288,11 +291,8 @@ if __name__ == "__main__":
                         label=r"$\sigma = $" + str(sigma_list[n]),
                     )
                 else:
-                    ax.plot(
-                        range(n_epochs),
-                        al,
-                        color=color_list[n])
-            ax.axhline(y=sigma_list[n], color=color_list[n], ls='--')
+                    ax.plot(range(n_epochs), al, color=color_list[n])
+            ax.axhline(y=sigma_list[n], color=color_list[n], ls="--")
         ax.set_ylabel("Aleatoric Uncertainty")
         ax.set_xlabel("Epoch")
         if model[0:3] == "DER":
@@ -303,12 +303,12 @@ if __name__ == "__main__":
     plt.legend()
     if config.get_item("analysis", "savefig", "Analysis"):
         plt.savefig(
-                str(path_to_out)
-                + "aleatoric_uncertainty_n_epochs_"
-                + str(n_epochs)
-                + "_n_models_DE_"
-                + str(n_models)
-                + ".png"
-            )
+            str(path_to_out)
+            + "aleatoric_uncertainty_n_epochs_"
+            + str(n_epochs)
+            + "_n_models_DE_"
+            + str(n_models)
+            + ".png"
+        )
     if config.get_item("analysis", "plot", "Analysis"):
         plt.show()

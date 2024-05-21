@@ -35,7 +35,6 @@ def train_DER(
     save_n_hidden=False,
     n_hidden=64,
     verbose=True,
-    
 ):
     # first determine if you even need to run anything
     if not save_all_checkpoints and save_final_checkpoint:
