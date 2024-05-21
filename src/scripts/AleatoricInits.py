@@ -23,8 +23,7 @@ def parse_args():
     # model
     # we need some info about the model to run this analysis
     # path to save the model results
-    parser.add_argument("--dir",
-                        default=DefaultsAnalysis["common"]["dir"])
+    parser.add_argument("--dir", default=DefaultsAnalysis["common"]["dir"])
     # now args for model
     parser.add_argument(
         "--n_models",
@@ -118,11 +117,13 @@ def parse_args():
         # check if args were specified in cli
         input_yaml = {
             "common": {"dir": args.dir},
-            "model": {"n_models": args.n_models,
-                      "n_epochs": args.n_epochs,
-                      "BETA": args.BETA,
-                      "COEFF": args.COEFF,
-                      "loss_type": args.loss_type},
+            "model": {
+                "n_models": args.n_models,
+                "n_epochs": args.n_epochs,
+                "BETA": args.BETA,
+                "COEFF": args.COEFF,
+                "loss_type": args.loss_type,
+            },
             "analysis": {
                 "noise_level_list": args.noise_level_list,
                 "model_names_list": args.model_names_list,
@@ -175,10 +176,10 @@ if __name__ == "__main__":
     rs_list = [1, 2, 3, 4, 5]
     # check that this exists and if not make it
     if not os.path.isdir(path_to_out):
-        print('does not exist, making dir', path_to_out)
+        print("does not exist, making dir", path_to_out)
         os.mkdir(path_to_out)
     else:
-        print('already exists', path_to_out)
+        print("already exists", path_to_out)
     model_name_list = config.get_item("analysis",
                                       "model_names_list",
                                       "Analysis")
@@ -188,13 +189,11 @@ if __name__ == "__main__":
     # make an empty nested dictionary with keys for
     # model names followed by noise levels
     al_dict = {
-        model_name: {noise: {rs: [] for rs in rs_list}
-                     for noise in noise_list}
+        model_name: {noise: {rs: [] for rs in rs_list} for noise in noise_list}
         for model_name in model_name_list
     }
     al_std_dict = {
-        model_name: {noise: {rs: [] for rs in rs_list}
-                     for noise in noise_list}
+        model_name: {noise: {rs: [] for rs in rs_list} for noise in noise_list}
         for model_name in model_name_list
     }
     n_epochs = config.get_item("model", "n_epochs", "Analysis")
@@ -215,13 +214,13 @@ if __name__ == "__main__":
                             COEFF=COEFF,
                             loss=loss_type,
                             load_rs_chk=True,
-                            rs=rs
+                            rs=rs,
+                            load_nh_chk=False,
                         )
                         # path=path_to_chk)
                         # things to grab: 'valid_mse' and 'valid_bnll'
-                        epistemic_m, aleatoric_m, e_std, a_std = (
+                        _, aleatoric_m, _, a_std = \
                             chk_module.ep_al_checkpoint_DER(chk)
-                        )
                         al_dict[model][noise][rs].append(aleatoric_m)
                         al_std_dict[model][noise][rs].append(a_std)
 
@@ -229,7 +228,7 @@ if __name__ == "__main__":
                 n_models = config.get_item("model", "n_models", "DE")
                 for epoch in range(n_epochs):
                     list_mus = []
-                    list_sigs = []
+                    list_vars = []
                     for nmodels in range(n_models):
                         chk = chk_module.load_checkpoint(
                             model,
@@ -240,12 +239,13 @@ if __name__ == "__main__":
                             BETA=BETA,
                             nmodel=nmodels,
                         )
-                        mu_vals, sig_vals = chk_module.ep_al_checkpoint_DE(chk)
+                        mu_vals, var_vals = chk_module.ep_al_checkpoint_DE(chk)
                         list_mus.append(mu_vals)
-                        list_sigs.append(sig_vals)
+                        list_vars.append(var_vals)
                         try:
                             al_dict[model][noise][nmodels + 1].append(
-                                np.mean(list_sigs))
+                                np.mean(list_vars)
+                            )
                         except KeyError:
                             continue
     # make a two-paneled plot for the different noise levels
@@ -260,18 +260,25 @@ if __name__ == "__main__":
         ax.set_title(model)  # Set title for each subplot
         for n, noise in enumerate(noise_list):
             for r, rs in enumerate(rs_list):
-                al = np.array(np.sqrt(al_dict[model][noise][rs]))
-                '''
-                al_std = np.array(np.sqrt(al_std_dict[model][noise][rs]))
-                ax.fill_between(
-                    range(n_epochs),
-                    al - al_std,
-                    al + al_std,
-                    color=color_list[n],
-                    alpha=0.0,
-                    edgecolor=None
-                )
-                '''
+                if model[0:3] == "DE_":
+                    al = np.array(np.sqrt(al_dict[model][noise][rs]))
+                else:
+                    al = np.array(al_dict[model][noise][rs])
+                """
+                # it doesn't really make sense to plot the std for the
+                # case of the DE because each individual model
+                # makes up one in the ensemble
+                """
+                if model[0:3] == "DER":
+                    al_std = np.array(al_std_dict[model][noise][rs])
+                    ax.fill_between(
+                        range(n_epochs),
+                        al - al_std,
+                        al + al_std,
+                        color=color_list[n],
+                        alpha=0.1,
+                        edgecolor=None,
+                    )
                 if r == 0:
                     ax.plot(
                         range(n_epochs),
@@ -280,27 +287,24 @@ if __name__ == "__main__":
                         label=r"$\sigma = $" + str(sigma_list[n]),
                     )
                 else:
-                    ax.plot(
-                        range(n_epochs),
-                        al,
-                        color=color_list[n])
-            ax.axhline(y=sigma_list[n], color=color_list[n], ls='--')
+                    ax.plot(range(n_epochs), al, color=color_list[n])
+            ax.axhline(y=sigma_list[n], color=color_list[n], ls="--")
         ax.set_ylabel("Aleatoric Uncertainty")
         ax.set_xlabel("Epoch")
         if model[0:3] == "DER":
             ax.set_title("Deep Evidential Regression")
         elif model[0:2] == "DE":
             ax.set_title("Deep Ensemble (100 models)")
-        ax.set_ylim([0, 6])
+        ax.set_ylim([0, 13])
     plt.legend()
     if config.get_item("analysis", "savefig", "Analysis"):
         plt.savefig(
-                str(path_to_out)
-                + "aleatoric_uncertainty_n_epochs_"
-                + str(n_epochs)
-                + "_n_models_DE_"
-                + str(n_models)
-                + ".png"
-            )
+            str(path_to_out)
+            + "aleatoric_uncertainty_n_epochs_"
+            + str(n_epochs)
+            + "_n_models_DE_"
+            + str(n_models)
+            + ".png"
+        )
     if config.get_item("analysis", "plot", "Analysis"):
         plt.show()

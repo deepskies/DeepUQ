@@ -71,6 +71,8 @@ DefaultsDER = {
         "savefig": False,
         "save_chk_random_seed_init": False,
         "rs": 42,
+        "save_n_hidden": False,
+        "n_hidden": 64,
         "verbose": False,
     },
     "plots_common": {
@@ -101,6 +103,9 @@ DefaultsAnalysis = {
     "analysis": {
         "noise_level_list": ["low", "medium", "high"],
         "model_names_list": ["DER_wst", "DE_desiderata_2"],
+        # ["DER_wst", "DE_desiderata_2"],
+        # for architecture: ["DER"], #, "DE_desiderata_2"],
+        # for the inits changed to "DER_wst"
         # ["DER_desiderata_2", "DE_desiderata_2"]
         "plot": True,
         "savefig": False,

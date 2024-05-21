@@ -267,8 +267,12 @@ if __name__ == "__main__":
         # Your plotting code for each model here
         ax.set_title(model)  # Set title for each subplot
         for i, noise in enumerate(noise_list):
-            al = np.array(np.sqrt(al_dict[model][noise]))
-            al_std = np.array(np.sqrt(al_std_dict[model][noise]))
+            if model[0:3] == "DE_":
+                al = np.array(np.sqrt(al_dict[model][noise]))
+                al_std = np.array(np.sqrt(al_std_dict[model][noise]))
+            else:
+                al = np.array(al_dict[model][noise])
+                al_std = np.array(al_std_dict[model][noise])
             ep = np.array(ep_dict[model][noise])
             ep_std = np.array(ep_std_dict[model][noise])
             total = np.sqrt(al**2 + ep**2)
@@ -287,14 +291,14 @@ if __name__ == "__main__":
                 color=color_list[i],
                 label=r"$\sigma = $" + str(sigma_list[i]),
             )
-            ax.axhline(y=sigma_list[i], color=color_list[i])
+            ax.axhline(y=sigma_list[i], color=color_list[i], ls='--')
         ax.set_ylabel("Total Uncertainty")
         ax.set_xlabel("Epoch")
         if model[0:3] == "DER":
             ax.set_title("Deep Evidential Regression")
         elif model[0:2] == "DE":
             ax.set_title("Deep Ensemble (100 models)")
-        # ax.set_ylim([-1, 15])
+        ax.set_ylim([0, 15])
     plt.legend()
     if config.get_item("analysis", "savefig", "Analysis"):
         plt.savefig(

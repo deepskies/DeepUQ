@@ -1,18 +1,20 @@
 import os
 import yaml
 import argparse
+import numpy as np
 import torch
 import matplotlib.pyplot as plt
-from data.data import DataPreparation
 from utils.config import Config
 from utils.defaults import DefaultsAnalysis
+from data.data import DataPreparation
 from analyze.analyze import AggregateCheckpoints
-
-# from plots import Plots
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="data handling module")
+    parser = argparse.ArgumentParser(
+        description="Analyzes the aleatoric uncertainty when the model \
+        architecture is jittered"
+    )
     # there are three options with the parser:
     # 1) Read from a yaml
     # 2) Reads from the command line and default file
@@ -173,6 +175,9 @@ if __name__ == "__main__":
     root_dir = config.get_item("common", "dir", "Analysis")
     path_to_chk = root_dir + "checkpoints/"
     path_to_out = root_dir + "analysis/"
+    # this needs to be redone
+    n_hidden_list = [64, 54, 44, 34, 24]
+    rs = 1
     # check that this exists and if not make it
     if not os.path.isdir(path_to_out):
         print("does not exist, making dir", path_to_out)
@@ -185,48 +190,26 @@ if __name__ == "__main__":
     print("model list", model_name_list)
     print("noise list", noise_list)
     chk_module = AggregateCheckpoints()
-    mse_loss = {
-        model_name: {noise: [] for noise in noise_list}
+    # make an empty nested dictionary with keys for
+    # model names followed by noise levels
+    al_dict = {
+        model_name: {noise: {nh: [] for nh in n_hidden_list}
+                     for noise in noise_list}
         for model_name in model_name_list
     }
-    loss = {
-        model_name: {noise: [] for noise in noise_list}
-        for model_name in model_name_list
-    }
-    mse_loss_train = {
-        model_name: {noise: [] for noise in noise_list}
-        for model_name in model_name_list
-    }
-    loss_train = {
-        model_name: {noise: [] for noise in noise_list}
+    al_std_dict = {
+        model_name: {noise: {nh: [] for nh in n_hidden_list}
+                     for noise in noise_list}
         for model_name in model_name_list
     }
     n_epochs = config.get_item("model", "n_epochs", "Analysis")
-    n_models = config.get_item("model", "n_models", "Analysis")
     for model in model_name_list:
         for noise in noise_list:
-            # now run the analysis on the resulting checkpoints
-            if model[0:3] == "DER":
-                for epoch in range(n_epochs):
-                    chk = chk_module.load_checkpoint(
-                        model,
-                        noise,
-                        epoch,
-                        DEVICE,
-                        path=path_to_chk,
-                        COEFF=COEFF,
-                        loss=loss_type,
-                    )
-                    # path=path_to_chk)
-                    # things to grab: 'valid_mse' and 'valid_bnll'
-                    mse_loss[model][noise].append(chk["valid_mse"])
-                    loss[model][noise].append(chk["valid_loss"])
-                    mse_loss_train[model][noise].append(chk["train_mse"])
-                    loss_train[model][noise].append(chk["train_loss"])
-            elif model[0:3] == "DE_":
-                for nmodel in range(n_models):
-                    mse_loss_one_model = []
-                    loss_one_model = []
+            for nh in n_hidden_list:
+
+                # append a noise key
+                # now run the analysis on the resulting checkpoints
+                if model[0:3] == "DER":
                     for epoch in range(n_epochs):
                         chk = chk_module.load_checkpoint(
                             model,
@@ -234,14 +217,45 @@ if __name__ == "__main__":
                             epoch,
                             DEVICE,
                             path=path_to_chk,
-                            BETA=BETA,
-                            nmodel=nmodel,
+                            COEFF=COEFF,
+                            loss=loss_type,
+                            load_rs_chk=True,
+                            rs=rs,
+                            load_nh_chk=True,
+                            nh=nh,
                         )
-                        mse_loss_one_model.append(chk["valid_mse"])
-                        loss_one_model.append(chk["valid_loss"])
+                        # path=path_to_chk)
+                        # things to grab: 'valid_mse' and 'valid_bnll'
+                        epistemic_m, aleatoric_m, e_std, a_std = (
+                            chk_module.ep_al_checkpoint_DER(chk)
+                        )
+                        al_dict[model][noise][nh].append(aleatoric_m)
+                        al_std_dict[model][noise][nh].append(a_std)
 
-                    mse_loss[model][noise].append(mse_loss_one_model)
-                    loss[model][noise].append(loss_one_model)
+            if model[0:3] == "DE_":
+                n_models = config.get_item("model", "n_models", "DE")
+                for epoch in range(n_epochs):
+                    list_mus = []
+                    list_vars = []
+                    for nmodels in range(n_models):
+                        chk = chk_module.load_checkpoint(
+                            model,
+                            noise,
+                            epoch,
+                            DEVICE,
+                            path=path_to_chk,
+                            BETA=BETA,
+                            nmodel=nmodels,
+                        )
+                        mu_vals, var_vals = chk_module.ep_al_checkpoint_DE(chk)
+                        list_mus.append(mu_vals)
+                        list_vars.append(var_vals)
+                        try:
+                            al_dict[model][noise][nmodels + 1].append(
+                                np.mean(list_vars)
+                            )
+                        except KeyError:
+                            continue
     # make a two-paneled plot for the different noise levels
     # make one panel per model
     # for the noise levels:
@@ -252,76 +266,45 @@ if __name__ == "__main__":
         ax = fig.add_subplot(1, len(model_name_list), i + 1)
         # Your plotting code for each model here
         ax.set_title(model)  # Set title for each subplot
-        for i, noise in enumerate(noise_list):
-            if model[0:3] == "DER":
-                ax.plot(
+        for n, noise in enumerate(noise_list):
+            for h, nh in enumerate(n_hidden_list):
+                if model[0:3] == "DE_":
+                    al = np.array(np.sqrt(al_dict[model][noise][nh]))
+                    al_std = np.array(np.sqrt(al_std_dict[model][noise][nh]))
+                else:
+                    al = np.array(al_dict[model][noise][nh])
+                    al_std = np.array(al_std_dict[model][noise][nh])
+                ax.fill_between(
                     range(n_epochs),
-                    mse_loss[model][noise],
-                    color=color_list[i],
-                    label=r"$\sigma = $" + str(sigma_list[i]),
+                    al - al_std,
+                    al + al_std,
+                    color=color_list[n],
+                    alpha=0.1,
+                    edgecolor=None,
                 )
-            else:
-                for n in range(n_models):
+
+                if h == 0:
                     ax.plot(
                         range(n_epochs),
-                        mse_loss[model][noise][n],
-                        color=color_list[i]
+                        al,
+                        color=color_list[n],
+                        label=r"$\sigma = $" + str(sigma_list[n]),
                     )
-        ax.set_ylabel("MSE Loss")
+                else:
+                    ax.plot(range(n_epochs), al, color=color_list[n])
+            ax.axhline(y=sigma_list[n], color=color_list[n], ls="--")
+        ax.set_ylabel("Aleatoric Uncertainty")
         ax.set_xlabel("Epoch")
         if model[0:3] == "DER":
             ax.set_title("Deep Evidential Regression")
-            plt.legend()
         elif model[0:2] == "DE":
             ax.set_title("Deep Ensemble (100 models)")
-        ax.set_ylim([0, 250])
+        ax.set_ylim([0, 6])
+    plt.legend()
     if config.get_item("analysis", "savefig", "Analysis"):
         plt.savefig(
             str(path_to_out)
-            + "mse_loss_n_epochs_"
-            + str(n_epochs)
-            + "_n_models_DE_"
-            + str(n_models)
-            + ".png"
-        )
-    if config.get_item("analysis", "plot", "Analysis"):
-        plt.show()
-
-    plt.clf()
-    fig = plt.figure(figsize=(10, 4))
-    # try this instead with a fill_between method
-    for i, model in enumerate(model_name_list):
-        ax = fig.add_subplot(1, len(model_name_list), i + 1)
-        # Your plotting code for each model here
-        ax.set_title(model)  # Set title for each subplot
-        for i, noise in enumerate(noise_list):
-            if model[0:3] == "DER":
-                ax.plot(
-                    range(n_epochs),
-                    loss[model][noise],
-                    color=color_list[i],
-                    label=r"$\sigma = $" + str(sigma_list[i]),
-                )
-            else:
-                for n in range(n_models):
-                    ax.plot(
-                        range(n_epochs),
-                        loss[model][noise][n],
-                        color=color_list[i],
-                    )
-        ax.set_xlabel("Epoch")
-        if model[0:3] == "DER":
-            ax.set_title("Deep Evidential Regression")
-            ax.set_ylabel("NIG Loss")
-            plt.legend()
-        elif model[0:3] == "DE_":
-            ax.set_title("Deep Ensemble (100 models)")
-            ax.set_ylabel(r"$\beta-$NLL Loss")
-        # ax.set_ylim([0, 11])
-    if config.get_item("analysis", "savefig", "Analysis"):
-        plt.savefig(
-            str(path_to_out)
-            + "loss_n_epochs_"
+            + "aleatoric_uncertainty_n_epochs_"
             + str(n_epochs)
             + "_n_models_DE_"
             + str(n_models)

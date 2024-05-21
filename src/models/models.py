@@ -67,8 +67,7 @@ class SDERLayer(nn.Module):
         return torch.stack((gamma, nu, alpha, beta), dim=1)
 
 
-def model_setup_DER(loss_type, DEVICE):
-    print('loss type', loss_type, type(loss_type))
+def model_setup_DER(loss_type, DEVICE, n_hidden):
     # initialize the model from scratch
     if loss_type == "SDER":
         Layer = SDERLayer
@@ -81,7 +80,7 @@ def model_setup_DER(loss_type, DEVICE):
 
     # from https://github.com/pasteurlabs/unreasonable_effective_der
     # /blob/main/x3_indepth.ipynb
-    model = torch.nn.Sequential(Model(4), Layer())
+    model = torch.nn.Sequential(Model(4, n_hidden), Layer())
     model = model.to(DEVICE)
     return model, lossFn
 
@@ -113,57 +112,9 @@ def model_setup_DE(loss_type, DEVICE):
         # model = de_var().to(DEVICE)
         Layer = MuVarLayer
         lossFn = loss_bnll
-    model = torch.nn.Sequential(Model(2), Layer())
+    model = torch.nn.Sequential(Model(2, 64), Layer())
     model = model.to(DEVICE)
     return model, lossFn
-
-
-class de_no_var(nn.Module):
-    def __init__(self):
-        super().__init__()
-        drop_percent = 0.1
-        self.ln_1 = nn.Linear(3, 100)
-        self.act1 = nn.ReLU()
-        self.drop1 = nn.Dropout(drop_percent)
-        self.ln_2 = nn.Linear(100, 100)
-        self.act2 = nn.ReLU()
-        self.drop2 = nn.Dropout(drop_percent)
-        self.ln_3 = nn.Linear(100, 100)
-        self.act3 = nn.ReLU()
-        self.drop3 = nn.Dropout(drop_percent)
-        self.ln_4 = nn.Linear(100, 1)
-        # this last dim needs to be 2 if using the GaussianNLLoss
-
-    def forward(self, x):
-        x = self.drop1(self.act1(self.ln_1(x)))
-        x = self.drop2(self.act2(self.ln_2(x)))
-        x = self.drop3(self.act3(self.ln_3(x)))
-        x = self.ln_4(x)
-        return x
-
-
-class de_var(nn.Module):
-    def __init__(self):
-        super().__init__()
-        drop_percent = 0.1
-        self.ln_1 = nn.Linear(3, 100)
-        self.act1 = nn.ReLU()
-        self.drop1 = nn.Dropout(drop_percent)
-        self.ln_2 = nn.Linear(100, 100)
-        self.act2 = nn.ReLU()
-        self.drop2 = nn.Dropout(drop_percent)
-        self.ln_3 = nn.Linear(100, 100)
-        self.act3 = nn.ReLU()
-        self.drop3 = nn.Dropout(drop_percent)
-        self.ln_4 = nn.Linear(100, 2)
-        # this last dim needs to be 2 if using the GaussianNLLoss
-
-    def forward(self, x):
-        x = self.drop1(self.act1(self.ln_1(x)))
-        x = self.drop2(self.act2(self.ln_2(x)))
-        x = self.drop3(self.act3(self.ln_3(x)))
-        x = self.ln_4(x)
-        return x
 
 
 # This following is from PasteurLabs -
@@ -171,7 +122,7 @@ class de_var(nn.Module):
 
 
 class Model(nn.Module):
-    def __init__(self, n_output, n_hidden=64):
+    def __init__(self, n_output, n_hidden):
         super().__init__()
         self.model = nn.Sequential(
             nn.Linear(3, n_hidden),
@@ -219,14 +170,13 @@ def loss_sder(y, y_pred, coeff):
 
     # define aleatoric and epistemic uncert
     u_al = np.sqrt(
-        (beta.detach().numpy()
-         * (1 + nu.detach().numpy()))
+        (beta.detach().numpy() * (1 + nu.detach().numpy()))
         / (alpha.detach().numpy() * nu.detach().numpy())
     )
     u_ep = 1 / np.sqrt(nu.detach().numpy())
 
-    return torch.mean(torch.log(var) + (1.0 + coeff * nu) * error**2 / var), \
-        u_al, u_ep
+    return torch.mean(torch.log(var) +
+                      (1.0 + coeff * nu) * error**2 / var), u_al, u_ep
 
 
 # from martius lab

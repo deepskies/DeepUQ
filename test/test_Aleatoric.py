@@ -148,6 +148,8 @@ def create_test_config_DER(
             "savefig": False,
             "save_chk_random_seed_init": False,
             "rs": 42,
+            "save_n_hidden": False,
+            "n_hidden": 64,
             "verbose": False,
         },
         "data": {

@@ -1,6 +1,5 @@
 # Contains modules to analyze the output checkpoints
 # from a trained model and make plots for the paper
-import numpy as np
 import torch
 
 
@@ -20,7 +19,9 @@ class AggregateCheckpoints:
         COEFF=0.5,
         loss="SDER",
         load_rs_chk=False,
-        rs=42
+        rs=42,
+        load_nh_chk=False,
+        nh=64,
     ):
         """
         Load PyTorch model checkpoint from a .pt file.
@@ -33,37 +34,31 @@ class AggregateCheckpoints:
         :return: Loaded model
         """
         if model_name[0:3] == "DER":
-            if load_rs_chk:
-                file_name = (
-                    str(path)
-                    + f"{model_name}_noise_{noise}_loss_{loss}"
-                    + f"_COEFF_{COEFF}_epoch_{epoch}_rs_{rs}.pt"
-                )
-            else:
-                file_name = (
-                    str(path)
-                    + f"{model_name}_noise_{noise}_loss_{loss}"
-                    + f"_COEFF_{COEFF}_epoch_{epoch}.pt"
-                )
-            checkpoint = torch.load(file_name, map_location=device)
-        elif model_name[0:2] == "DE":
             file_name = (
                 str(path)
-                + f"{model_name}_noise_{noise}_beta_{BETA}_"
-                  f"nmodel_{nmodel}_epoch_{epoch}.pt"
+                + f"{model_name}_noise_{noise}_loss_{loss}"
+                + f"_COEFF_{COEFF}_epoch_{epoch}"
             )
-            checkpoint = torch.load(file_name, map_location=device)
+            if load_rs_chk:
+                file_name += f"_rs_{rs}"
+            if load_nh_chk:
+                file_name += f"_n_hidden_{nh}"
+            file_name += ".pt"
+        elif model_name[0:2] == "DE":
+            file_name = (
+                str(path) + f"{model_name}_noise_{noise}_beta_{BETA}_"
+                f"nmodel_{nmodel}_epoch_{epoch}.pt"
+            )
+        checkpoint = torch.load(file_name, map_location=device)
         return checkpoint
 
     def ep_al_checkpoint_DE(self, checkpoint):
         # Extract additional information
         # loaded_epoch = checkpoint.get("epoch", None)
         mean_validation = checkpoint.get("valid_mean", None).detach().numpy()
-        # this valid_sigma is actually the variance so you'll need to take
-        # the sqrt of this
-        sigma_validation = np.sqrt(
-            checkpoint.get("valid_sigma", None).detach().numpy())
-        return mean_validation, sigma_validation
+        # valid_sigma is technically the variance
+        var_validation = checkpoint.get("valid_sigma", None).detach().numpy()
+        return mean_validation, var_validation
 
     def ep_al_checkpoint_DER(self, checkpoint):
         """

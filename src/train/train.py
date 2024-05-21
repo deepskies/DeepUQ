@@ -32,6 +32,8 @@ def train_DER(
     savefig=True,
     set_and_save_rs=False,
     rs=42,
+    save_n_hidden=False,
+    n_hidden=64,
     verbose=True,
 ):
     # first determine if you even need to run anything
@@ -82,7 +84,9 @@ def train_DER(
         set_random_seeds(seed_value=rs)
 
     best_loss = np.inf  # init to infinity
-    model, lossFn = models.model_setup_DER(loss_type, DEVICE)
+    model, lossFn = models.model_setup_DER(loss_type,
+                                           DEVICE,
+                                           n_hidden=n_hidden)
     if verbose:
         print("model is", model, "lossfn", lossFn)
 
@@ -252,62 +256,64 @@ def train_DER(
                 plt.show()
             plt.close()
         if save_all_checkpoints:
+
+            filename = (
+                str(path_to_model)
+                + "checkpoints/"
+                + str(model_name)
+                + "_loss_"
+                + str(loss_type)
+                + "_COEFF_"
+                + str(COEFF)
+                + "_epoch_"
+                + str(epoch)
+            )
+
             if set_and_save_rs:
-                torch.save(
-                    {
-                        "epoch": epoch,
-                        "model_state_dict": model.state_dict(),
-                        "optimizer_state_dict": opt.state_dict(),
-                        "train_loss": np.mean(loss_this_epoch),
-                        "valid_loss": NIGloss_val,
-                        "valid_mse": mse,
-                        "med_u_al_validation": med_u_al_val,
-                        "med_u_ep_validation": med_u_ep_val,
-                        "std_u_al_validation": std_u_al_val,
-                        "std_u_ep_validation": std_u_ep_val,
-                    },
-                    str(path_to_model)
-                    + "checkpoints/"
-                    + str(model_name)
-                    + "_loss_"
-                    + str(loss_type)
-                    + "_COEFF_"
-                    + str(COEFF)
-                    + "_epoch_"
-                    + str(epoch)
-                    + "_rs_"
-                    + str(rs)
-                    + ".pt",
-                )
-            else:
-                torch.save(
-                    {
-                        "epoch": epoch,
-                        "model_state_dict": model.state_dict(),
-                        "optimizer_state_dict": opt.state_dict(),
-                        "train_loss": np.mean(loss_this_epoch),
-                        "valid_loss": NIGloss_val,
-                        "valid_mse": mse,
-                        "med_u_al_validation": med_u_al_val,
-                        "med_u_ep_validation": med_u_ep_val,
-                        "std_u_al_validation": std_u_al_val,
-                        "std_u_ep_validation": std_u_ep_val,
-                    },
-                    str(path_to_model)
-                    + "checkpoints/"
-                    + str(model_name)
-                    + "_loss_"
-                    + str(loss_type)
-                    + "_COEFF_"
-                    + str(COEFF)
-                    + "_epoch_"
-                    + str(epoch)
-                    + ".pt",
-                )
+                filename += "_rs_" + str(rs)
+
+            if save_n_hidden:
+                filename += "_n_hidden_" + str(n_hidden)
+
+            filename += ".pt"
+            torch.save(
+                {
+                    "epoch": epoch,
+                    "model_state_dict": model.state_dict(),
+                    "optimizer_state_dict": opt.state_dict(),
+                    "train_loss": np.mean(loss_this_epoch),
+                    "valid_loss": NIGloss_val,
+                    "valid_mse": mse,
+                    "med_u_al_validation": med_u_al_val,
+                    "med_u_ep_validation": med_u_ep_val,
+                    "std_u_al_validation": std_u_al_val,
+                    "std_u_ep_validation": std_u_ep_val,
+                },
+                filename
+            )
+
         if save_final_checkpoint and (e % (EPOCHS - 1) == 0) and (e != 0):
-            # option to just save final epoch
+            filename = (
+                str(path_to_model)
+                + "checkpoints/"
+                + str(model_name)
+                + "_loss_"
+                + str(loss_type)
+                + "_COEFF_"
+                + str(COEFF)
+                + "_epoch_"
+                + str(epoch)
+            )
+
             if set_and_save_rs:
-                torch.save(
+                filename += "_rs_" + str(rs)
+
+            if save_n_hidden:
+                filename += "_n_hidden_" + str(n_hidden)
+
+            filename += ".pt"
+            # option to just save final epoch
+            torch.save(
                     {
                         "epoch": epoch,
                         "model_state_dict": model.state_dict(),
@@ -320,43 +326,8 @@ def train_DER(
                         "std_u_al_validation": std_u_al_val,
                         "std_u_ep_validation": std_u_ep_val,
                     },
-                    str(path_to_model)
-                    + "checkpoints/"
-                    + str(model_name)
-                    + "_loss_"
-                    + str(loss_type)
-                    + "_COEFF_"
-                    + str(COEFF)
-                    + "_epoch_"
-                    + str(epoch)
-                    + "_rs_"
-                    + str(rs)
-                    + ".pt",
+                    filename
                 )
-            else:
-                torch.save(
-                    {
-                        "epoch": epoch,
-                        "model_state_dict": model.state_dict(),
-                        "optimizer_state_dict": opt.state_dict(),
-                        "train_loss": np.mean(loss_this_epoch),
-                        "valid_loss": NIGloss_val,
-                        "valid_mse": mse,
-                        "med_u_al_validation": med_u_al_val,
-                        "med_u_ep_validation": med_u_ep_val,
-                        "std_u_al_validation": std_u_al_val,
-                        "std_u_ep_validation": std_u_ep_val,
-                    },
-                    str(path_to_model)
-                    + "checkpoints/"
-                    + str(model_name)
-                    + "_loss_"
-                    + str(loss_type)
-                    + "_COEFF_"
-                    + str(COEFF)
-                    + "_epoch_"
-                    + str(epoch)
-                    + ".pt")
     endTime = time.time()
     if verbose:
         print("start at", startTime, "end at", endTime)
@@ -707,6 +678,8 @@ def train_DE(
                             "valid_loss": loss,
                             "valid_mse": mse,
                             "valid_mean": y_pred[:, 0].flatten(),
+                            # annoying, this "valid_sigma" is technically
+                            # a variance
                             "valid_sigma": y_pred[:, 1].flatten(),
                             "x_val": x_val,
                             "y_val": y_val,

@@ -19,7 +19,7 @@ from data.data import DataPreparation, MyDataLoader
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="data handling module")
+    parser = argparse.ArgumentParser(description="Runs DER")
     # there are three options with the parser:
     # 1) Read from a yaml
     # 2) Reads from the command line and default file
@@ -55,7 +55,8 @@ def parse_args():
         type=float,
         required=False,
         default=DefaultsDER["data"]["size_df"],
-        help="Used to load the associated .h5 data file",
+        help="Used to load the associated .h5 data file,\
+            number of lines generated",
     )
     parser.add_argument(
         "--noise_level",
@@ -175,7 +176,20 @@ def parse_args():
         "--rs",
         type=int,
         default=DefaultsDER["model"]["rs"],
-        help="define a random seed to save",
+        help="random seed for the pytorch model initialization",
+    )
+    parser.add_argument(
+        "--save_n_hidden",
+        action="store_true",
+        default=DefaultsDER["model"]["save_n_hidden"],
+        help="save chk with the number of neurons in the hidden layer",
+    )
+    parser.add_argument(
+        "--n_hidden",
+        type=int,
+        required=False,
+        default=DefaultsDER["model"]["n_hidden"],
+        help="Number of hidden neurons in the hidden layer, default 64",
     )
     parser.add_argument(
         "--verbose",
@@ -215,6 +229,8 @@ def parse_args():
                 "savefig": args.savefig,
                 "save_chk_random_seed_init": args.save_chk_random_seed_init,
                 "rs": args.rs,
+                "save_n_hidden": args.save_n_hidden,
+                "n_hidden": args.n_hidden,
                 "verbose": args.verbose,
             },
             "data": {
@@ -295,7 +311,9 @@ if __name__ == "__main__":
         "model_type",
         "DER") + "_noise_" + noise
     model, lossFn = models.model_setup_DER(
-        config.get_item("model", "loss_type", "DER"), DEVICE
+        config.get_item("model", "loss_type", "DER"),
+        DEVICE,
+        n_hidden=config.get_item("model", "n_hidden", "DER")
     )
     model_ensemble = train.train_DER(
         trainDataLoader,
@@ -325,5 +343,9 @@ if __name__ == "__main__":
                                         "save_chk_random_seed_init",
                                         "DER"),
         rs=config.get_item("model", "rs", "DER"),
+        save_n_hidden=config.get_item("model",
+                                      "save_n_hidden",
+                                      "DER"),
+        n_hidden=config.get_item("model", "n_hidden", "DER"),
         verbose=config.get_item("model", "verbose", "DER"),
     )
