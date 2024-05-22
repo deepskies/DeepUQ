@@ -198,4 +198,4 @@ def loss_bnll(mean, variance, target, beta):  # beta=0.5):
     loss = 0.5 * ((target - mean) ** 2 / variance + variance.log())
     if beta > 0:
         loss = loss * (variance.detach() ** beta)
-    return loss.sum(axis=-1)
+    return loss.sum(axis=-1) / len(mean)
