@@ -237,10 +237,15 @@ if __name__ == "__main__":
                         mu_vals, var_vals = chk_module.ep_al_checkpoint_DE(chk)
                         list_mus.append(mu_vals)
                         list_vars.append(var_vals)
-                    al_dict[model][noise].append(np.median(np.mean(list_vars,
-                                                                   axis=0)))
-                    al_std_dict[model][noise].append(np.std(np.mean(list_vars,
-                                                                    axis=0)))
+                    # first taking the mean across the validation data
+                    # then looking at the mean and standard deviation
+                    # across all of the nmodels
+                    al_dict[model][noise].append(
+                        np.mean(np.mean(list_vars, axis=0))
+                    )
+                    al_std_dict[model][noise].append(
+                        np.std(np.mean(list_vars, axis=0))
+                    )
     # make a two-paneled plot for the different noise levels
     # make one panel per model
     # for the noise levels:
@@ -252,14 +257,14 @@ if __name__ == "__main__":
         # Your plotting code for each model here
         ax.set_title(model)  # Set title for each subplot
         for i, noise in enumerate(noise_list):
-            if model[0:3] == "DE_":
+            if model[0:3] == "DER":
+                al = np.array(al_dict[model][noise])
+                al_std = np.array(al_std_dict[model][noise])
+            elif model[0:2] == "DE":
                 # only take the sqrt for the case of DE,
                 # which is the variance
                 al = np.array(np.sqrt(al_dict[model][noise]))
                 al_std = np.array(np.sqrt(al_std_dict[model][noise]))
-            else:
-                al = np.array(al_dict[model][noise])
-                al_std = np.array(al_std_dict[model][noise])
             ax.fill_between(
                 range(n_epochs),
                 al - al_std,

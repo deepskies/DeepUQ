@@ -1,6 +1,6 @@
 DefaultsDE = {
     "common": {
-        "out_dir": "./DeepUQResources/results/",
+        "out_dir": "./DeepUQResources/",
         "temp_config": "./DeepUQResources/temp/temp_config_DE.yml",
     },
     "data": {
@@ -102,7 +102,7 @@ DefaultsAnalysis = {
     },
     "analysis": {
         "noise_level_list": ["low", "medium", "high"],
-        "model_names_list": ["DER_wst", "DE_desiderata_2"],
+        "model_names_list": ["DER", "DE"],
         # ["DER_wst", "DE_desiderata_2"],
         # for architecture: ["DER"], #, "DE_desiderata_2"],
         # for the inits changed to "DER_wst"

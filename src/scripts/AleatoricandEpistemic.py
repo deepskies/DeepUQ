@@ -234,7 +234,7 @@ if __name__ == "__main__":
                 n_models = config.get_item("model", "n_models", "DE")
                 for epoch in range(n_epochs):
                     list_mus = []
-                    list_sigs = []
+                    list_vars = []
                     for nmodels in range(n_models):
                         chk = chk_module.load_checkpoint(
                             model,
@@ -245,17 +245,21 @@ if __name__ == "__main__":
                             BETA=BETA,
                             nmodel=nmodels,
                         )
-                        mu_vals, sig_vals = chk_module.ep_al_checkpoint_DE(chk)
+                        mu_vals, var_vals = chk_module.ep_al_checkpoint_DE(chk)
                         list_mus.append(mu_vals)
-                        list_sigs.append(sig_vals)
-                    ep_dict[model][noise].append(np.median(np.std(list_mus,
-                                                                  axis=0)))
-                    al_dict[model][noise].append(np.median(np.mean(list_sigs,
-                                                                   axis=0)))
-                    ep_std_dict[model][noise].append(np.std(np.std(list_mus,
-                                                                   axis=0)))
-                    al_std_dict[model][noise].append(np.std(np.mean(list_sigs,
-                                                                    axis=0)))
+                        list_vars.append(var_vals)
+                    ep_dict[model][noise].append(
+                        np.mean(np.std(list_mus, axis=0))
+                    )
+                    ep_std_dict[model][noise].append(
+                        np.std(np.std(list_mus, axis=0))
+                    )
+                    al_dict[model][noise].append(
+                        np.mean(np.mean(list_vars, axis=0))
+                    )
+                    al_std_dict[model][noise].append(
+                        np.std(np.mean(list_vars, axis=0))
+                    )
     # make a two-paneled plot for the different noise levels
     # make one panel per model
     # for the noise levels:
@@ -267,12 +271,12 @@ if __name__ == "__main__":
         # Your plotting code for each model here
         ax.set_title(model)  # Set title for each subplot
         for i, noise in enumerate(noise_list):
-            if model[0:3] == "DE_":
-                al = np.array(np.sqrt(al_dict[model][noise]))
-                al_std = np.array(np.sqrt(al_std_dict[model][noise]))
-            else:
+            if model[0:3] == "DER":
                 al = np.array(al_dict[model][noise])
                 al_std = np.array(al_std_dict[model][noise])
+            elif model[0:2] == "DE":
+                al = np.array(np.sqrt(al_dict[model][noise]))
+                al_std = np.array(np.sqrt(al_std_dict[model][noise]))
             ep = np.array(ep_dict[model][noise])
             ep_std = np.array(ep_std_dict[model][noise])
             total = np.sqrt(al**2 + ep**2)

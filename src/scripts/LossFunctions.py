@@ -223,10 +223,12 @@ if __name__ == "__main__":
                     loss[model][noise].append(chk["valid_loss"])
                     mse_loss_train[model][noise].append(chk["train_mse"])
                     loss_train[model][noise].append(chk["train_loss"])
-            elif model[0:3] == "DE_":
+            elif model[0:2] == "DE":
                 for nmodel in range(n_models):
                     mse_loss_one_model = []
                     loss_one_model = []
+                    train_mse_loss_one_model = []
+                    train_loss_one_model = []
                     for epoch in range(n_epochs):
                         chk = chk_module.load_checkpoint(
                             model,
@@ -239,9 +241,14 @@ if __name__ == "__main__":
                         )
                         mse_loss_one_model.append(chk["valid_mse"])
                         loss_one_model.append(chk["valid_loss"])
+                        train_mse_loss_one_model.append(chk["train_mse"])
+                        train_loss_one_model.append(chk["train_loss"])
 
                     mse_loss[model][noise].append(mse_loss_one_model)
                     loss[model][noise].append(loss_one_model)
+                    mse_loss_train[model][noise].append(
+                        train_mse_loss_one_model)
+                    loss_train[model][noise].append(train_loss_one_model)
     # make a two-paneled plot for the different noise levels
     # make one panel per model
     # for the noise levels:
@@ -256,12 +263,25 @@ if __name__ == "__main__":
             if model[0:3] == "DER":
                 ax.plot(
                     range(n_epochs),
+                    mse_loss_train[model][noise],
+                    color=color_list[i],
+                    label=r"Train; $\sigma = $" + str(sigma_list[i]),
+                    ls='--'
+                )
+                ax.plot(
+                    range(n_epochs),
                     mse_loss[model][noise],
                     color=color_list[i],
-                    label=r"$\sigma = $" + str(sigma_list[i]),
+                    label=r"Validation; $\sigma = $" + str(sigma_list[i]),
                 )
             else:
                 for n in range(n_models):
+                    ax.plot(
+                        range(n_epochs),
+                        mse_loss_train[model][noise][n],
+                        color=color_list[i],
+                        ls='--'
+                    )
                     ax.plot(
                         range(n_epochs),
                         mse_loss[model][noise][n],
@@ -273,7 +293,7 @@ if __name__ == "__main__":
             ax.set_title("Deep Evidential Regression")
             plt.legend()
         elif model[0:2] == "DE":
-            ax.set_title("Deep Ensemble (100 models)")
+            ax.set_title("Deep Ensemble")
         ax.set_ylim([0, 250])
     if config.get_item("analysis", "savefig", "Analysis"):
         plt.savefig(
@@ -298,12 +318,25 @@ if __name__ == "__main__":
             if model[0:3] == "DER":
                 ax.plot(
                     range(n_epochs),
+                    loss_train[model][noise],
+                    color=color_list[i],
+                    label=r"Train; $\sigma = $" + str(sigma_list[i]),
+                    ls='--'
+                )
+                ax.plot(
+                    range(n_epochs),
                     loss[model][noise],
                     color=color_list[i],
-                    label=r"$\sigma = $" + str(sigma_list[i]),
+                    label=r"Validation; $\sigma = $" + str(sigma_list[i]),
                 )
             else:
                 for n in range(n_models):
+                    ax.plot(
+                        range(n_epochs),
+                        loss_train[model][noise][n],
+                        color=color_list[i],
+                        ls='--'
+                    )
                     ax.plot(
                         range(n_epochs),
                         loss[model][noise][n],
@@ -314,8 +347,8 @@ if __name__ == "__main__":
             ax.set_title("Deep Evidential Regression")
             ax.set_ylabel("NIG Loss")
             plt.legend()
-        elif model[0:3] == "DE_":
-            ax.set_title("Deep Ensemble (100 models)")
+        elif model[0:2] == "DE":
+            ax.set_title("Deep Ensemble")
             ax.set_ylabel(r"$\beta-$NLL Loss")
         # ax.set_ylim([0, 11])
     if config.get_item("analysis", "savefig", "Analysis"):
