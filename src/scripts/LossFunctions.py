@@ -1,3 +1,4 @@
+import numpy as np
 import os
 import yaml
 import argparse
@@ -223,7 +224,7 @@ if __name__ == "__main__":
                     loss[model][noise].append(chk["valid_loss"])
                     mse_loss_train[model][noise].append(chk["train_mse"])
                     loss_train[model][noise].append(chk["train_loss"])
-            elif model[0:3] == "DE_":
+            elif model[0:2] == "DE":
                 for nmodel in range(n_models):
                     mse_loss_one_model = []
                     loss_one_model = []
@@ -263,16 +264,16 @@ if __name__ == "__main__":
             if model[0:3] == "DER":
                 ax.plot(
                     range(n_epochs),
-                    mse_loss[model][noise],
+                    mse_loss_train[model][noise],
                     color=color_list[i],
                     label=r"Train; $\sigma = $" + str(sigma_list[i]),
+                    ls='--'
                 )
                 ax.plot(
                     range(n_epochs),
-                    mse_loss_train[model][noise],
+                    mse_loss[model][noise],
                     color=color_list[i],
                     label=r"Validation; $\sigma = $" + str(sigma_list[i]),
-                    ls='--'
                 )
             else:
                 for n in range(n_models):
@@ -293,7 +294,7 @@ if __name__ == "__main__":
             ax.set_title("Deep Evidential Regression")
             plt.legend()
         elif model[0:2] == "DE":
-            ax.set_title("Deep Ensemble (100 models)")
+            ax.set_title("Deep Ensemble")
         ax.set_ylim([0, 250])
     if config.get_item("analysis", "savefig", "Analysis"):
         plt.savefig(
@@ -347,8 +348,8 @@ if __name__ == "__main__":
             ax.set_title("Deep Evidential Regression")
             ax.set_ylabel("NIG Loss")
             plt.legend()
-        elif model[0:3] == "DE_":
-            ax.set_title("Deep Ensemble (100 models)")
+        elif model[0:2] == "DE":
+            ax.set_title("Deep Ensemble")
             ax.set_ylabel(r"$\beta-$NLL Loss")
         # ax.set_ylim([0, 11])
     if config.get_item("analysis", "savefig", "Analysis"):

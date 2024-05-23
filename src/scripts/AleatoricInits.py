@@ -223,8 +223,7 @@ if __name__ == "__main__":
                             chk_module.ep_al_checkpoint_DER(chk)
                         al_dict[model][noise][rs].append(aleatoric_m)
                         al_std_dict[model][noise][rs].append(a_std)
-
-            if model[0:3] == "DE_":
+            if model[0:2] == "DE" and model[0:3] != "DER":
                 n_models = config.get_item("model", "n_models", "DE")
                 for epoch in range(n_epochs):
                     list_mus = []
@@ -260,10 +259,10 @@ if __name__ == "__main__":
         ax.set_title(model)  # Set title for each subplot
         for n, noise in enumerate(noise_list):
             for r, rs in enumerate(rs_list):
-                if model[0:3] == "DE_":
-                    al = np.array(np.sqrt(al_dict[model][noise][rs]))
-                else:
+                if model[0:3] == "DER":
                     al = np.array(al_dict[model][noise][rs])
+                elif model[0:2] == "DE":
+                    al = np.array(np.sqrt(al_dict[model][noise][rs]))
                 """
                 # it doesn't really make sense to plot the std for the
                 # case of the DE because each individual model

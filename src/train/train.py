@@ -89,7 +89,6 @@ def train_DER(
                                            n_hidden=n_hidden)
     if verbose:
         print("model is", model, "lossfn", lossFn)
-
     opt = torch.optim.Adam(model.parameters(), lr=INIT_LR)
     mse_loss = torch.nn.MSELoss(reduction="mean")
 
@@ -374,8 +373,6 @@ def train_DE(
 
     model_ensemble = []
 
-    print("this is the value of save_final_checkpoint", save_final_checkpoint)
-
     for m in range(n_models):
         print("model", m)
         if not save_all_checkpoints and save_final_checkpoint:
@@ -523,7 +520,6 @@ def train_DE(
                                     color="grey",
                                     alpha=0.5,
                                 )
-
                 loss_this_epoch.append(loss.item())
                 mse_this_epoch.append(mse.item())
 
@@ -545,31 +541,31 @@ def train_DE(
             # this code from Rohan:
             # now, once an epoch is done:
             model.eval()
-            y_pred = model(torch.Tensor(x_val))
+            y_pred_val = model(torch.Tensor(x_val))
             # print(y_pred.flatten().size(), torch.Tensor(y_valid).size())
             if loss_type == "no_var_loss":
-                loss = lossFn(y_pred.flatten(), torch.Tensor(y_val)).item()
+                loss_val = lossFn(y_pred_val.flatten(),
+                                  torch.Tensor(y_val)).item()
             if loss_type == "var_loss":
-                loss = lossFn(
-                    y_pred[:, 0].flatten(),
+                loss_val = lossFn(
+                    y_pred_val[:, 0].flatten(),
                     torch.Tensor(y_val),
-                    y_pred[:, 1].flatten(),
+                    y_pred_val[:, 1].flatten(),
                 ).item()
             if loss_type == "bnll_loss":
-                loss = lossFn(
-                    y_pred[:, 0].flatten(),
-                    y_pred[:, 1].flatten(),
+                loss_val = lossFn(
+                    y_pred_val[:, 0].flatten(),
+                    y_pred_val[:, 1].flatten(),
                     torch.Tensor(y_val),
                     beta=beta_epoch,
                 ).item()
-            loss_validation.append(loss)
-            mse = mse_loss(y_pred[:, 0], torch.Tensor(y_val)).item()
-            if loss < best_loss:
-                best_loss = loss
+            loss_validation.append(loss_val)
+            mse = mse_loss(y_pred_val[:, 0], torch.Tensor(y_val)).item()
+            if loss_val < best_loss:
+                best_loss = loss_val
                 if verbose:
-                    print("new best loss", loss, "in epoch", epoch)
+                    print("new best loss", loss_val, "in epoch", epoch)
                 # best_weights = copy.deepcopy(model.state_dict())
-            # print('validation loss', mse)
             if (plot or savefig) and (e % (EPOCHS - 1) == 0) and (e != 0):
                 ax1.plot(range(0, 1000),
                          range(0, 1000),
@@ -578,7 +574,7 @@ def train_DE(
                 if loss_type == "no_var_loss":
                     ax1.scatter(
                         y_val,
-                        y_pred.flatten().detach().numpy(),
+                        y_pred_val.flatten().detach().numpy(),
                         color="#F45866",
                         edgecolor="black",
                         zorder=100,
@@ -587,8 +583,9 @@ def train_DE(
                 else:
                     ax1.errorbar(
                         y_val,
-                        y_pred[:, 0].flatten().detach().numpy(),
-                        yerr=np.sqrt(y_pred[:, 1].flatten().detach().numpy()),
+                        y_pred_val[:, 0].flatten().detach().numpy(),
+                        yerr=np.sqrt(
+                            y_pred_val[:, 1].flatten().detach().numpy()),
                         linestyle="None",
                         color="black",
                         capsize=2,
@@ -596,19 +593,27 @@ def train_DE(
                     )
                     ax1.scatter(
                         y_val,
-                        y_pred[:, 0].flatten().detach().numpy(),
+                        y_pred_val[:, 0].flatten().detach().numpy(),
                         color="#9CD08F",
                         s=5,
                         zorder=101,
                         label="validation data",
                     )
+                    ax1.scatter(
+                        y,
+                        pred[:, 0].flatten().detach().numpy(),
+                        color="red",
+                        s=5,
+                        zorder=101,
+                        label="training data",
+                    )
 
                 # add residual plot
-                residuals = y_pred[:, 0].flatten().detach().numpy() - y_val
+                residuals = y_pred_val[:, 0].flatten().detach().numpy() - y_val
                 ax2.errorbar(
                     y_val,
                     residuals,
-                    yerr=np.sqrt(y_pred[:, 1].flatten().detach().numpy()),
+                    yerr=np.sqrt(y_pred_val[:, 1].flatten().detach().numpy()),
                     linestyle="None",
                     color="black",
                     capsize=2,
@@ -625,7 +630,7 @@ def train_DE(
                         + "\n"
                         + str(loss_type)
                         + " = "
-                        + str(round(loss, 2))
+                        + str(round(loss_val, 2))
                         + "\n"
                         + r"MSE = "
                         + str(round(mse, 2)),
@@ -691,13 +696,13 @@ def train_DE(
                         "model_state_dict": model.state_dict(),
                         "optimizer_state_dict": opt.state_dict(),
                         "train_loss": np.mean(loss_this_epoch),
-                        "valid_loss": loss,
+                        "valid_loss": loss_val,
                         "train_mse": np.mean(mse_this_epoch),
                         "valid_mse": mse,
-                        "valid_mean": y_pred[:, 0].flatten(),
+                        "valid_mean": y_pred_val[:, 0].flatten(),
                         # annoying, this "valid_sigma" is technically
                         # a variance
-                        "valid_sigma": y_pred[:, 1].flatten(),
+                        "valid_sigma": y_pred_val[:, 1].flatten(),
                         "x_val": x_val,
                         "y_val": y_val,
                     },
@@ -717,13 +722,13 @@ def train_DE(
                         "model_state_dict": model.state_dict(),
                         "optimizer_state_dict": opt.state_dict(),
                         "train_loss": np.mean(loss_this_epoch),
-                        "valid_loss": loss,
+                        "valid_loss": loss_val,
                         "train_mse": np.mean(mse_this_epoch),
                         "valid_mse": mse,
-                        "valid_mean": y_pred[:, 0].flatten(),
+                        "valid_mean": y_pred_val[:, 0].flatten(),
                         # annoying, this "valid_sigma" is technically
                         # a variance
-                        "valid_sigma": y_pred[:, 1].flatten(),
+                        "valid_sigma": y_pred_val[:, 1].flatten(),
                         "x_val": x_val,
                         "y_val": y_val,
                     },
