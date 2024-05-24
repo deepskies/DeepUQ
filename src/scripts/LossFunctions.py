@@ -253,10 +253,10 @@ if __name__ == "__main__":
     # make one panel per model
     # for the noise levels:
     plt.clf()
-    fig = plt.figure(figsize=(10, 4))
+    fig = plt.figure(figsize=(12, 10))
     # try this instead with a fill_between method
     for i, model in enumerate(model_name_list):
-        ax = fig.add_subplot(1, len(model_name_list), i + 1)
+        ax = fig.add_subplot(2, len(model_name_list), i + 1)
         # Your plotting code for each model here
         ax.set_title(model)  # Set title for each subplot
         for i, noise in enumerate(noise_list):
@@ -275,18 +275,17 @@ if __name__ == "__main__":
                     label=r"Validation; $\sigma = $" + str(sigma_list[i]),
                 )
             else:
-                for n in range(n_models):
-                    ax.plot(
-                        range(n_epochs),
-                        mse_loss_train[model][noise][n],
-                        color=color_list[i],
-                        ls='--'
-                    )
-                    ax.plot(
-                        range(n_epochs),
-                        mse_loss[model][noise][n],
-                        color=color_list[i]
-                    )
+                ax.plot(
+                    range(n_epochs),
+                    mse_loss_train[model][noise][0],
+                    color=color_list[i],
+                    ls='--'
+                )
+                ax.plot(
+                    range(n_epochs),
+                    mse_loss[model][noise][0],
+                    color=color_list[i]
+                )
         ax.set_ylabel("MSE Loss")
         ax.set_xlabel("Epoch")
         if model[0:3] == "DER":
@@ -295,25 +294,10 @@ if __name__ == "__main__":
         elif model[0:2] == "DE":
             ax.set_title("Deep Ensemble")
         ax.set_ylim([0, 250])
-    if config.get_item("analysis", "savefig", "Analysis"):
-        plt.savefig(
-            str(path_to_out)
-            + "mse_loss_n_epochs_"
-            + str(n_epochs)
-            + "_n_models_DE_"
-            + str(n_models)
-            + ".png"
-        )
-    if config.get_item("analysis", "plot", "Analysis"):
-        plt.show()
-
-    plt.clf()
-    fig = plt.figure(figsize=(10, 4))
-    # try this instead with a fill_between method
+    # now make the other loss plots
     for i, model in enumerate(model_name_list):
-        ax = fig.add_subplot(1, len(model_name_list), i + 1)
+        ax = fig.add_subplot(2, len(model_name_list), i + 3)
         # Your plotting code for each model here
-        ax.set_title(model)  # Set title for each subplot
         for i, noise in enumerate(noise_list):
             if model[0:3] == "DER":
                 ax.plot(
@@ -330,31 +314,28 @@ if __name__ == "__main__":
                     label=r"Validation; $\sigma = $" + str(sigma_list[i]),
                 )
             else:
-                for n in range(n_models):
-                    ax.plot(
-                        range(n_epochs),
-                        loss_train[model][noise][n],
-                        color=color_list[i],
-                        ls='--'
-                    )
-                    ax.plot(
-                        range(n_epochs),
-                        loss[model][noise][n],
-                        color=color_list[i],
-                    )
+                ax.plot(
+                    range(n_epochs),
+                    loss_train[model][noise][0],
+                    color=color_list[i],
+                    ls='--'
+                )
+                ax.plot(
+                    range(n_epochs),
+                    loss[model][noise][0],
+                    color=color_list[i],
+                )
+
         ax.set_xlabel("Epoch")
         if model[0:3] == "DER":
-            ax.set_title("Deep Evidential Regression")
             ax.set_ylabel("NIG Loss")
-            plt.legend()
         elif model[0:2] == "DE":
-            ax.set_title("Deep Ensemble")
             ax.set_ylabel(r"$\beta-$NLL Loss")
-        # ax.set_ylim([0, 11])
+        # ax.set_ylim([0, 5])
     if config.get_item("analysis", "savefig", "Analysis"):
         plt.savefig(
             str(path_to_out)
-            + "loss_n_epochs_"
+            + "all_loss_n_epochs_"
             + str(n_epochs)
             + "_n_models_DE_"
             + str(n_models)
