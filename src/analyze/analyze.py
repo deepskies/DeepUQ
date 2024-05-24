@@ -70,9 +70,9 @@ class AggregateCheckpoints:
         """
 
         # Extract additional information
-        med_u_ep = checkpoint.get("med_u_ep_validation", None)
-        med_u_al = checkpoint.get("med_u_al_validation", None)
+        mean_u_ep = checkpoint.get("mean_u_ep_validation", None)
+        mean_u_al = checkpoint.get("mean_u_al_validation", None)
         std_u_ep = checkpoint.get("std_u_ep_validation", None)
         std_u_al = checkpoint.get("std_u_al_validation", None)
 
-        return med_u_ep, med_u_al, std_u_ep, std_u_al
+        return mean_u_ep, mean_u_al, std_u_ep, std_u_al
