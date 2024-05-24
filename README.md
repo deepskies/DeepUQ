@@ -41,7 +41,7 @@ Install the pyproject file
 Begin the environment
 > poetry shell
 
-### Verify it is installed
+### Verify DeepUQ is installed correctly
 
 After following the installation instructions, verify installation is functional is all tests are passing by running the following in the root directory:
 > pytest
@@ -49,7 +49,7 @@ After following the installation instructions, verify installation is functional
 ## How to run the workflow
 ![Folder structure overview](images/DeepUQWorkflow_Maggie.png)
 
-The scripts can be accessed via the ipython example notebooks or via the model modules (ie `DeepEnsemble.py`). For example, to ingest data and train a Deep Ensemble fromt the DeepUQ/ directory:
+The scripts can be accessed via the ipython example notebooks or via the model modules (ie `DeepEnsemble.py`). For example, to ingest data and train a Deep Ensemble from the DeepUQ/ directory:
 
 > python src/scripts/DeepEnsemble.py
 
@@ -87,11 +87,14 @@ Repeat for the DER:
 
 Next run the analysis scripts:
 > python src/scripts/AleatoricandEpistemic.py
+
 > python src/scripts/LossFunctions.py
+
 > python src/scripts/ParitySigma.py
 
 To reproduce the random initialization runs for the DER (these already exist for the DE):
 > python src/scripts/DeepEvidentialRegression.py --save_all_checkpoints --noise_level "low" --save_chk_random_seed_init --rs 10
+
 Change the value of the random seed to match those given in the `src/scripts/Aleatoric_and_inits.py` script.
 
 Finally:
