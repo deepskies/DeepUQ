@@ -253,14 +253,14 @@ if __name__ == "__main__":
         ax = fig.add_subplot(1, len(model_name_list), m + 1)
         # Your plotting code for each model here
         for i, noise in enumerate(noise_list):
-            if model[0:3] == "DE_":
+            if model[0:3] == "DER":
+                al = np.array(al_dict[model][noise])
+                al_std = np.array(al_std_dict[model][noise])
+            elif model[0:2] == "DE":
                 # only take the sqrt for the case of DE,
                 # which is the variance
                 al = np.array(np.sqrt(al_dict[model][noise]))
                 al_std = np.array(np.sqrt(al_std_dict[model][noise]))
-            else:
-                al = np.array(al_dict[model][noise])
-                al_std = np.array(al_std_dict[model][noise])
             # summarize the aleatoric
             ax.errorbar(
                 sigma_list[i],
@@ -277,7 +277,7 @@ if __name__ == "__main__":
             )
         ax.set_ylabel("Aleatoric Uncertainty")
         ax.set_xlabel("True (Injected) Uncertainty")
-        ax.plot(range(0, 14), range(0, 14), ls="--", color="black")
+        ax.plot(range(0, 15), range(0, 15), ls="--", color="black")
         ax.set_ylim([0, 14])
         ax.set_xlim([0, 14])
         if model[0:3] == "DER":
