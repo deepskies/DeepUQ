@@ -198,7 +198,8 @@ if __name__ == "__main__":
         for model_name in model_name_list
     }
     n_epochs = config.get_item("model", "n_epochs", "Analysis")
-    '''
+    """
+    # this is for the validation data
     for model in model_name_list:
         for noise in noise_list:
             # append a noise key
@@ -276,7 +277,6 @@ if __name__ == "__main__":
                 sigma_list[i],
                 al[-1],
                 color=color_list[i],
-                label=r"$\sigma = $" + str(sigma_list[i]),
             )
         ax.set_ylabel("Aleatoric Uncertainty")
         ax.set_xlabel("True (Injected) Uncertainty")
@@ -299,17 +299,16 @@ if __name__ == "__main__":
         )
     if config.get_item("analysis", "plot", "Analysis"):
         plt.show()
-    '''
+    """
 
     for model in model_name_list:
         for i, noise in enumerate(noise_list):
             # now create a test set
             data = DataPreparation()
             data.sample_params_from_prior(1000)
-            data.simulate_data(data.params,
-                               sigma_list[i],
-                               "linear_homogeneous",
-                               seed=41)
+            data.simulate_data(
+                data.params, sigma_list[i], "linear_homogeneous", seed=41
+            )
             df_array = data.get_dict()
             # Convert non-tensor entries to tensors
             df = {}
@@ -329,17 +328,19 @@ if __name__ == "__main__":
             ys_array = np.reshape(df["output"].numpy(), (len_df * len_x))
 
             inputs = np.array([xs_array, ms_array, bs_array]).T
-            model_inputs, model_outputs = DataPreparation.normalize(inputs,
-                                                                    ys_array,
-                                                                    False)
+            model_inputs, model_outputs = DataPreparation.normalize(
+                inputs, ys_array, False
+            )
             _, x_test, _, y_test = DataPreparation.train_val_split(
-                model_inputs, model_outputs, val_proportion=0.1, random_state=41
+                model_inputs,
+                model_outputs,
+                val_proportion=0.1,
+                random_state=41
             )
             # append a noise key
             # now run the analysis on the resulting checkpoints
             if model[0:3] == "DER":
                 # first, define the model
-                # DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
                 DERmodel, lossFn = models.model_setup_DER("DER", DEVICE, 64)
                 for epoch in range(n_epochs):
                     chk = chk_module.load_checkpoint(
@@ -353,9 +354,9 @@ if __name__ == "__main__":
                     )
                     # first, define the model at this epoch
                     DERmodel.load_state_dict(chk.get("model_state_dict"))
-                        #checkpoint['model_state_dict'])
-                    #print(chk.get("model_state_dict"))
-                    # now 
+                    # checkpoint['model_state_dict'])
+                    # print(chk.get("model_state_dict"))
+                    # now
                     DERmodel.eval()
                     # now run on the x_test
                     y_pred = DERmodel(torch.Tensor(x_test))
@@ -389,28 +390,6 @@ if __name__ == "__main__":
                         y_pred = DEmodel(torch.Tensor(x_test)).detach().numpy()
                         list_mus.append(y_pred[:, 0].flatten())
                         list_vars.append(y_pred[:, 1].flatten())
-                        '''
-                        # make sure these are different than the 
-                        # validation set
-                        print('shape of test', np.shape(y_pred))
-                        mu_vals, var_vals = chk_module.ep_al_checkpoint_DE(chk)
-                        print('shape of val', np.shape(mu_vals))
-                        
-                        plt.clf()
-                        plt.hist(y_pred[:, 1].flatten(),
-                                 label='test var', alpha=0.5, density=True)
-                        plt.hist(var_vals, label = 'valid var', alpha=0.5, density=True)
-                        plt.legend()
-                        plt.show()
-
-                        plt.clf()
-                        plt.scatter(y_pred[:, 1].flatten(), var_vals)
-                        plt.xlabel('test var')
-                        plt.ylabel('valid var')
-                        plt.show()
-
-                        STOP
-                        '''
                     al_dict[model][noise].append(
                         np.mean(np.mean(list_vars, axis=0)))
                     al_std_dict[model][noise].append(
