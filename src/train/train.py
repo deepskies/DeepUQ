@@ -160,8 +160,8 @@ def train_DER(
         y_pred = model(torch.Tensor(x_val))
         loss = lossFn(y_pred, torch.Tensor(y_val), COEFF)
         NIGloss_val = loss[0].item()
-        med_u_al_val = np.median(loss[1])
-        med_u_ep_val = np.median(loss[2])
+        mean_u_al_val = np.mean(loss[1])
+        mean_u_ep_val = np.mean(loss[2])
         std_u_al_val = np.std(loss[1])
         std_u_ep_val = np.std(loss[2])
 
@@ -287,8 +287,8 @@ def train_DER(
                     "valid_loss": NIGloss_val,
                     "train_mse": np.mean(mse_this_epoch),
                     "valid_mse": mse,
-                    "med_u_al_validation": med_u_al_val,
-                    "med_u_ep_validation": med_u_ep_val,
+                    "mean_u_al_validation": mean_u_al_val,
+                    "mean_u_ep_validation": mean_u_ep_val,
                     "std_u_al_validation": std_u_al_val,
                     "std_u_ep_validation": std_u_ep_val,
                 },
@@ -325,8 +325,8 @@ def train_DER(
                         "valid_loss": NIGloss_val,
                         "train_mse": np.mean(mse_this_epoch),
                         "valid_mse": mse,
-                        "med_u_al_validation": med_u_al_val,
-                        "med_u_ep_validation": med_u_ep_val,
+                        "mean_u_al_validation": mean_u_al_val,
+                        "mean_u_ep_validation": mean_u_ep_val,
                         "std_u_al_validation": std_u_al_val,
                         "std_u_ep_validation": std_u_ep_val,
                     },

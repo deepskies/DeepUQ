@@ -8,6 +8,8 @@ from utils.config import Config
 from utils.defaults import DefaultsAnalysis
 from data.data import DataPreparation
 from analyze.analyze import AggregateCheckpoints
+from torch.utils.data import TensorDataset
+from models import models
 
 # from plots import Plots
 
@@ -196,6 +198,8 @@ if __name__ == "__main__":
         for model_name in model_name_list
     }
     n_epochs = config.get_item("model", "n_epochs", "Analysis")
+    """
+    # this is for the validation data
     for model in model_name_list:
         for noise in noise_list:
             # append a noise key
@@ -273,7 +277,6 @@ if __name__ == "__main__":
                 sigma_list[i],
                 al[-1],
                 color=color_list[i],
-                label=r"$\sigma = $" + str(sigma_list[i]),
             )
         ax.set_ylabel("Aleatoric Uncertainty")
         ax.set_xlabel("True (Injected) Uncertainty")
@@ -289,6 +292,156 @@ if __name__ == "__main__":
         plt.savefig(
             str(path_to_out)
             + "parity_plot_uncertainty_"
+            + str(n_epochs)
+            + "_n_models_DE_"
+            + str(n_models)
+            + ".png"
+        )
+    if config.get_item("analysis", "plot", "Analysis"):
+        plt.show()
+    """
+
+    for model in model_name_list:
+        for i, noise in enumerate(noise_list):
+            # now create a test set
+            data = DataPreparation()
+            data.sample_params_from_prior(1000)
+            data.simulate_data(
+                data.params, sigma_list[i], "linear_homogeneous", seed=41
+            )
+            df_array = data.get_dict()
+            # Convert non-tensor entries to tensors
+            df = {}
+            for key, value in df_array.items():
+
+                if isinstance(value, TensorDataset):
+                    # Keep tensors as they are
+                    df[key] = value
+                else:
+                    # Convert lists to tensors
+                    df[key] = torch.tensor(value)
+            len_df = len(df["params"][:, 0].numpy())
+            len_x = len(df["inputs"].numpy())
+            ms_array = np.repeat(df["params"][:, 0].numpy(), len_x)
+            bs_array = np.repeat(df["params"][:, 1].numpy(), len_x)
+            xs_array = np.tile(df["inputs"].numpy(), len_df)
+            ys_array = np.reshape(df["output"].numpy(), (len_df * len_x))
+
+            inputs = np.array([xs_array, ms_array, bs_array]).T
+            model_inputs, model_outputs = DataPreparation.normalize(
+                inputs, ys_array, False
+            )
+            _, x_test, _, y_test = DataPreparation.train_val_split(
+                model_inputs,
+                model_outputs,
+                val_proportion=0.1,
+                random_state=41
+            )
+            # append a noise key
+            # now run the analysis on the resulting checkpoints
+            if model[0:3] == "DER":
+                # first, define the model
+                DERmodel, lossFn = models.model_setup_DER("DER", DEVICE, 64)
+                for epoch in range(n_epochs):
+                    chk = chk_module.load_checkpoint(
+                        model,
+                        noise,
+                        epoch,
+                        DEVICE,
+                        path=path_to_chk,
+                        COEFF=COEFF,
+                        loss=loss_type,
+                    )
+                    # first, define the model at this epoch
+                    DERmodel.load_state_dict(chk.get("model_state_dict"))
+                    # checkpoint['model_state_dict'])
+                    # print(chk.get("model_state_dict"))
+                    # now
+                    DERmodel.eval()
+                    # now run on the x_test
+                    y_pred = DERmodel(torch.Tensor(x_test))
+
+                    loss = lossFn(y_pred, torch.Tensor(y_test), 0.01)
+                    mean_u_al_test = np.mean(loss[1])
+                    mean_u_ep_test = np.mean(loss[2])
+                    std_u_al_test = np.std(loss[1])
+                    std_u_ep_test = np.std(loss[2])
+                    al_dict[model][noise].append(mean_u_al_test)
+                    al_std_dict[model][noise].append(std_u_al_test)
+
+            elif model[0:2] == "DE":
+                DEmodel, lossFn = models.model_setup_DE("bnll_loss", DEVICE)
+                n_models = config.get_item("model", "n_models", "DE")
+                for epoch in range(n_epochs):
+                    list_mus = []
+                    list_vars = []
+                    for nmodels in range(n_models):
+                        chk = chk_module.load_checkpoint(
+                            model,
+                            noise,
+                            epoch,
+                            DEVICE,
+                            path=path_to_chk,
+                            BETA=BETA,
+                            nmodel=nmodels,
+                        )
+                        DEmodel.load_state_dict(chk.get("model_state_dict"))
+                        DEmodel.eval()
+                        y_pred = DEmodel(torch.Tensor(x_test)).detach().numpy()
+                        list_mus.append(y_pred[:, 0].flatten())
+                        list_vars.append(y_pred[:, 1].flatten())
+                    al_dict[model][noise].append(
+                        np.mean(np.mean(list_vars, axis=0)))
+                    al_std_dict[model][noise].append(
+                        np.std(np.mean(list_vars, axis=0)))
+    # make a two-paneled plot for the different noise levels
+    # make one panel per model
+    # for the noise levels:
+    plt.clf()
+    fig = plt.figure(figsize=(10, 4))
+    # ax = fig.add_subplot(111)
+    # try this instead with a fill_between method
+    sym_list = ["^", "*"]
+    for m, model in enumerate(model_name_list):
+        ax = fig.add_subplot(1, len(model_name_list), m + 1)
+        # Your plotting code for each model here
+        for i, noise in enumerate(noise_list):
+            if model[0:3] == "DER":
+                al = np.array(al_dict[model][noise])
+                al_std = np.array(al_std_dict[model][noise])
+            elif model[0:2] == "DE":
+                # only take the sqrt for the case of DE,
+                # which is the variance
+                al = np.array(np.sqrt(al_dict[model][noise]))
+                al_std = np.array(np.sqrt(al_std_dict[model][noise]))
+            # summarize the aleatoric
+            ax.errorbar(
+                sigma_list[i],
+                al[-1],
+                yerr=al_std[-1],
+                color=color_list[i],
+                capsize=5
+            )
+            ax.scatter(
+                sigma_list[i],
+                al[-1],
+                color=color_list[i],
+                label=r"$\sigma = $" + str(sigma_list[i]),
+            )
+        ax.set_ylabel("Aleatoric Uncertainty")
+        ax.set_xlabel("True (Injected) Uncertainty")
+        ax.plot(range(0, 15), range(0, 15), ls="--", color="black")
+        ax.set_ylim([0, 14])
+        ax.set_xlim([0, 14])
+        if model[0:3] == "DER":
+            ax.set_title("Deep Evidential Regression")
+        elif model[0:2] == "DE":
+            ax.set_title("Deep Ensemble (100 models)")
+    plt.legend()
+    if config.get_item("analysis", "savefig", "Analysis"):
+        plt.savefig(
+            str(path_to_out)
+            + "parity_plot_uncertainty_test_"
             + str(n_epochs)
             + "_n_models_DE_"
             + str(n_models)
