@@ -250,7 +250,7 @@ if __name__ == "__main__":
             s=3,
         )
         # ax.set_xlabel('True y')
-        ax.set_ylabel("Predicted y")
+        ax.set_ylabel(r"Predicted $y$")
         ax.plot(range(-100, 1100), range(-100, 1100), ls="--", color="grey")
 
         axr.scatter(
@@ -262,7 +262,7 @@ if __name__ == "__main__":
             zorder=-100,
         )
 
-        axr.set_xlabel("True y")
+        axr.set_xlabel(r"True $y^*$")
         axr.set_ylabel("Residual (predicted - true)")
         axr.axhline(y=0, ls="--", color="grey")
     plt.legend()
