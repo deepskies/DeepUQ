@@ -40,6 +40,9 @@ This software includes methods to curate and store these datasets and model para
 
 
 # Statement of Need
+Physically and statistically interpretable uncertainties are critical for measurements, predictions, and decision-making. There is a large and recently populated literature regarding formulations and experiments for uncertainty quantification (UQ) in deep neural networks. However, the development of a coherent and consistent theoretical framework for estimating and calibrating uncertainties remains a significant challenge. The primary issues include matters of statistical interpretability, consistency of models for each approach, and consistency across approaches. 
+
+
 * A prinicipled method for comparing UQ predictions from different techniques
 * A method for comparing true to predicted uncertainties and a framework for our expectations for uncertainty behavior
 * A method that is flexible to testing with different types and prescriptions of uncertainty and to adding on new deep learning UQ methods as they emerge
@@ -51,7 +54,28 @@ Furthermore, a software that is publicly available and that provides an end-to-e
 
 ## Related Work
 
-`[@brando2022thesis]`
+
+
+
+We briefly review the landscape of existing UQ approaches in the literature; they present different methods to obtain aleatoric and epistemic uncertainties.
+Deep Evidential Regression (`[@Amini2019DER]`) offers a novel approach to train a neural network to learn a continuous prediction as well as the associated evidence, enabling the practitioner to retrieve both aleatoric and epistemic uncertainties from one model.
+Deep Ensembles (`[@Lakshminarayanan2016arXiv161201474L]`) are an ensembling UQ method that predicts aleatoric and epistemic uncertainty estimates by combining multiple mean-variance estimation networks (`[@Nix374138]`). 
+Monte Carlo Dropout (MC Dropout; `[@GalMCDropout2015arXiv150602142G]`) utilizes dropout at test time to produce predictive uncertainties.
+Bayesian Neural Networks (`[@LV2000,@T2004,@PS2017]`) replace the deterministic network weights with probability distributions and also output a mean and a variance for each of the network outputs. 
+This allows BNNs to capture both epistemic and aleatoric uncertainty. At inference time, multiple sets of weights are sampled from the learned weight distributions, allowing the computation of a series of possible network outputs. Because of this, BNNs can be considered a special case of ensemble learning (`[@ZZ2012]`).
+
+
+Within the landscape of deep learning UQ approaches, there exist taxonomical disagreements or inconsistencies regarding the definitions of aleatoric and epistemic uncertainties in the UQ literature.
+For example, `[@Gal2022NatRP...4..573G]` presents a discussion between UQ experts on how different types of uncertainties should be estimated.
+`[@brando2022thesis]` also presents a thorough review of the tension between some of these definitions.
+Often, aleatoric uncertainty is presented by the deep learning literature as being {\it irreducible} and related only to the data, while epistemic is presented as {\it reducible} and related only to the model.
+Unfortunately, these definitions don't account for the gamut of interpretations in the deep learning community or across the domains in which the techniques are applied.
+
+
+Previous efforts have attempted to benchmark models or standardize the definitions of types of uncertainty `[@Caldeira2020arXiv200410710C, @brando2023standardizing]`.
+Other work has focused on developing metrics to assess the quality of the uncertainty estimates `[@Tran2019arXiv191210066T]`.
+
+This work uses the probabilistic conceptualization of deep learning-based UQ from `[@brando2023standardizing]` and examines assumptions in the context of two existing UQ methods---Deep 
 
 
 
@@ -80,7 +104,7 @@ The **DeepBench** software simulates data for analysis tasks that require precis
 
 # Example Outputs 
 
-![Example output of the training script **DeepUQ**. The training scripts have an option to save model parameters such as different types of model loss by epoch. Training (dashed) and validation (solid) loss as a function of epoch for DER (left) and DE (right). The MSE loss (top) and NIG and $\beta$-NLL loss (bottom).](figures/all_losses.png)
+![Example output of the training script **DeepUQ**. The training scripts have an option to save model parameters such as different types of model loss by epoch. Training (dashed) and validation (solid) loss as a function of epoch for DER (left) and DE (right). The MSE loss (top) and NIG and $\beta$-NLL loss (bottom).](figures/all_loss.png)
 
 ![Example output of the analysis script from **DeepUQ**. Aleatoric uncertainty as a function of epoch for both the DER (left) and the DE (right) models. The thick lines are the model we use for the DER (left) and the mean DE model (right). The thin lines demonstrate the jitter from five individual runs of each method with a new random seed for the initialization of the weight parameters.](figures/aleatoric_and_jitter.png)
 
