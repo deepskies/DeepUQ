@@ -1,11 +1,11 @@
 # DeepUQ
 DeepUQ is a package for injecting and measuring different types of uncertainty in ML models.
 
-![status](https://img.shields.io/badge/arXiv-000.000-red)(arxiv link if applicable)
+![status](https://img.shields.io/badge/arXiv-000.000-red)
 
-![status](https://img.shields.io/badge/PyPi-0.0.0.0-blue)(pypi link if applicable)
+![status](https://img.shields.io/badge/PyPi-0.0.0.0-blue)
 
-![status](https://img.shields.io/badge/License-MIT-lightgrey)(MIT or Apache 2.0 or another requires link changed)
+![status](https://img.shields.io/badge/License-MIT-lightgrey)
 
 ![test](https://github.com/deepskies/DeepUQ/actions/workflows/test.yml/badge.svg?branch=issue/JOSS)
 
