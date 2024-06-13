@@ -7,7 +7,7 @@ DeepUQ is a package for injecting and measuring different types of uncertainty i
 
 ![status](https://img.shields.io/badge/License-MIT-lightgrey)(MIT or Apache 2.0 or another requires link changed)
 
-![test](https://github.com/deepskies/DeepUQ/.github/workflows/test.yml/badge.svg)
+![test](https://github.com/deepskies/DeepUQ/actions/workflows/test.yml/badge.svg?branch=issue/JOSS)
 
 ## Installation
 
