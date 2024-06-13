@@ -8,8 +8,15 @@ readme = "README.md"
 license = "MIT"
 
 [tool.poetry.scripts]
-ensamble = "src.scripts.DeepEnsemble:main"
-der = "src.scripts.DeepEvidentialRegression:main"
+UQensemble = "src.scripts.DeepEnsemble:main"
+UQder = "src.scripts.DeepEvidentialRegression:main"
+inoutaleatoric = "src.scripts.ParitySigma:main"
+aleatoric = "src.scripts.Aleatoric:main"
+aleatoricinits = "src.scripts.Aleatoric_and_inits:main"
+alep = "src.scripts.AleatoricandEpistemic:main"
+loss = "src.scripts.LossFunctions:main"
+parity = "src.scripts.ParityPlotTest:main"
+
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
