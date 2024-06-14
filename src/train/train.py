@@ -3,39 +3,103 @@ import time
 import glob
 import numpy as np
 import matplotlib.pyplot as plt
+from typing import List, Union, Tuple
 from models import models
 
 
 def set_random_seeds(seed_value=42):
+    """Sets a random seed used for initializing the weights
+    for the deep learning methods.
+
+    Args:
+        seed_value (int, optional): (Optionally) enter a single
+        integer value for the weight initialization. Defaults to 42.
+        This function will set the seed manually in pytorch.
+    """
     torch.manual_seed(seed_value)
     torch.cuda.manual_seed_all(seed_value)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
     np.random.seed(seed_value)
+    return
 
 
 def train_DER(
-    trainDataLoader,
-    x_val,
-    y_val,
-    INIT_LR,
-    DEVICE,
-    COEFF,
-    loss_type,
-    model_name="DER",
-    EPOCHS=100,
-    path_to_model="models/",
-    save_all_checkpoints=False,
-    save_final_checkpoint=False,
-    overwrite_final_checkpoint=False,
-    plot=True,
-    savefig=True,
-    set_and_save_rs=False,
-    rs=42,
-    save_n_hidden=False,
-    n_hidden=64,
-    verbose=True,
-):
+    trainDataLoader: torch.utils.data.DataLoader,
+    x_val: torch.Tensor,
+    y_val: torch.Tensor,
+    INIT_LR: float,
+    DEVICE: str,
+    COEFF: float,
+    loss_type: str,
+    model_name: str = "DER",
+    EPOCHS: int = 100,
+    path_to_model: str = "models/",
+    save_all_checkpoints: bool = False,
+    save_final_checkpoint: bool = False,
+    overwrite_final_checkpoint: bool = False,
+    plot: bool = True,
+    savefig: bool = True,
+    set_and_save_rs: bool = False,
+    rs: int = 42,
+    save_n_hidden: bool = False,
+    n_hidden: int = 64,
+    verbose: bool = True,
+) -> Tuple[torch.nn.Module, float]:
+    """
+    Trains a DER model with the specified parameters.
+
+    Parameters
+    ----------
+    trainDataLoader : torch.utils.data.DataLoader
+        DataLoader for training data.
+    x_val : torch.Tensor
+        Validation features.
+    y_val : torch.Tensor
+        Validation targets.
+    INIT_LR : float
+        Initial learning rate.
+    DEVICE : str
+        Device to run the model on ('cpu' or 'cuda').
+    COEFF : float
+        Coefficient used in the loss function.
+    loss_type : str
+        Type of loss function to use.
+    model_name : str, optional
+        Name of the model. Defaults to "DER".
+    EPOCHS : int, optional
+        Number of epochs to train. Defaults to 100.
+    path_to_model : str, optional
+        Path to save the model checkpoints. Defaults to "models/".
+    save_all_checkpoints : bool, optional
+        Whether to save all checkpoints. Defaults to False.
+    save_final_checkpoint : bool, optional
+        Whether to save the final checkpoint. Defaults to False.
+    overwrite_final_checkpoint : bool, optional
+        Whether to overwrite the final checkpoint if it exists.
+        Defaults to False.
+    plot : bool, optional
+        Whether to plot training progress. Defaults to True.
+    savefig : bool, optional
+        Whether to save the plots as figures. Defaults to True.
+    set_and_save_rs : bool, optional
+        Whether to set and save random state. Defaults to False.
+    rs : int, optional
+        Random state value. Defaults to 42.
+    save_n_hidden : bool, optional
+        Whether to save the number of hidden layers. Defaults to False.
+    n_hidden : int, optional
+        Number of hidden layers. Defaults to 64.
+    verbose : bool, optional
+        Whether to print detailed logs. Defaults to True.
+
+    Returns
+    -------
+    model: torch.nn.Module
+        The trained model.
+    mse : float
+        Mean Squared Error of the model on the validation set.
+    """
     # first determine if you even need to run anything
     if not save_all_checkpoints and save_final_checkpoint:
         # option to skip running the model if you don't care about
@@ -340,25 +404,72 @@ def train_DER(
 
 
 def train_DE(
-    trainDataLoader,
-    x_val,
-    y_val,
-    INIT_LR,
-    DEVICE,
-    loss_type,
-    n_models,
-    model_name="DE",
-    BETA=0.5,
-    EPOCHS=100,
-    path_to_model="models/",
-    save_all_checkpoints=False,
-    save_final_checkpoint=False,
-    overwrite_final_checkpoint=False,
-    plot=True,
-    savefig=True,
-    verbose=True,
-):
+    trainDataLoader: torch.utils.data.DataLoader,
+    x_val: torch.Tensor,
+    y_val: torch.Tensor,
+    INIT_LR: float,
+    DEVICE: str,
+    loss_type: str,
+    n_models: int,
+    model_name: str = "DE",
+    BETA: Union[float, str] = 0.5,
+    EPOCHS: int = 100,
+    path_to_model: str = "models/",
+    save_all_checkpoints: bool = False,
+    save_final_checkpoint: bool = False,
+    overwrite_final_checkpoint: bool = False,
+    plot: bool = True,
+    savefig: bool = True,
+    verbose: bool = True,
+) -> List[torch.nn.Module]:
+    """
+    Trains an ensemble of DE models with the specified parameters.
 
+    Parameters
+    ----------
+    trainDataLoader : torch.utils.data.DataLoader
+        DataLoader for training data.
+    x_val : torch.Tensor
+        Validation features.
+    y_val : torch.Tensor
+        Validation targets.
+    INIT_LR : float
+        Initial learning rate.
+    DEVICE : str
+        Device to run the models on ('cpu' or 'cuda').
+    loss_type : str
+        Type of loss function to use.
+    n_models : int
+        Number of models in the ensemble.
+    model_name : str, optional
+        Name of the model. Defaults to "DE".
+    BETA : float or str, optional
+        Beta parameter for the loss function. Can also be a string
+        indicating a schedule ('linear_decrease', 'step_decrease_to_0.5',
+        'step_decrease_to_0.0'). Defaults to 0.5.
+    EPOCHS : int, optional
+        Number of epochs to train. Defaults to 100.
+    path_to_model : str, optional
+        Path to save the model checkpoints. Defaults to "models/".
+    save_all_checkpoints : bool, optional
+        Whether to save all checkpoints. Defaults to False.
+    save_final_checkpoint : bool, optional
+        Whether to save the final checkpoint. Defaults to False.
+    overwrite_final_checkpoint : bool, optional
+        Whether to overwrite the final checkpoint if it exists.
+        Defaults to False.
+    plot : bool, optional
+        Whether to plot training progress. Defaults to True.
+    savefig : bool, optional
+        Whether to save the plots as figures. Defaults to True.
+    verbose : bool, optional
+        Whether to print detailed logs. Defaults to True.
+
+    Returns
+    -------
+    list of torch.nn.Module
+        List of trained models in the ensemble.
+    """
     startTime = time.time()
     start_epoch = 0
     if verbose:
@@ -728,7 +839,7 @@ def train_DE(
                         "valid_mean": y_pred_val[:, 0].flatten(),
                         # annoying, this "valid_sigma" is technically
                         # a variance
-                        "valid_sigma": y_pred_val[:, 1].flatten(),
+                        "valid_var": y_pred_val[:, 1].flatten(),
                         "x_val": x_val,
                         "y_val": y_val,
                     },
