@@ -332,6 +332,7 @@ if __name__ == "__main__":
         model_name,
         EPOCHS=config.get_item("model", "n_epochs", "DER"),
         path_to_model=config.get_item("common", "out_dir", "DER"),
+        data_prescription=prescription,
         save_all_checkpoints=config.get_item(
             "model",
             "save_all_checkpoints",

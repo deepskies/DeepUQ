@@ -25,6 +25,7 @@ def train_DER(
     model_name="DER",
     EPOCHS=100,
     path_to_model="models/",
+    data_prescription="linear_homoskedastic",
     save_all_checkpoints=False,
     save_final_checkpoint=False,
     overwrite_final_checkpoint=False,
@@ -44,6 +45,8 @@ def train_DER(
             str(path_to_model)
             + "checkpoints/"
             + str(model_name)
+            + "_"
+            + str(data_prescription)    
             + "_loss_"
             + str(loss_type)
             + "_epoch_"
@@ -246,6 +249,8 @@ def train_DER(
                     str(path_to_model)
                     + "images/animations/"
                     + str(model_name)
+                    + "_"
+                    + str(data_prescription)
                     + "_loss_"
                     + str(loss_type)
                     + "_COEFF_"
@@ -263,6 +268,8 @@ def train_DER(
                 str(path_to_model)
                 + "checkpoints/"
                 + str(model_name)
+                + "_"
+                + str(data_prescription)
                 + "_loss_"
                 + str(loss_type)
                 + "_COEFF_"
@@ -300,6 +307,8 @@ def train_DER(
                 str(path_to_model)
                 + "checkpoints/"
                 + str(model_name)
+                + "_"
+                + str(data_prescription)
                 + "_loss_"
                 + str(loss_type)
                 + "_COEFF_"
