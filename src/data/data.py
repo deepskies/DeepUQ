@@ -108,7 +108,7 @@ class DataPreparation:
         x=np.linspace(0, 100, 101),
         seed=42
     ):
-        if simulation_name == "linear_homogeneous":
+        if simulation_name == "linear_homoskedastic":
             # convert to numpy array (if tensor):
             thetas = np.atleast_2d(thetas)
             # Check if the input has the correct shape
@@ -140,8 +140,8 @@ class DataPreparation:
                 m, b = thetas[i, 0], thetas[i, 1]
                 y[:, i] = m * x + b + ε[:, i]
             # simulated_data = pd.DataFrame({'Feature': x, 'Target': y})
-            print("Linear homogeneous simulation data generated.")
-        elif simulation_name == "linear_heterogeneous":
+            print("Linear homoskedastic simulation data generated.")
+        elif simulation_name == "linear_heteroskedastic":
             # convert to numpy array (if tensor):
             thetas = np.atleast_2d(thetas)
             # Check if the input has the correct shape
@@ -174,7 +174,7 @@ class DataPreparation:
                 m, b = thetas[i, 0], thetas[i, 1]
                 y[:, i] = m * x + b + ε[:, i] * scaling * x
             # simulated_data = pd.DataFrame({'Feature': x, 'Target': y})
-            print("Linear heterogeneous simulation data generated.")
+            print("Linear heteroskedastic simulation data generated.")
         elif simulation_name == "quadratic":
             # Example quadratic simulation
             y = 3 * x**2 + 2 * x + 1 + np.random.normal(0, 1, len(x))
