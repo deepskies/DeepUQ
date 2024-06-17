@@ -48,6 +48,7 @@ DefaultsDER = {
     "data": {
         "data_path": "./data/",
         "data_engine": "DataLoader",
+        "data_prescription": "linear_homogeneous",
         "size_df": 1000,
         "noise_level": "low",
         "normalize": False,
