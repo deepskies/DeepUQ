@@ -140,7 +140,41 @@ class DataPreparation:
                 m, b = thetas[i, 0], thetas[i, 1]
                 y[:, i] = m * x + b + ε[:, i]
             # simulated_data = pd.DataFrame({'Feature': x, 'Target': y})
-            print("Linear simulation data generated.")
+            print("Linear homogeneous simulation data generated.")
+        elif simulation_name == "linear_heterogeneous":
+            # convert to numpy array (if tensor):
+            thetas = np.atleast_2d(thetas)
+            # Check if the input has the correct shape
+            if thetas.shape[1] != 2:
+                raise ValueError(
+                    "Input tensor must have shape (n, 2) where n is \
+                        the number of parameter sets."
+                )
+
+            # Unpack the parameters
+            if thetas.shape[0] == 1:
+                # If there's only one set of parameters, extract them directly
+                m, b = thetas[0, 0], thetas[0, 1]
+            else:
+                # If there are multiple sets of parameters,
+                # extract them for each row
+                m, b = thetas[:, 0], thetas[:, 1]
+            rs = np.random.RandomState(seed)  # 2147483648)#
+            # I'm thinking sigma could actually be a function of x
+            # if we want to get fancy down the road
+            # Generate random noise (epsilon) based
+            # on a normal distribution with mean 0 and standard deviation sigma
+            ε = rs.normal(loc=0, scale=sigma, size=(len(x), thetas.shape[0]))
+
+            # Initialize an empty array to store the results
+            # for each set of parameters
+            y = np.zeros((len(x), thetas.shape[0]))
+            scaling = 0.1
+            for i in range(thetas.shape[0]):
+                m, b = thetas[i, 0], thetas[i, 1]
+                y[:, i] = m * x + b + ε[:, i] * scaling * x
+            # simulated_data = pd.DataFrame({'Feature': x, 'Target': y})
+            print("Linear heterogeneous simulation data generated.")
         elif simulation_name == "quadratic":
             # Example quadratic simulation
             y = 3 * x**2 + 2 * x + 1 + np.random.normal(0, 1, len(x))
