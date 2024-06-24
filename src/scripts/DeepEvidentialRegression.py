@@ -287,7 +287,8 @@ if __name__ == "__main__":
     else:
         loader = MyDataLoader()
         df = loader.load_data_h5(
-            str(prescription) + "_sigma_" + str(sigma) + "_size_" + str(size_df),
+            str(prescription) + "_sigma_" +
+            str(sigma) + "_size_" + str(size_df),
             path=path_to_data,
         )
     len_df = len(df["params"][:, 0].numpy())

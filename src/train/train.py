@@ -46,7 +46,7 @@ def train_DER(
             + "checkpoints/"
             + str(model_name)
             + "_"
-            + str(data_prescription)    
+            + str(data_prescription)
             + "_loss_"
             + str(loss_type)
             + "_epoch_"
