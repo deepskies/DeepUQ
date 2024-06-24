@@ -34,7 +34,8 @@ def temp_data():
         dict = data.get_dict()
         saver = MyDataLoader()
         # save the dataframe
-        filename = "linear_homoskedastic_sigma_" + str(sigma) + "_size_" + str(size_df)
+        filename = ("linear_homoskedastic_sigma_" + str(sigma) +
+                    "_size_" + str(size_df))
         saver.save_data_h5(filename, dict, path=data_dir)
 
     yield data_dir  # provide the temporary directory path to the test function
