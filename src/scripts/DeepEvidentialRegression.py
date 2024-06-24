@@ -35,6 +35,11 @@ def parse_args():
         default=DefaultsDER["data"]["data_path"]
     )
     parser.add_argument(
+        "--data_prescription",
+        "-dp",
+        default=DefaultsDER["data"]["data_prescription"]
+    )
+    parser.add_argument(
         "--data_engine",
         "-dl",
         default=DefaultsDER["data"]["data_engine"],
@@ -49,7 +54,6 @@ def parse_args():
         default=DefaultsDER["model"]["model_engine"],
         choices=ModelModules.keys(),
     )
-
     parser.add_argument(
         "--size_df",
         type=float,
@@ -236,6 +240,7 @@ def parse_args():
             "data": {
                 "data_path": args.data_path,
                 "data_engine": args.data_engine,
+                "data_prescription": args.data_prescription,
                 "size_df": args.size_df,
                 "noise_level": args.noise_level,
                 "val_proportion": args.val_proportion,
@@ -262,11 +267,12 @@ if __name__ == "__main__":
     BATCH_SIZE = config.get_item("data", "batchsize", "DER")
     sigma = DataPreparation.get_sigma(noise)
     path_to_data = config.get_item("data", "data_path", "DER")
+    prescription = config.get_item("data", "data_prescription", "DER")
     if config.get_item("data", "generatedata", "DER", raise_exception=False):
         # generate the df
         data = DataPreparation()
         data.sample_params_from_prior(size_df)
-        data.simulate_data(data.params, sigma, "linear_homogeneous")
+        data.simulate_data(data.params, sigma, prescription)
         df_array = data.get_dict()
         # Convert non-tensor entries to tensors
         df = {}
@@ -281,7 +287,8 @@ if __name__ == "__main__":
     else:
         loader = MyDataLoader()
         df = loader.load_data_h5(
-            "linear_sigma_" + str(sigma) + "_size_" + str(size_df),
+            str(prescription) + "_sigma_" +
+            str(sigma) + "_size_" + str(size_df),
             path=path_to_data,
         )
     len_df = len(df["params"][:, 0].numpy())
@@ -326,6 +333,7 @@ if __name__ == "__main__":
         model_name,
         EPOCHS=config.get_item("model", "n_epochs", "DER"),
         path_to_model=config.get_item("common", "out_dir", "DER"),
+        data_prescription=prescription,
         save_all_checkpoints=config.get_item(
             "model",
             "save_all_checkpoints",
