@@ -240,7 +240,7 @@ def parse_args():
             "data": {
                 "data_path": args.data_path,
                 "data_engine": args.data_engine,
-                "prescription": args.data_prescription,
+                "data_prescription": args.data_prescription,
                 "size_df": args.size_df,
                 "noise_level": args.noise_level,
                 "val_proportion": args.val_proportion,
@@ -267,7 +267,7 @@ if __name__ == "__main__":
     BATCH_SIZE = config.get_item("data", "batchsize", "DER")
     sigma = DataPreparation.get_sigma(noise)
     path_to_data = config.get_item("data", "data_path", "DER")
-    prescription = config.get_item("data", "prescription", "DER")
+    prescription = config.get_item("data", "data_prescription", "DER")
     if config.get_item("data", "generatedata", "DER", raise_exception=False):
         # generate the df
         data = DataPreparation()
