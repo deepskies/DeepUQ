@@ -29,6 +29,11 @@ def parse_args():
                         default=DefaultsAnalysis["common"]["dir"])
     # now args for model
     parser.add_argument(
+        "--data_prescription",
+        "-dp",
+        default=DefaultsAnalysis["model"]["data_prescription"]
+    )
+    parser.add_argument(
         "--n_models",
         type=int,
         default=DefaultsAnalysis["model"]["n_models"],
@@ -122,6 +127,7 @@ def parse_args():
             "common": {"dir": args.dir},
             "model": {"n_models": args.n_models,
                       "n_epochs": args.n_epochs,
+                      "data_prescription": args.data_prescription,
                       "BETA": args.BETA,
                       "COEFF": args.COEFF,
                       "loss_type": args.loss_type},
@@ -167,6 +173,7 @@ if __name__ == "__main__":
     BETA = config.get_item("model", "BETA", "Analysis")
     COEFF = config.get_item("model", "COEFF", "Analysis")
     loss_type = config.get_item("model", "loss_type", "Analysis")
+    prescription = config.get_item("model", "data_prescription", "Analysis")
     sigma_list = []
     for noise in noise_list:
         sigma_list.append(DataPreparation.get_sigma(noise))
@@ -204,6 +211,7 @@ if __name__ == "__main__":
                 for epoch in range(n_epochs):
                     chk = chk_module.load_checkpoint(
                         model,
+                        prescription,
                         noise,
                         epoch,
                         DEVICE,
@@ -227,6 +235,7 @@ if __name__ == "__main__":
                     for nmodels in range(n_models):
                         chk = chk_module.load_checkpoint(
                             model,
+                            prescription,
                             noise,
                             epoch,
                             DEVICE,

@@ -10,6 +10,7 @@ class AggregateCheckpoints:
     def load_checkpoint(
         self,
         model_name,
+        prescription,
         noise,
         epoch,
         device,
@@ -36,7 +37,7 @@ class AggregateCheckpoints:
         if model_name[0:3] == "DER":
             file_name = (
                 str(path)
-                + f"{model_name}_noise_{noise}_loss_{loss}"
+                + f"{model_name}_noise_{noise}_{prescription}_loss_{loss}"
                 + f"_COEFF_{COEFF}_epoch_{epoch}"
             )
             if load_rs_chk:
@@ -46,8 +47,8 @@ class AggregateCheckpoints:
             file_name += ".pt"
         elif model_name[0:2] == "DE":
             file_name = (
-                str(path) + f"{model_name}_noise_{noise}_beta_{BETA}_"
-                f"nmodel_{nmodel}_epoch_{epoch}.pt"
+                str(path) + f"{model_name}_noise_{noise}_{prescription}"
+                f"_beta_{BETA}_nmodel_{nmodel}_epoch_{epoch}.pt"
             )
         checkpoint = torch.load(file_name, map_location=device)
         return checkpoint

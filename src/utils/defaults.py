@@ -96,6 +96,7 @@ DefaultsAnalysis = {
     "model": {
         "model_engine": "DE",
         "model_type": "DE",
+        "data_prescription": "linear_homoskedastic",
         "n_models": 100,
         "n_epochs": 100,
         "BETA": 0.5,
