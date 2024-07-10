@@ -35,6 +35,12 @@ def parse_args():
         help="Number of MVEs in the ensemble",
     )
     parser.add_argument(
+        "--prescription",
+        type=str,
+        default=DefaultsAnalysis["model"]["data_prescription"],
+        help="Current only case is linear homoskedastic",
+    )
+    parser.add_argument(
         "--BETA",
         type=beta_type,
         required=False,
@@ -122,6 +128,7 @@ def parse_args():
             "common": {"dir": args.dir},
             "model": {"n_models": args.n_models,
                       "n_epochs": args.n_epochs,
+                      "prescription": args.prescription,
                       "BETA": args.BETA,
                       "COEFF": args.COEFF,
                       "loss_type": args.loss_type},
@@ -167,6 +174,7 @@ if __name__ == "__main__":
     BETA = config.get_item("model", "BETA", "Analysis")
     COEFF = config.get_item("model", "COEFF", "Analysis")
     loss_type = config.get_item("model", "loss_type", "Analysis")
+    prescription = config.get_item("model", "prescription", "Analysis")
     sigma_list = []
     for noise in noise_list:
         sigma_list.append(DataPreparation.get_sigma(noise))
@@ -202,8 +210,27 @@ if __name__ == "__main__":
             # now run the analysis on the resulting checkpoints
             if model[0:3] == "DER":
                 for epoch in range(n_epochs):
+                    '''
+                    self,
+        model_name,
+        prescription,
+        noise,
+        epoch,
+        device,
+        path="models/",
+        BETA=0.5,
+        nmodel=None,
+        COEFF=0.5,
+        loss="SDER",
+        load_rs_chk=False,
+        rs=42,
+        load_nh_chk=False,
+        nh=64,
+    ):
+                    '''
                     chk = chk_module.load_checkpoint(
                         model,
+                        prescription,
                         noise,
                         epoch,
                         DEVICE,
@@ -275,6 +302,7 @@ if __name__ == "__main__":
                     for epoch in range(n_epochs):
                         chk = chk_module.load_checkpoint(
                             model,
+                            prescription,
                             noise,
                             epoch,
                             DEVICE,
@@ -299,6 +327,7 @@ if __name__ == "__main__":
                     for nmodels in range(n_models):
                         chk = chk_module.load_checkpoint(
                             model,
+                            prescription,
                             noise,
                             epoch,
                             DEVICE,
