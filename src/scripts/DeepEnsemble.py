@@ -41,6 +41,11 @@ def parse_args():
         default=DefaultsDE["data"]["data_prescription"]
     )
     parser.add_argument(
+        "--data_injection",
+        "-di",
+        default=DefaultsDE["data"]["data_injection"]
+    )
+    parser.add_argument(
         "--data_engine",
         "-dl",
         default=DefaultsDE["data"]["data_engine"],
@@ -232,6 +237,7 @@ def parse_args():
                 "data_path": args.data_path,
                 "data_engine": args.data_engine,
                 "data_prescription": args.data_prescription,
+                "data_injection": args.data_injection,
                 "size_df": args.size_df,
                 "noise_level": args.noise_level,
                 "val_proportion": args.val_proportion,
@@ -276,6 +282,7 @@ if __name__ == "__main__":
     sigma = DataPreparation.get_sigma(noise)
     path_to_data = config.get_item("data", "data_path", "DE")
     prescription = config.get_item("data", "data_prescription", "DE")
+    injection = config.get_item("data", "data_injection", "DE")
     if config.get_item("data", "generatedata", "DE", raise_exception=False):
         # generate the df
         data = DataPreparation()
@@ -294,17 +301,35 @@ if __name__ == "__main__":
                 df[key] = torch.tensor(value)
     else:
         loader = MyDataLoader()
-        df = loader.load_data_h5(
-            str(prescription) + "_sigma_" + str(sigma) +
-            "_size_" + str(size_df),
-            path=path_to_data,
-        )
+        filename = str(prescription) + "_" + str(injection) + \
+            "_sigma_" + str(sigma) + \
+            "_size_" + str(size_df)
+        df = loader.load_data_h5(filename, path=path_to_data)
+        print('loaded this file: ', filename)
     len_df = len(df["params"][:, 0].numpy())
-    len_x = len(df["inputs"].numpy())
+    len_x = np.shape(df["output"])[1]
     ms_array = np.repeat(df["params"][:, 0].numpy(), len_x)
     bs_array = np.repeat(df["params"][:, 1].numpy(), len_x)
-    xs_array = np.tile(df["inputs"].numpy(), len_df)
+    #xs_array = np.tile(df["inputs"].numpy(), len_df)
+    #print('shape of inputs', np.shape(df["inputs"]))
+    #print('shape of outputs', np.shape(df["output"]))
+    xs_array = np.reshape(df["inputs"].numpy(), (len_df * len_x))
     ys_array = np.reshape(df["output"].numpy(), (len_df * len_x))
+
+    '''
+    print('shapes after reshape',
+          np.shape(xs_array),
+          np.shape(ys_array),
+          np.shape(ms_array))
+    
+    # plot to make doubley sure
+    import matplotlib.pyplot as plt
+    plt.scatter(xs_array[0:100], ys_array[0:100])
+    plt.show()
+    print(ms_array[0:100])
+
+    STOP
+    '''
 
     inputs = np.array([xs_array, ms_array, bs_array]).T
     model_inputs, model_outputs = DataPreparation.normalize(inputs,
@@ -322,7 +347,8 @@ if __name__ == "__main__":
 
     model_name = config.get_item("model",
                                  "model_type",
-                                 "DE") + "_noise_" + noise
+                                 "DE") + "_inject_" + injection + \
+                                         "_noise_" + noise
     model, lossFn = models.model_setup_DE(
         config.get_item("model", "loss_type", "DE"),
         DEVICE,
@@ -331,6 +357,9 @@ if __name__ == "__main__":
         "save final checkpoint has this value",
         config.get_item("model", "save_final_checkpoint", "DE"),
     )
+    print(
+        "model name is ", model_name
+        )
     model_ensemble = train.train_DE(
         trainDataLoader,
         x_val,

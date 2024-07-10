@@ -716,9 +716,7 @@ def train_DE(
                         "train_mse": np.mean(mse_this_epoch),
                         "valid_mse": mse,
                         "valid_mean": y_pred_val[:, 0].flatten(),
-                        # annoying, this "valid_sigma" is technically
-                        # a variance
-                        "valid_sigma": y_pred_val[:, 1].flatten(),
+                        "valid_var": y_pred_val[:, 1].flatten(),
                         "x_val": x_val,
                         "y_val": y_val,
                     },
@@ -742,9 +740,7 @@ def train_DE(
                         "train_mse": np.mean(mse_this_epoch),
                         "valid_mse": mse,
                         "valid_mean": y_pred_val[:, 0].flatten(),
-                        # annoying, this "valid_sigma" is technically
-                        # a variance
-                        "valid_sigma": y_pred_val[:, 1].flatten(),
+                        "valid_var": y_pred_val[:, 1].flatten(),
                         "x_val": x_val,
                         "y_val": y_val,
                     },

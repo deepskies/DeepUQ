@@ -195,11 +195,12 @@ class DataPreparation:
         '''
         if inject_type == 'predictive':
             #self.input = x
-            self.input = np.repeat(x, thetas.shape[0], axis=0).T
+            self.input = torch.Tensor(
+                np.tile(x, thetas.shape[0]).T)
             self.output = torch.Tensor(y_prime.T)
             self.output_err = ε[:, i].T
         elif inject_type == 'feature':
-            self.input = x_prime.T
+            self.input = torch.Tensor(x_prime.T)
             self.output = torch.Tensor(y.T)
             self.output_err = ε[:, i].T
         print(f"{simulation_name} simulation data generated, \
