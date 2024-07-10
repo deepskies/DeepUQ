@@ -136,7 +136,7 @@ class DataPreparation:
 
             # Initialize an empty array to store the results
             # for each set of parameters
-            x_prime = []
+            x_prime = np.zeros((len(x), thetas.shape[0]))
             y_prime = np.zeros((len(x), thetas.shape[0]))
             y = np.zeros((len(x), thetas.shape[0]))
             for i in range(thetas.shape[0]):
@@ -146,7 +146,7 @@ class DataPreparation:
                 elif inject_type == 'feature':
                     # y_prime[:, i] = m * (x + ε[:, i]) + b
                     y[:, i] = m * x + b
-                    x_prime.append(x + ε[:, i])
+                    x_prime[:, i] = (x + ε[:, i])
             
         else:
             print(
@@ -194,13 +194,14 @@ class DataPreparation:
             y = 3 * x**2 + 2 * x + 1 + np.random.normal(0, 1, len(x))
         '''
         if inject_type == 'predictive':
-            self.input = x
+            #self.input = x
+            self.input = np.repeat(x, thetas.shape[0], axis=0).T
             self.output = torch.Tensor(y_prime.T)
-            self.output_err = ε[:, i]
+            self.output_err = ε[:, i].T
         elif inject_type == 'feature':
-            self.input = x_prime
+            self.input = x_prime.T
             self.output = torch.Tensor(y.T)
-            self.output_err = ε[:, i]
+            self.output_err = ε[:, i].T
         print(f"{simulation_name} simulation data generated, \
                 with noise injected type: {inject_type}.")
 
