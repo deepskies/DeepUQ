@@ -104,8 +104,9 @@ class DataPreparation:
         self,
         thetas,
         sigma,
-        simulation_name,
+        simulation_name='linear_homoskedastic',
         x=np.linspace(0, 100, 101),
+        inject_type='predictive',
         seed=42
     ):
         if simulation_name == "linear_homoskedastic":
@@ -135,12 +136,25 @@ class DataPreparation:
 
             # Initialize an empty array to store the results
             # for each set of parameters
+            x_prime = []
+            y_prime = np.zeros((len(x), thetas.shape[0]))
             y = np.zeros((len(x), thetas.shape[0]))
             for i in range(thetas.shape[0]):
                 m, b = thetas[i, 0], thetas[i, 1]
-                y[:, i] = m * x + b + ε[:, i]
-            # simulated_data = pd.DataFrame({'Feature': x, 'Target': y})
-            print("Linear homoskedastic simulation data generated.")
+                if inject_type == 'predictive':
+                    y_prime[:, i] = m * x + b + ε[:, i]
+                elif inject_type == 'feature':
+                    # y_prime[:, i] = m * (x + ε[:, i]) + b
+                    y[:, i] = m * x + b
+                    x_prime.append(x + ε[:, i])
+            
+        else:
+            print(
+                f"Error: Unknown simulation name '{simulation_name}'. \
+                    No data generated."
+            )
+            return
+        '''
         elif simulation_name == "linear_heteroskedastic":
             # convert to numpy array (if tensor):
             thetas = np.atleast_2d(thetas)
@@ -178,16 +192,17 @@ class DataPreparation:
         elif simulation_name == "quadratic":
             # Example quadratic simulation
             y = 3 * x**2 + 2 * x + 1 + np.random.normal(0, 1, len(x))
-        else:
-            print(
-                f"Error: Unknown simulation name '{simulation_name}'. \
-                    No data generated."
-            )
-            return
-        self.input = x
-        self.output = torch.Tensor(y.T)
-        self.output_err = ε[:, i]
-        # self.data = simulated_data
+        '''
+        if inject_type == 'predictive':
+            self.input = x
+            self.output = torch.Tensor(y_prime.T)
+            self.output_err = ε[:, i]
+        elif inject_type == 'feature':
+            self.input = x_prime
+            self.output = torch.Tensor(y.T)
+            self.output_err = ε[:, i]
+        print(f"{simulation_name} simulation data generated, \
+                with noise injected type: {inject_type}.")
 
     def sample_params_from_prior(self,
                                  n_samples,
