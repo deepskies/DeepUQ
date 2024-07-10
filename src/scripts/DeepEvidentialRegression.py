@@ -40,6 +40,11 @@ def parse_args():
         default=DefaultsDER["data"]["data_prescription"]
     )
     parser.add_argument(
+        "--data_injection",
+        "-di",
+        default=DefaultsDER["data"]["data_injection"]
+    )
+    parser.add_argument(
         "--data_engine",
         "-dl",
         default=DefaultsDER["data"]["data_engine"],
@@ -241,6 +246,7 @@ def parse_args():
                 "data_path": args.data_path,
                 "data_engine": args.data_engine,
                 "data_prescription": args.data_prescription,
+                "data_injection": args.data_injection,
                 "size_df": args.size_df,
                 "noise_level": args.noise_level,
                 "val_proportion": args.val_proportion,
@@ -268,6 +274,7 @@ if __name__ == "__main__":
     sigma = DataPreparation.get_sigma(noise)
     path_to_data = config.get_item("data", "data_path", "DER")
     prescription = config.get_item("data", "data_prescription", "DER")
+    injection = config.get_item("data", "data_injection", "DER")
     if config.get_item("data", "generatedata", "DER", raise_exception=False):
         # generate the df
         data = DataPreparation()
@@ -316,12 +323,15 @@ if __name__ == "__main__":
     model_name = config.get_item(
         "model",
         "model_type",
-        "DER") + "_noise_" + noise
+        "DER") + "_inject_" + injection + "_noise_" + noise
     model, lossFn = models.model_setup_DER(
         config.get_item("model", "loss_type", "DER"),
         DEVICE,
         n_hidden=config.get_item("model", "n_hidden", "DER")
     )
+    print(
+        "model name is ", model_name
+        )
     model_ensemble = train.train_DER(
         trainDataLoader,
         x_val,
