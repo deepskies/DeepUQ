@@ -293,16 +293,16 @@ if __name__ == "__main__":
                 df[key] = torch.tensor(value)
     else:
         loader = MyDataLoader()
-        df = loader.load_data_h5(
-            str(prescription) + "_sigma_" +
-            str(sigma) + "_size_" + str(size_df),
-            path=path_to_data,
-        )
+        filename = str(prescription) + "_" + str(injection) + \
+            "_sigma_" + str(sigma) + \
+            "_size_" + str(size_df)
+        df = loader.load_data_h5(filename, path=path_to_data)
+        print('loaded this file: ', filename)
     len_df = len(df["params"][:, 0].numpy())
-    len_x = len(df["inputs"].numpy())
+    len_x = np.shape(df["output"])[1]
     ms_array = np.repeat(df["params"][:, 0].numpy(), len_x)
     bs_array = np.repeat(df["params"][:, 1].numpy(), len_x)
-    xs_array = np.tile(df["inputs"].numpy(), len_df)
+    xs_array = np.reshape(df["inputs"].numpy(), (len_df * len_x))
     ys_array = np.reshape(df["output"].numpy(), (len_df * len_x))
     inputs = np.array([xs_array, ms_array, bs_array]).T
     model_inputs, model_outputs = DataPreparation.normalize(
@@ -323,7 +323,7 @@ if __name__ == "__main__":
     model_name = config.get_item(
         "model",
         "model_type",
-        "DER") + "_inject_" + injection + "_noise_" + noise
+        "DER")
     model, lossFn = models.model_setup_DER(
         config.get_item("model", "loss_type", "DER"),
         DEVICE,
