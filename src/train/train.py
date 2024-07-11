@@ -26,6 +26,7 @@ def train_DER(
     EPOCHS=100,
     path_to_model="models/",
     data_prescription="linear_homoskedastic",
+    inject_type="predictive",
     save_all_checkpoints=False,
     save_final_checkpoint=False,
     overwrite_final_checkpoint=False,
@@ -47,6 +48,8 @@ def train_DER(
             + str(model_name)
             + "_"
             + str(data_prescription)
+            + "_"
+            + str(inject_type)
             + "_loss_"
             + str(loss_type)
             + "_epoch_"
@@ -251,6 +254,8 @@ def train_DER(
                     + str(model_name)
                     + "_"
                     + str(data_prescription)
+                    + "_"
+                    + str(inject_type)
                     + "_loss_"
                     + str(loss_type)
                     + "_COEFF_"
@@ -270,6 +275,8 @@ def train_DER(
                 + str(model_name)
                 + "_"
                 + str(data_prescription)
+                + "_"
+                + str(inject_type)
                 + "_loss_"
                 + str(loss_type)
                 + "_COEFF_"
@@ -309,6 +316,8 @@ def train_DER(
                 + str(model_name)
                 + "_"
                 + str(data_prescription)
+                + "_"
+                + str(inject_type)
                 + "_loss_"
                 + str(loss_type)
                 + "_COEFF_"
@@ -361,6 +370,7 @@ def train_DE(
     EPOCHS=100,
     path_to_model="models/",
     data_prescription="linear_homoskedastic",
+    inject_type="predictive",
     save_all_checkpoints=False,
     save_final_checkpoint=False,
     overwrite_final_checkpoint=False,
@@ -395,6 +405,8 @@ def train_DE(
                     + str(model_name)
                     + "_"
                     + str(data_prescription)
+                    + "_"
+                    + str(inject_type)
                     + "_beta_"
                     + str(BETA)
                     + "_nmodel_"
@@ -410,6 +422,8 @@ def train_DE(
                     + str(model_name)
                     + "_"
                     + str(data_prescription)
+                    + "_"
+                    + str(inject_type)
                     + "_nmodel_"
                     + str(m)
                     + "_epoch_"
@@ -687,6 +701,8 @@ def train_DE(
                         + str(model_name)
                         + "_"
                         + str(data_prescription)
+                        + "_"
+                        + str(inject_type)
                         + "_nmodel_"
                         + str(m)
                         + "_beta_"
@@ -701,7 +717,8 @@ def train_DE(
 
             if save_all_checkpoints:
                 filename = str(path_to_model) + 'checkpoints/' + \
-                    str(model_name) + "_" + str(data_prescription)
+                    str(model_name) + "_" + str(data_prescription) + \
+                    "_" + str(inject_type)
                 if loss_type == "bnll_loss":
                     filename += "_beta_" + str(BETA)
                 filename += "_nmodel_" + str(m) + "_epoch_" + str(epoch)
@@ -725,7 +742,8 @@ def train_DE(
             if save_final_checkpoint and (e % (EPOCHS - 1) == 0) and (e != 0):
                 # option to just save final epoch
                 filename = str(path_to_model) + 'checkpoints/' + \
-                    str(model_name)
+                    str(model_name) + "_" + str(data_prescription) + \
+                    "_" + str(inject_type)
                 if loss_type == "bnll_loss":
                     filename += "_beta_" + str(BETA)
                 filename += "_nmodel_" + str(m) + "_epoch_" + str(epoch)
