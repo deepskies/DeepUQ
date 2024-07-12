@@ -19,13 +19,14 @@ parity = "src.scripts.ParityPlotTest:main"
 
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.11"
+python = ">=3.10,<3.11"
 jupyter = "^1.0.0"
 matplotlib = "^3.7.1"
 scikit-learn = "^1.3.0"
 seaborn = "^0.12.2"
 torch = "^2.0.1"
 h5py = "^3.10.0"
+deepbench = "^0.2.3"
 
 [tool.poetry.group.dev.dependencies]
 pytest-cov = "^4.1.0"
