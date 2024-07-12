@@ -5,10 +5,7 @@ from sklearn.model_selection import train_test_split
 import pickle
 import torch
 import h5py
-from deepbench.astro_object import GalaxyObject 
-#from utils.challenge_utilities import SkyGenerator01 as SkyGenerator
-
-
+from deepbench.astro_object import GalaxyObject
 
 class MyDataLoader:
     def __init__(self):
