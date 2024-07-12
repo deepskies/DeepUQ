@@ -38,8 +38,8 @@ class AggregateCheckpoints:
         if model_name[0:3] == "DER":
             file_name = (
                 str(path)
-                + f"{model_name}_{prescription}_{inject_type}_noise_{noise}"
-                + f"_loss_{loss}_COEFF_{COEFF}_epoch_{epoch}"
+                + f"{model_name}_{prescription}_{inject_type}"
+                + f"_noise_{noise}_loss_{loss}_COEFF_{COEFF}_epoch_{epoch}"
             )
             if load_rs_chk:
                 file_name += f"_rs_{rs}"
@@ -49,8 +49,8 @@ class AggregateCheckpoints:
         elif model_name[0:2] == "DE":
             file_name = (
                 str(path)
-                + f"{model_name}_{prescription}_{inject_type}_noise_{noise}"
-                f"_beta_{BETA}_nmodel_{nmodel}_epoch_{epoch}.pt"
+                + f"{model_name}_{prescription}_{inject_type}"
+                f"_noise_{noise}_beta_{BETA}_nmodel_{nmodel}_epoch_{epoch}.pt"
             )
         checkpoint = torch.load(file_name, map_location=device)
         return checkpoint

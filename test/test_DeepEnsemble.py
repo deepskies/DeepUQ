@@ -31,11 +31,14 @@ def temp_data():  # noise_level, size_df):
         sigma = 10
     if noise_level == "vhigh":
         sigma = 100
-    data.simulate_data(data.params, sigma, "linear_homoskedastic")
+    data.simulate_data(data.params,
+                       sigma,
+                       "linear_homoskedastic",
+                       inject_type="predictive")
     dict = data.get_dict()
     saver = MyDataLoader()
     # save the dataframe
-    filename = ("linear_homoskedastic_sigma_" + str(sigma) +
+    filename = ("linear_homoskedastic_predictive_sigma_" + str(sigma) +
                 "_size_" + str(size_df))
     saver.save_data_h5(filename, dict, path=data_dir)
 
@@ -91,6 +94,7 @@ def create_test_config(
             "data_path": temp_data,
             "data_engine": "DataLoader",
             "data_prescription": "linear_homoskedastic",
+            "data_injection": "predictive",
             "size_df": size_df,
             "noise_level": noise_level,
             "val_proportion": 0.1,

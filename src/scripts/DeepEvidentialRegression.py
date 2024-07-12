@@ -29,20 +29,12 @@ def parse_args():
     parser.add_argument("--config", "-c", default=None)
 
     # data info
+    parser.add_argument("--data_path", "-d", default=DefaultsDER["data"]["data_path"])
     parser.add_argument(
-        "--data_path",
-        "-d",
-        default=DefaultsDER["data"]["data_path"]
+        "--data_prescription", "-dp", default=DefaultsDER["data"]["data_prescription"]
     )
     parser.add_argument(
-        "--data_prescription",
-        "-dp",
-        default=DefaultsDER["data"]["data_prescription"]
-    )
-    parser.add_argument(
-        "--data_injection",
-        "-di",
-        default=DefaultsDER["data"]["data_injection"]
+        "--data_injection", "-di", default=DefaultsDER["data"]["data_injection"]
     )
     parser.add_argument(
         "--data_engine",
@@ -293,11 +285,17 @@ if __name__ == "__main__":
                 df[key] = torch.tensor(value)
     else:
         loader = MyDataLoader()
-        filename = str(prescription) + "_" + str(injection) + \
-            "_sigma_" + str(sigma) + \
-            "_size_" + str(size_df)
+        filename = (
+            str(prescription)
+            + "_"
+            + str(injection)
+            + "_sigma_"
+            + str(sigma)
+            + "_size_"
+            + str(size_df)
+        )
         df = loader.load_data_h5(filename, path=path_to_data)
-        print('loaded this file: ', filename)
+        print("loaded this file: ", filename)
     len_df = len(df["params"][:, 0].numpy())
     len_x = np.shape(df["output"])[1]
     ms_array = np.repeat(df["params"][:, 0].numpy(), len_x)
@@ -305,33 +303,22 @@ if __name__ == "__main__":
     xs_array = np.reshape(df["inputs"].numpy(), (len_df * len_x))
     ys_array = np.reshape(df["output"].numpy(), (len_df * len_x))
     inputs = np.array([xs_array, ms_array, bs_array]).T
-    model_inputs, model_outputs = DataPreparation.normalize(
-        inputs,
-        ys_array,
-        norm)
+    model_inputs, model_outputs = DataPreparation.normalize(inputs, ys_array, norm)
     x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
         model_inputs, model_outputs, val_proportion=val_prop, random_state=rs
     )
     trainData = TensorDataset(torch.Tensor(x_train), torch.Tensor(y_train))
-    trainDataLoader = DataLoader(
-        trainData,
-        batch_size=BATCH_SIZE,
-        shuffle=True)
+    trainDataLoader = DataLoader(trainData, batch_size=BATCH_SIZE, shuffle=True)
     print("[INFO] initializing the gal model...")
     # set the device we will be using to train the model
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model_name = config.get_item(
-        "model",
-        "model_type",
-        "DER")
+    model_name = config.get_item("model", "model_type", "DER")
     model, lossFn = models.model_setup_DER(
         config.get_item("model", "loss_type", "DER"),
         DEVICE,
-        n_hidden=config.get_item("model", "n_hidden", "DER")
+        n_hidden=config.get_item("model", "n_hidden", "DER"),
     )
-    print(
-        "model name is ", model_name
-        )
+    print("model name is ", model_name)
     model_ensemble = train.train_DER(
         trainDataLoader,
         x_val,
@@ -344,26 +331,18 @@ if __name__ == "__main__":
         EPOCHS=config.get_item("model", "n_epochs", "DER"),
         path_to_model=config.get_item("common", "out_dir", "DER"),
         data_prescription=prescription,
-        save_all_checkpoints=config.get_item(
-            "model",
-            "save_all_checkpoints",
-            "DER"),
-        save_final_checkpoint=config.get_item(
-            "model",
-            "save_final_checkpoint",
-            "DER"),
+        inject_type=injection,
+        noise_level=noise,
+        save_all_checkpoints=config.get_item("model", "save_all_checkpoints", "DER"),
+        save_final_checkpoint=config.get_item("model", "save_final_checkpoint", "DER"),
         overwrite_final_checkpoint=config.get_item(
             "model", "overwrite_final_checkpoint", "DER"
         ),
         plot=config.get_item("model", "plot", "DER"),
         savefig=config.get_item("model", "savefig", "DER"),
-        set_and_save_rs=config.get_item("model",
-                                        "save_chk_random_seed_init",
-                                        "DER"),
+        set_and_save_rs=config.get_item("model", "save_chk_random_seed_init", "DER"),
         rs=config.get_item("model", "rs", "DER"),
-        save_n_hidden=config.get_item("model",
-                                      "save_n_hidden",
-                                      "DER"),
+        save_n_hidden=config.get_item("model", "save_n_hidden", "DER"),
         n_hidden=config.get_item("model", "n_hidden", "DER"),
         verbose=config.get_item("model", "verbose", "DER"),
     )

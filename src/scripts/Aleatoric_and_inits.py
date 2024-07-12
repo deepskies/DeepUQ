@@ -35,7 +35,7 @@ def parse_args():
         help="Number of MVEs in the ensemble",
     )
     parser.add_argument(
-        "--prescription",
+        "--data_prescription",
         type=str,
         default=DefaultsAnalysis["model"]["data_prescription"],
         help="Current only case is linear homoskedastic",
@@ -128,7 +128,7 @@ def parse_args():
             "common": {"dir": args.dir},
             "model": {"n_models": args.n_models,
                       "n_epochs": args.n_epochs,
-                      "prescription": args.prescription,
+                      "data_prescription": args.data_prescription,
                       "BETA": args.BETA,
                       "COEFF": args.COEFF,
                       "loss_type": args.loss_type},
@@ -174,7 +174,10 @@ if __name__ == "__main__":
     BETA = config.get_item("model", "BETA", "Analysis")
     COEFF = config.get_item("model", "COEFF", "Analysis")
     loss_type = config.get_item("model", "loss_type", "Analysis")
-    prescription = config.get_item("model", "prescription", "Analysis")
+    prescription = config.get_item("model", "data_prescription", "Analysis")
+    inject_type_list = config.get_item("analysis",
+                                       "inject_type_list",
+                                       "Analysis")
     sigma_list = []
     for noise in noise_list:
         sigma_list.append(DataPreparation.get_sigma(noise))
@@ -191,6 +194,8 @@ if __name__ == "__main__":
                                       "model_names_list",
                                       "Analysis")
     print("model list", model_name_list)
+    model = model_name_list[0]
+    print("one model at a time", model)
     print("noise list", noise_list)
     chk_module = AggregateCheckpoints()
     # make an empty nested dictionary with keys for
@@ -204,8 +209,13 @@ if __name__ == "__main__":
         for model_name in model_name_list
     }
     n_epochs = config.get_item("model", "n_epochs", "Analysis")
-    for model in model_name_list:
+    # switching from two panels for different models to 
+    # two panels for different injection types
+    # could eventually make this into a four panel plot
+    #for model in model_name_list:
+    for inject_type in inject_type_list:
         for noise in noise_list:
+            
             # append a noise key
             # now run the analysis on the resulting checkpoints
             if model[0:3] == "DER":
@@ -231,6 +241,7 @@ if __name__ == "__main__":
                     chk = chk_module.load_checkpoint(
                         model,
                         prescription,
+                        inject_type,
                         noise,
                         epoch,
                         DEVICE,
@@ -255,6 +266,8 @@ if __name__ == "__main__":
                     for nmodels in range(n_models):
                         chk = chk_module.load_checkpoint(
                             model,
+                            prescription,
+                            inject_type,
                             noise,
                             epoch,
                             DEVICE,
@@ -292,7 +305,8 @@ if __name__ == "__main__":
     }
     '''
     n_epochs = config.get_item("model", "n_epochs", "Analysis")
-    for model in model_name_list:
+    #for model in model_name_list:
+    for inject_type in inject_type_list:
         for noise in noise_list:
             for rs in rs_list:
 
@@ -303,6 +317,7 @@ if __name__ == "__main__":
                         chk = chk_module.load_checkpoint(
                             model,
                             prescription,
+                            inject_type,
                             noise,
                             epoch,
                             DEVICE,
@@ -328,6 +343,7 @@ if __name__ == "__main__":
                         chk = chk_module.load_checkpoint(
                             model,
                             prescription,
+                            inject_type,
                             noise,
                             epoch,
                             DEVICE,

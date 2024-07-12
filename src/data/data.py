@@ -104,10 +104,10 @@ class DataPreparation:
         self,
         thetas,
         sigma,
-        simulation_name='linear_homoskedastic',
+        simulation_name="linear_homoskedastic",
         x=np.linspace(0, 100, 101),
-        inject_type='predictive',
-        seed=42
+        inject_type="predictive",
+        seed=42,
     ):
         if simulation_name == "linear_homoskedastic":
             # convert to numpy array (if tensor):
@@ -141,20 +141,20 @@ class DataPreparation:
             y = np.zeros((len(x), thetas.shape[0]))
             for i in range(thetas.shape[0]):
                 m, b = thetas[i, 0], thetas[i, 1]
-                if inject_type == 'predictive':
+                if inject_type == "predictive":
                     y_prime[:, i] = m * x + b + ε[:, i]
-                elif inject_type == 'feature':
+                elif inject_type == "feature":
                     # y_prime[:, i] = m * (x + ε[:, i]) + b
                     y[:, i] = m * x + b
-                    x_prime[:, i] = (x + ε[:, i])
-            
+                    x_prime[:, i] = x + ε[:, i]
+
         else:
             print(
                 f"Error: Unknown simulation name '{simulation_name}'. \
                     No data generated."
             )
             return
-        '''
+        """
         elif simulation_name == "linear_heteroskedastic":
             # convert to numpy array (if tensor):
             thetas = np.atleast_2d(thetas)
@@ -192,30 +192,27 @@ class DataPreparation:
         elif simulation_name == "quadratic":
             # Example quadratic simulation
             y = 3 * x**2 + 2 * x + 1 + np.random.normal(0, 1, len(x))
-        '''
-        if inject_type == 'predictive':
-            #self.input = x
-            self.input = torch.Tensor(
-                np.tile(x, thetas.shape[0]).T)
+        """
+        if inject_type == "predictive":
+            # self.input = x
+            self.input = torch.Tensor(np.tile(x, thetas.shape[0]).T)
             self.output = torch.Tensor(y_prime.T)
             self.output_err = ε[:, i].T
-        elif inject_type == 'feature':
+        elif inject_type == "feature":
             self.input = torch.Tensor(x_prime.T)
             self.output = torch.Tensor(y.T)
             self.output_err = ε[:, i].T
-        print(f"{simulation_name} simulation data generated, \
-                with noise injected type: {inject_type}.")
+        print(
+            f"{simulation_name} simulation data generated, \
+                with noise injected type: {inject_type}."
+        )
 
-    def sample_params_from_prior(self,
-                                 n_samples,
-                                 seed=42):
+    def sample_params_from_prior(self, n_samples, seed=42):
         low_bounds = torch.tensor([0, -10], dtype=torch.float32)
         high_bounds = torch.tensor([10, 10], dtype=torch.float32)
         rs = np.random.RandomState(seed)  # 2147483648)#
-        prior = rs.uniform(low=low_bounds,
-                           high=high_bounds,
-                           size=(n_samples, 2))
-        '''
+        prior = rs.uniform(low=low_bounds, high=high_bounds, size=(n_samples, 2))
+        """
         the prior way of doing this (lol)
         #print(np.shape(prior), prior)
         #prior = Uniform(low=low_bounds,
@@ -223,7 +220,7 @@ class DataPreparation:
         #                seed=seed)
         # not random_seed, rs, or seed
         #params = prior.sample((n_samples,))
-        '''
+        """
         self.params = prior
 
     def get_dict(self):
@@ -248,7 +245,7 @@ class DataPreparation:
         elif noise == "vhigh":
             sigma = 100
         else:
-            print('cannot find a match for this noise', noise)
+            print("cannot find a match for this noise", noise)
         return sigma
 
     def normalize(inputs, ys_array, norm=False):
