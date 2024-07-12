@@ -7,6 +7,7 @@ import torch
 import h5py
 from deepbench.astro_object import GalaxyObject
 
+
 class MyDataLoader:
     def __init__(self):
         self.data = None
