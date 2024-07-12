@@ -5,6 +5,9 @@ from sklearn.model_selection import train_test_split
 import pickle
 import torch
 import h5py
+from deepbench.astro_object import GalaxyObject 
+#from utils.challenge_utilities import SkyGenerator01 as SkyGenerator
+
 
 
 class MyDataLoader:
@@ -99,6 +102,31 @@ class DataPreparation:
 
     def __init__(self):
         self.data = None
+
+    def simulate_data_2d(
+        self,
+        image_size=100,
+        amplitude=10,
+        radius=10,
+        center_x=50,
+        center_y=50,
+        theta=0,
+        noise_level=0.0,
+        simulation_name="linear_homoskedastic",
+        inject_type="predictive",
+        seed=42,
+    ):
+        image = GalaxyObject(
+            image_dimensions=(image_size, image_size),
+            amplitude=amplitude,
+            noise_level=noise_level,
+            theta=theta,
+            radius=radius
+                ).create_object(
+                    center_x=center_x,
+                    center_y=center_y
+                        )
+        return image
 
     def simulate_data(
         self,
@@ -207,12 +235,19 @@ class DataPreparation:
                 with noise injected type: {inject_type}."
         )
 
-    def sample_params_from_prior(self, n_samples, seed=42):
-        low_bounds = torch.tensor([0, -10], dtype=torch.float32)
-        high_bounds = torch.tensor([10, 10], dtype=torch.float32)
+    def sample_params_from_prior(self,
+                                 n_samples,
+                                 low=[0, -10],
+                                 high=[10, 10],
+                                 n_params=2,
+                                 seed=42):
+        assert len(low) == len(high) == n_params, \
+            "the length of the bounds must match that of the n_params"
+        low_bounds = torch.tensor(low, dtype=torch.float32)
+        high_bounds = torch.tensor(high, dtype=torch.float32)
         rs = np.random.RandomState(seed)  # 2147483648)#
         prior = rs.uniform(
-            low=low_bounds, high=high_bounds, size=(n_samples, 2))
+            low=low_bounds, high=high_bounds, size=(n_samples, n_params))
         """
         the prior way of doing this (lol)
         #print(np.shape(prior), prior)
