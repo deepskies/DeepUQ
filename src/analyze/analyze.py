@@ -11,12 +11,13 @@ class AggregateCheckpoints:
         self,
         model_name,
         prescription,
+        inject_type,
         noise,
         epoch,
         device,
         path="models/",
         BETA=0.5,
-        nmodel=None,
+        nmodel=99,
         COEFF=0.5,
         loss="SDER",
         load_rs_chk=False,
@@ -37,8 +38,8 @@ class AggregateCheckpoints:
         if model_name[0:3] == "DER":
             file_name = (
                 str(path)
-                + f"{model_name}_noise_{noise}_{prescription}_loss_{loss}"
-                + f"_COEFF_{COEFF}_epoch_{epoch}"
+                + f"{model_name}_{prescription}_{inject_type}"
+                + f"_noise_{noise}_loss_{loss}_COEFF_{COEFF}_epoch_{epoch}"
             )
             if load_rs_chk:
                 file_name += f"_rs_{rs}"
@@ -47,8 +48,9 @@ class AggregateCheckpoints:
             file_name += ".pt"
         elif model_name[0:2] == "DE":
             file_name = (
-                str(path) + f"{model_name}_noise_{noise}_{prescription}"
-                f"_beta_{BETA}_nmodel_{nmodel}_epoch_{epoch}.pt"
+                str(path)
+                + f"{model_name}_{prescription}_{inject_type}"
+                f"_noise_{noise}_beta_{BETA}_nmodel_{nmodel}_epoch_{epoch}.pt"
             )
         checkpoint = torch.load(file_name, map_location=device)
         return checkpoint
@@ -57,8 +59,7 @@ class AggregateCheckpoints:
         # Extract additional information
         # loaded_epoch = checkpoint.get("epoch", None)
         mean_validation = checkpoint.get("valid_mean", None).detach().numpy()
-        # valid_sigma is technically the variance
-        var_validation = checkpoint.get("valid_sigma", None).detach().numpy()
+        var_validation = checkpoint.get("valid_var", None).detach().numpy()
         return mean_validation, var_validation
 
     def ep_al_checkpoint_DER(self, checkpoint):

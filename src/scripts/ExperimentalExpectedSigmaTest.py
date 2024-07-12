@@ -8,6 +8,8 @@ from utils.config import Config
 from utils.defaults import DefaultsAnalysis
 from data.data import DataPreparation
 from analyze.analyze import AggregateCheckpoints
+from torch.utils.data import TensorDataset
+from models import models
 
 # from plots import Plots
 
@@ -28,15 +30,22 @@ def parse_args():
     parser.add_argument("--dir", default=DefaultsAnalysis["common"]["dir"])
     # now args for model
     parser.add_argument(
-        "--data_prescription",
-        "-dp",
-        default=DefaultsAnalysis["model"]["data_prescription"],
-    )
-    parser.add_argument(
         "--n_models",
         type=int,
         default=DefaultsAnalysis["model"]["n_models"],
         help="Number of MVEs in the ensemble",
+    )
+    parser.add_argument(
+        "--prescription",
+        type=str,
+        default=DefaultsAnalysis["model"]["data_prescription"],
+        help="Current only case is linear homoskedastic",
+    )
+    parser.add_argument(
+        "--inject_type_list",
+        type=str,
+        default=DefaultsAnalysis["analysis"]["inject_type_list"],
+        help="Options are predictive or feature",
     )
     parser.add_argument(
         "--BETA",
@@ -127,7 +136,7 @@ def parse_args():
             "model": {
                 "n_models": args.n_models,
                 "n_epochs": args.n_epochs,
-                "data_prescription": args.data_prescription,
+                "prescription": args.prescription,
                 "BETA": args.BETA,
                 "COEFF": args.COEFF,
                 "loss_type": args.loss_type,
@@ -135,6 +144,7 @@ def parse_args():
             "analysis": {
                 "noise_level_list": args.noise_level_list,
                 "model_names_list": args.model_names_list,
+                "inject_type_list": args.inject_type_list,
                 "plot": args.plot,
                 "savefig": args.savefig,
                 "verbose": args.verbose,
@@ -170,15 +180,13 @@ if __name__ == "__main__":
     config = parse_args()
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     noise_list = config.get_item("analysis", "noise_level_list", "Analysis")
+    inject_type_list = config.get_item(
+        "analysis", "inject_type_list", "Analysis")
     color_list = config.get_item("plots", "color_list", "Analysis")
     BETA = config.get_item("model", "BETA", "Analysis")
     COEFF = config.get_item("model", "COEFF", "Analysis")
-    n_models = config.get_item("model", "n_models", "Analysis")
     loss_type = config.get_item("model", "loss_type", "Analysis")
-    prescription = config.get_item(
-        "model", "data_prescription", "Analysis")
-    inject_type_list = config.get_item(
-        "analysis", "inject_type_list", "Analysis")
+    prescription = config.get_item("model", "prescription", "Analysis")
     sigma_list = []
     for noise in noise_list:
         sigma_list.append(DataPreparation.get_sigma(noise))
@@ -194,125 +202,147 @@ if __name__ == "__main__":
     model_name_list = config.get_item(
         "analysis", "model_names_list", "Analysis")
     print("model list", model_name_list)
-    if len(model_name_list) > 1:
-        assert "model_name_list should only be one item"
-    print("inject type list", inject_type_list)
-    print("noise list", noise_list)
-    chk_module = AggregateCheckpoints()
-    # make an empty nested dictionary with keys for
-    # model names followed by noise levels
-    al_dict = {typei: {noise: [] for noise in noise_list}
-               for typei in inject_type_list}
-    al_std_dict = {
-        typei: {noise: [] for noise in noise_list}
-        for typei in inject_type_list
-    }
-    n_epochs = config.get_item("model", "n_epochs", "Analysis")
-    # for model in model_name_list:
     model = model_name_list[0]
-    for typei in inject_type_list:
-        for noise in noise_list:
-            # append a noise key
-            # now run the analysis on the resulting checkpoints
-            if model[0:3] == "DER":
-                for epoch in range(n_epochs):
-                    chk = chk_module.load_checkpoint(
-                        model,
-                        prescription,
-                        typei,
-                        noise,
-                        epoch,
-                        DEVICE,
-                        path=path_to_chk,
-                        COEFF=COEFF,
-                        loss=loss_type,
-                    )
-                    # path=path_to_chk)
-                    # things to grab: 'valid_mse' and 'valid_bnll'
-                    epistemic_m, aleatoric_m, e_std, a_std = (
-                        chk_module.ep_al_checkpoint_DER(chk)
-                    )
-                    al_dict[typei][noise].append(aleatoric_m)
-                    al_std_dict[typei][noise].append(a_std)
+    print("this model", model)
+    print("noise list", noise_list)
+    print("inject type list", inject_type_list)
+    chk_module = AggregateCheckpoints()
 
-            else:
-                n_models = config.get_item("model", "n_models", "DE")
-                for epoch in range(n_epochs):
-                    list_mus = []
-                    list_vars = []
-                    for nmodels in range(n_models):
-                        chk = chk_module.load_checkpoint(
-                            model,
-                            prescription,
-                            typei,
-                            noise,
-                            epoch,
-                            DEVICE,
-                            path=path_to_chk,
-                            BETA=BETA,
-                            nmodel=nmodels,
-                        )
-                        mu_vals, var_vals = chk_module.ep_al_checkpoint_DE(chk)
-                        list_mus.append(mu_vals)
-                        list_vars.append(var_vals)
-                    # first taking the mean across the validation data
-                    # then looking at the mean and standard deviation
-                    # across all of the nmodels
-                    al_dict[typei][noise].append(
-                        np.mean(np.mean(list_vars, axis=0)))
-                    al_std_dict[typei][noise].append(
-                        np.std(np.mean(list_vars, axis=0)))
-    # make a two-paneled plot for the different noise levels
-    # make one panel per model
-    # for the noise levels:
+    noise_to_sigma = {"low": 1, "medium": 5, "high": 10, "vhigh": 100}
+
+    # load up the checkpoints for DER
+    # and run it on the test data, make a parity plot
+    DERmodel, lossFn = models.model_setup_DER("DER", DEVICE, 64)
     plt.clf()
-    fig = plt.figure(figsize=(10, 4))
-    # try this instead with a fill_between method
-    for i, typei in enumerate(inject_type_list):
-        ax = fig.add_subplot(1, len(inject_type_list), i + 1)
-        # Your plotting code for each model here
-        ax.set_title(typei)  # Set title for each subplot
-        for i, noise in enumerate(noise_list):
-            if model[0:3] == "DER":
-                al = np.array(al_dict[typei][noise])
-                al_std = np.array(al_std_dict[typei][noise])
-            elif model[0:2] == "DE":
-                # only take the sqrt for the case of DE,
-                # which is the variance
-                al = np.array(np.sqrt(al_dict[typei][noise]))
-                al_std = np.array(np.sqrt(al_std_dict[typei][noise]))
-            ax.fill_between(
-                range(n_epochs),
-                al - al_std,
-                al + al_std,
-                color=color_list[i],
-                alpha=0.25,
-                edgecolor=None,
+    fig = plt.figure()
+    ax = fig.add_subplot(211)
+    axr = fig.add_subplot(212)
+
+    for i, noise in enumerate(noise_list):
+        for typei in inject_type_list:
+            # now create a test set
+            data = DataPreparation()
+            data.sample_params_from_prior(1000)
+            data.simulate_data(
+                data.params,
+                noise_to_sigma[noise],
+                "linear_homoskedastic",
+                inject_type=typei,
+                seed=41,
             )
-            ax.plot(
-                range(n_epochs),
-                al,
-                color=color_list[i],
-                label=r"$\sigma = $" + str(sigma_list[i]),
+            df_array = data.get_dict()
+            # Convert non-tensor entries to tensors
+            df = {}
+            for key, value in df_array.items():
+
+                if isinstance(value, TensorDataset):
+                    # Keep tensors as they are
+                    df[key] = value
+                else:
+                    # Convert lists to tensors
+                    df[key] = torch.tensor(value)
+            len_df = len(df["params"][:, 0].numpy())
+            len_x = np.shape(df["output"])[1]
+            ms_array = np.repeat(df["params"][:, 0].numpy(), len_x)
+            bs_array = np.repeat(df["params"][:, 1].numpy(), len_x)
+            xs_array = np.reshape(df["inputs"].numpy(), (len_df * len_x))
+            ys_array = np.reshape(df["output"].numpy(), (len_df * len_x))
+
+            inputs = np.array([xs_array, ms_array, bs_array]).T
+            model_inputs, model_outputs = DataPreparation.normalize(
+                inputs, ys_array, False
             )
-            ax.axhline(y=sigma_list[i], color=color_list[i], ls="--")
-        ax.set_ylabel("Aleatoric Uncertainty")
-        ax.set_xlabel("Epoch")
-        # if model[0:3] == "DER":
-        #    ax.set_title("Deep Evidential Regression")
-        # elif model[0:2] == "DE":
-        #    ax.set_title("Deep Ensemble (100 models)")
-        ax.set_title(typei)
-        ax.set_ylim([0, 15])
-    plt.legend()
-    if config.get_item("analysis", "savefig", "Analysis"):
-        plt.savefig(
-            str(path_to_out)
-            + "aleatoric_uncertainty_n_epochs_"
-            + str(n_epochs)
-            + "_n_models_DE_"
-            + str(n_models)
-            + ".png"
+            _, x_test, _, y_test = DataPreparation.train_val_split(
+                model_inputs, model_outputs, val_proportion=0.1,
+                random_state=41
+            )
+            chk = chk_module.load_checkpoint(
+                model,
+                prescription,
+                typei,
+                noise,
+                99,
+                DEVICE,
+                path=path_to_chk,
+                COEFF=COEFF,
+                loss=loss_type,
+            )
+            # first, define the model at this epoch
+            DERmodel.load_state_dict(chk.get("model_state_dict"))
+            # checkpoint['model_state_dict'])
+            DERmodel.eval()
+            # now run on the x_test
+            y_pred = DERmodel(torch.Tensor(x_test)).detach().numpy()
+            print(x_test)
+            print(x_test[:, 1])
+            if typei == "predictive":
+                y_noisy = y_test
+                y_noiseless = x_test[:, 1] * x_test[:, 0] + x_test[:, 2]
+                sub = y_noisy - y_noiseless
+                label = r"$y_{noisy} - y_{noiseless}$"
+            elif typei == "feature":
+                y_noisy = x_test[:, 1] * x_test[:, 0] + x_test[:, 2]
+                y_noiseless = y_test
+                sub = y_noisy - y_noiseless  # / x_test[:, 1]
+                label = r"$(y_{noisy} - y_{noiseless})$"  # / m$'
+
+            plt.clf()
+            plt.scatter(y_noiseless, y_noisy)
+            plt.xlabel("y noiseless")
+            plt.ylabel("y test")
+            plt.title(str(model))
+            plt.show()
+
+            plt.clf()
+            _, bins = np.histogram(sub, bins=50)  # , range=[0, 5])
+            plt.hist(sub, bins=bins, alpha=0.5, label=label, color="#610345")
+            plt.hist(
+                np.sqrt(y_pred[:, 1]),
+                bins=bins,
+                alpha=0.5,
+                label="predicted sigma",
+                color="#9EB25D",
+            )
+
+            plt.axvline(x=np.mean(sub), color="black", ls="--")
+            plt.axvline(x=np.std(sub), color="black", ls="--")
+            plt.axvline(
+                x=np.percentile(sub, 50) - np.percentile(sub, 16),
+                color="red", ls="--"
+            )
+            plt.axvline(
+                x=np.percentile(sub, 84) - np.percentile(sub, 50),
+                color="red", ls="--"
+            )
+            plt.axvline(x=noise_to_sigma[noise], color="black")
+            plt.legend()
+            plt.title(str(noise) + " noise " + str(model))
+            plt.show()
+
+            continue
+
+        ax.scatter(
+            y_test,
+            y_pred[:, 0],
+            color=color_list[i],
+            label=r"$\sigma = $" + str(sigma_list[i]),
+            s=3,
         )
-    if config.get_item("analysis", "plot", "Analysis"):
-        plt.show()
+        # ax.set_xlabel('True y')
+        ax.set_ylabel(r"Predicted $y$")
+        ax.plot(range(-100, 1100), range(-100, 1100), ls="--", color="grey")
+
+        axr.scatter(
+            y_test,
+            y_pred[:, 0] - y_test,
+            color=color_list[i],
+            label=r"$\sigma = $" + str(sigma_list[i]),
+            s=3,
+            zorder=-100,
+        )
+
+        axr.set_xlabel(r"True $y^*$")
+        axr.set_ylabel("Residual (predicted - true)")
+        axr.axhline(y=0, ls="--", color="grey")
+    plt.legend()
+    plt.show()

@@ -4,6 +4,7 @@ import subprocess
 import tempfile
 import shutil
 import yaml
+import numpy as np
 from data.data import MyDataLoader, DataPreparation
 
 
@@ -30,11 +31,15 @@ def temp_data():
             sigma = 10
         if noise_level == "vhigh":
             sigma = 100
-        data.simulate_data(data.params, sigma, "linear_homoskedastic")
+        print('params shape', np.shape(data.params))
+        data.simulate_data(data.params,
+                           sigma,
+                           "linear_homoskedastic",
+                           inject_type="predictive")
         dict = data.get_dict()
         saver = MyDataLoader()
         # save the dataframe
-        filename = ("linear_homoskedastic_sigma_" + str(sigma) +
+        filename = ("linear_homoskedastic_predictive_sigma_" + str(sigma) +
                     "_size_" + str(size_df))
         saver.save_data_h5(filename, dict, path=data_dir)
 
@@ -69,12 +74,14 @@ def create_test_config_aleatoric(
     temp_directory, n_models, n_epochs,
     noise_level_list=["low", "medium", "high"],
     model_names_list=["DER", "DE"],
+    inject_type_list=["predictive"]
 ):
     input_yaml = {
         "common": {"dir": str(temp_directory)},
         "analysis": {
             "noise_level_list": noise_level_list,
             "model_names_list": model_names_list,
+            "inject_type_list": inject_type_list,
             "plot": False,
             "savefig": True,
             "verbose": False,
@@ -120,6 +127,7 @@ def create_test_config_DE(
             "data_path": temp_data,
             "data_engine": "DataLoader",
             "data_prescription": "linear_homoskedastic",
+            "data_injection": "predictive",
             "size_df": size_df,
             "noise_level": noise_level,
             "val_proportion": 0.1,
@@ -159,6 +167,7 @@ def create_test_config_DER(
             "data_path": temp_data,
             "data_engine": "DataLoader",
             "data_prescription": "linear_homoskedastic",
+            "data_injection": "predictive",
             "size_df": size_df,
             "noise_level": noise_level,
             "val_proportion": 0.1,

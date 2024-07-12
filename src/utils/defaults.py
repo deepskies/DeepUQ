@@ -7,6 +7,7 @@ DefaultsDE = {
         "data_path": "./data/",
         "data_engine": "DataLoader",
         "data_prescription": "linear_homoskedastic",
+        "data_injection": "predictive",
         "size_df": 1000,
         "noise_level": "low",
         "normalize": False,
@@ -50,6 +51,7 @@ DefaultsDER = {
         "data_path": "./data/",
         "data_engine": "DataLoader",
         "data_prescription": "linear_homoskedastic",
+        "data_injection": "predictive",
         "size_df": 1000,
         "noise_level": "low",
         "normalize": False,
@@ -104,8 +106,9 @@ DefaultsAnalysis = {
         "loss_type": "DER"
     },
     "analysis": {
-        "noise_level_list": ["low", "medium", "high"],
-        "model_names_list": ["DER", "DE"],
+        "noise_level_list": ["low"],
+        "model_names_list": ["DER"],
+        "inject_type_list": ["predictive", "feature"],
         # ["DER_wst", "DE_desiderata_2"],
         # for architecture: ["DER"], #, "DE_desiderata_2"],
         # for the inits changed to "DER_wst"
