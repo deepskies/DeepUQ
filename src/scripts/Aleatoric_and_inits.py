@@ -209,13 +209,12 @@ if __name__ == "__main__":
         for model_name in model_name_list
     }
     n_epochs = config.get_item("model", "n_epochs", "Analysis")
-    # switching from two panels for different models to 
+    # switching from two panels for different models to
     # two panels for different injection types
     # could eventually make this into a four panel plot
-    #for model in model_name_list:
+    # for model in model_name_list:
     for inject_type in inject_type_list:
         for noise in noise_list:
-            
             # append a noise key
             # now run the analysis on the resulting checkpoints
             if model[0:3] == "DER":
@@ -305,7 +304,7 @@ if __name__ == "__main__":
     }
     '''
     n_epochs = config.get_item("model", "n_epochs", "Analysis")
-    #for model in model_name_list:
+    # for model in model_name_list:
     for inject_type in inject_type_list:
         for noise in noise_list:
             for rs in rs_list:

@@ -211,7 +211,8 @@ class DataPreparation:
         low_bounds = torch.tensor([0, -10], dtype=torch.float32)
         high_bounds = torch.tensor([10, 10], dtype=torch.float32)
         rs = np.random.RandomState(seed)  # 2147483648)#
-        prior = rs.uniform(low=low_bounds, high=high_bounds, size=(n_samples, 2))
+        prior = rs.uniform(
+            low=low_bounds, high=high_bounds, size=(n_samples, 2))
         """
         the prior way of doing this (lol)
         #print(np.shape(prior), prior)

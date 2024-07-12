@@ -37,7 +37,8 @@ def parse_args():
         default=DefaultsDE["data"]["data_path"],
     )
     parser.add_argument(
-        "--data_prescription", "-dp", default=DefaultsDE["data"]["data_prescription"]
+        "--data_prescription",
+        "-dp", default=DefaultsDE["data"]["data_prescription"]
     )
     parser.add_argument(
         "--data_injection", "-di", default=DefaultsDE["data"]["data_injection"]
@@ -320,12 +321,14 @@ if __name__ == "__main__":
     ys_array = np.reshape(df["output"].numpy(), (len_df * len_x))
 
     inputs = np.array([xs_array, ms_array, bs_array]).T
-    model_inputs, model_outputs = DataPreparation.normalize(inputs, ys_array, norm)
+    model_inputs, model_outputs = DataPreparation.normalize(
+        inputs, ys_array, norm)
     x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
         model_inputs, model_outputs, val_proportion=val_prop, random_state=rs
     )
     trainData = TensorDataset(torch.Tensor(x_train), torch.Tensor(y_train))
-    trainDataLoader = DataLoader(trainData, batch_size=BATCH_SIZE, shuffle=True)
+    trainDataLoader = DataLoader(
+        trainData, batch_size=BATCH_SIZE, shuffle=True)
     # set the device we will be using to train the model
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -361,8 +364,10 @@ if __name__ == "__main__":
         data_prescription=prescription,
         inject_type=injection,
         noise_level=noise,
-        save_all_checkpoints=config.get_item("model", "save_all_checkpoints", "DE"),
-        save_final_checkpoint=config.get_item("model", "save_final_checkpoint", "DE"),
+        save_all_checkpoints=config.get_item(
+            "model", "save_all_checkpoints", "DE"),
+        save_final_checkpoint=config.get_item(
+            "model", "save_final_checkpoint", "DE"),
         overwrite_final_checkpoint=config.get_item(
             "model", "overwrite_final_checkpoint", "DE"
         ),
