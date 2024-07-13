@@ -279,7 +279,6 @@ if __name__ == "__main__":
     prescription = config.get_item("data", "data_prescription", "DER")
     dim = config.get_item("data", "data_dimension", "DER")
     injection = config.get_item("data", "data_injection", "DER")
-    print(config.get_item("data", "generatedata", "DER", raise_exception=False))
     if config.get_item("data", "generatedata", "DER", raise_exception=False):
         # generate the df
         print('generating the data')
@@ -305,17 +304,11 @@ if __name__ == "__main__":
                               high=[10, 10, 1.5],
                               n_params=3,
                               seed=42)
-            im, im_noisy, y, y_noisy, y_prop_noisy = data.simulate_data_2d(
+            model_inputs, model_outputs = data.simulate_data_2d(
                 size_df,
                 data.params,
                 image_size=32,
                 inject_type=injection)
-            if injection == "predictive":
-                model_inputs = im
-                model_outputs = y_noisy
-            elif injection == "feature":
-                model_inputs = im_noisy
-                model_outputs = y
     else:
         loader = MyDataLoader()
         if dim == "0D":
@@ -336,13 +329,21 @@ if __name__ == "__main__":
         ms_array = np.repeat(df["params"][:, 0].numpy(), len_x)
         bs_array = np.repeat(df["params"][:, 1].numpy(), len_x)
         xs_array = np.reshape(df["inputs"].numpy(), (len_df * len_x))
-        ys_array = np.reshape(df["output"].numpy(), (len_df * len_x))
-        inputs = np.array([xs_array, ms_array, bs_array]).T
-        model_inputs, model_outputs = DataPreparation.normalize(
-            inputs, ys_array, norm)
+        model_outputs = np.reshape(df["output"].numpy(), (len_df * len_x))
+        model_inputs = np.array([xs_array, ms_array, bs_array]).T
+    model_inputs, model_outputs = DataPreparation.normalize(
+        model_inputs, model_outputs, norm)
     x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
         model_inputs, model_outputs, val_proportion=val_prop, random_state=rs
     )
+    '''
+    import matplotlib.pyplot as plt
+    plt.clf()
+    plt.imshow(x_train[0,:,:])
+    plt.title(y_train[0])
+    plt.colorbar()
+    plt.show()
+    '''
     trainData = TensorDataset(torch.Tensor(x_train), torch.Tensor(y_train))
     trainDataLoader = DataLoader(
         trainData, batch_size=BATCH_SIZE, shuffle=True)
@@ -369,6 +370,7 @@ if __name__ == "__main__":
         path_to_model=config.get_item("common", "out_dir", "DER"),
         data_prescription=prescription,
         inject_type=injection,
+        data_dim=dim,
         noise_level=noise,
         save_all_checkpoints=config.get_item(
             "model", "save_all_checkpoints", "DER"),

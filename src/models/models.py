@@ -66,8 +66,34 @@ class SDERLayer(nn.Module):
         beta = nn.functional.softplus(x[:, 3])
         return torch.stack((gamma, nu, alpha, beta), dim=1)
 
+class ConvLayers(nn.Module):
+    def __init__(self):
+        super(ConvLayers, self).__init__()
+        self.conv1 = nn.Conv2d(1, 10, kernel_size=3, padding=1)
+        self.conv2 = nn.Conv2d(10, 10, kernel_size=3, padding=1)
+        self.pool1 = nn.AvgPool2d(kernel_size=2, stride=2, padding=1)
+        self.conv3 = nn.Conv2d(10, 10, kernel_size=3, padding=1)
+        self.pool2 = nn.AvgPool2d(kernel_size=2, stride=2, padding=1)
+        self.conv4 = nn.Conv2d(10, 5, kernel_size=3, padding=1)
+        self.conv5 = nn.Conv2d(5, 5, kernel_size=3, padding=1)
+        self.flatten = nn.Flatten()
 
-def model_setup_DER(loss_type, DEVICE, n_hidden):
+    def forward(self, x):
+        x = nn.functional.relu(self.conv1(x))
+        x = nn.functional.relu(self.conv2(x))
+        x = self.pool1(x)
+        x = nn.functional.relu(self.conv3(x))
+        x = self.pool2(x)
+        x = nn.functional.relu(self.conv4(x))
+        x = nn.functional.relu(self.conv5(x))
+        x = self.flatten(x)
+        return x
+
+
+def model_setup_DER(loss_type,
+                    DEVICE,
+                    n_hidden=64,
+                    data_type="0D"):
     # initialize the model from scratch
     if loss_type == "SDER":
         Layer = SDERLayer
@@ -77,10 +103,20 @@ def model_setup_DER(loss_type, DEVICE, n_hidden):
         Layer = DERLayer
         # initialize our loss function
         lossFn = loss_der
-
-    # from https://github.com/pasteurlabs/unreasonable_effective_der
-    # /blob/main/x3_indepth.ipynb
-    model = torch.nn.Sequential(Model(4, n_hidden), Layer())
+    if data_type == "2D":
+        # Define the convolutional layers
+        conv_layers = ConvLayers()
+        
+        # Initialize the rest of the model
+        model = torch.nn.Sequential(
+            conv_layers,
+            Model(5 * 8 * 8, n_hidden),  # Adjust input size according to the flattened output size
+            Layer()
+        )
+    elif data_type == "0D":
+        # from https://github.com/pasteurlabs/unreasonable_effective_der
+        # /blob/main/x3_indepth.ipynb
+        model = torch.nn.Sequential(Model(4, n_hidden), Layer())
     model = model.to(DEVICE)
     return model, lossFn
 
