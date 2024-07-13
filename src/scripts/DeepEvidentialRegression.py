@@ -33,6 +33,10 @@ def parse_args():
         "--data_path",
         "-d", default=DefaultsDER["data"]["data_path"])
     parser.add_argument(
+        "--data_dimension",
+        "-dd", default=DefaultsDER["data"]["data_dimension"]
+    )
+    parser.add_argument(
         "--data_prescription",
         "-dp", default=DefaultsDER["data"]["data_prescription"]
     )
@@ -96,7 +100,7 @@ def parse_args():
         "--generatedata",
         action="store_true",
         default=DefaultsDER["data"]["generatedata"],
-        help="option to generate df, if not specified \
+        help="option to generate data, if not specified \
             default behavior is to load from file",
     )
     parser.add_argument(
@@ -241,6 +245,7 @@ def parse_args():
             "data": {
                 "data_path": args.data_path,
                 "data_engine": args.data_engine,
+                "data_dimension": args.data_dimension,
                 "data_prescription": args.data_prescription,
                 "data_injection": args.data_injection,
                 "size_df": args.size_df,
@@ -248,6 +253,8 @@ def parse_args():
                 "val_proportion": args.val_proportion,
                 "randomseed": args.randomseed,
                 "batchsize": args.batchsize,
+                "generatedata": args.generatedata,
+                "normalize": args.normalize
             },
             # "plots": {key: {} for key in args.plots},
             # "metrics": {key: {} for key in args.metrics},
@@ -270,45 +277,69 @@ if __name__ == "__main__":
     sigma = DataPreparation.get_sigma(noise)
     path_to_data = config.get_item("data", "data_path", "DER")
     prescription = config.get_item("data", "data_prescription", "DER")
+    dim = config.get_item("data", "data_dimension", "DER")
     injection = config.get_item("data", "data_injection", "DER")
+    print(config.get_item("data", "generatedata", "DER", raise_exception=False))
     if config.get_item("data", "generatedata", "DER", raise_exception=False):
         # generate the df
+        print('generating the data')
         data = DataPreparation()
-        data.sample_params_from_prior(size_df)
-        data.simulate_data(data.params, sigma, prescription)
-        df_array = data.get_dict()
-        # Convert non-tensor entries to tensors
-        df = {}
-        for key, value in df_array.items():
+        if dim == "0D":
+            data.sample_params_from_prior(size_df)
+            data.simulate_data(data.params, sigma, prescription)
+            df_array = data.get_dict()
+            # Convert non-tensor entries to tensors
+            df = {}
+            for key, value in df_array.items():
 
-            if isinstance(value, TensorDataset):
-                # Keep tensors as they are
-                df[key] = value
-            else:
-                # Convert lists to tensors
-                df[key] = torch.tensor(value)
+                if isinstance(value, TensorDataset):
+                    # Keep tensors as they are
+                    df[key] = value
+                else:
+                    # Convert lists to tensors
+                    df[key] = torch.tensor(value)
+        elif dim == "2D":
+            print('2D data')
+            data.sample_params_from_prior(size_df,
+                              low=[1, 1, -1.5],
+                              high=[10, 10, 1.5],
+                              n_params=3,
+                              seed=42)
+            im, im_noisy, y, y_noisy, y_prop_noisy = data.simulate_data_2d(
+                size_df,
+                data.params,
+                image_size=32,
+                inject_type=injection)
+            if injection == "predictive":
+                model_inputs = im
+                model_outputs = y_noisy
+            elif injection == "feature":
+                model_inputs = im_noisy
+                model_outputs = y
     else:
         loader = MyDataLoader()
-        filename = (
-            str(prescription)
-            + "_"
-            + str(injection)
-            + "_sigma_"
-            + str(sigma)
-            + "_size_"
-            + str(size_df)
-        )
-        df = loader.load_data_h5(filename, path=path_to_data)
-        print("loaded this file: ", filename)
-    len_df = len(df["params"][:, 0].numpy())
-    len_x = np.shape(df["output"])[1]
-    ms_array = np.repeat(df["params"][:, 0].numpy(), len_x)
-    bs_array = np.repeat(df["params"][:, 1].numpy(), len_x)
-    xs_array = np.reshape(df["inputs"].numpy(), (len_df * len_x))
-    ys_array = np.reshape(df["output"].numpy(), (len_df * len_x))
-    inputs = np.array([xs_array, ms_array, bs_array]).T
-    model_inputs, model_outputs = DataPreparation.normalize(
-        inputs, ys_array, norm)
+        if dim == "0D":
+            filename = (
+                str(prescription)
+                + "_"
+                + str(injection)
+                + "_sigma_"
+                + str(sigma)
+                + "_size_"
+                + str(size_df)
+            )
+            df = loader.load_data_h5(filename, path=path_to_data)
+            print("loaded this file: ", filename)
+    if dim == "0D":
+        len_df = len(df["params"][:, 0].numpy())
+        len_x = np.shape(df["output"])[1]
+        ms_array = np.repeat(df["params"][:, 0].numpy(), len_x)
+        bs_array = np.repeat(df["params"][:, 1].numpy(), len_x)
+        xs_array = np.reshape(df["inputs"].numpy(), (len_df * len_x))
+        ys_array = np.reshape(df["output"].numpy(), (len_df * len_x))
+        inputs = np.array([xs_array, ms_array, bs_array]).T
+        model_inputs, model_outputs = DataPreparation.normalize(
+            inputs, ys_array, norm)
     x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
         model_inputs, model_outputs, val_proportion=val_prop, random_state=rs
     )

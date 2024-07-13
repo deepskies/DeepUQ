@@ -241,6 +241,8 @@ def parse_args():
                 "val_proportion": args.val_proportion,
                 "randomseed": args.randomseed,
                 "batchsize": args.batchsize,
+                "generatedata": args.generatedata,
+                "normalize": args.normalize
             },
             # "plots": {key: {} for key in args.plots},
             # "metrics": {key: {} for key in args.metrics},
