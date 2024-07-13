@@ -79,14 +79,26 @@ class ConvLayers(nn.Module):
         self.flatten = nn.Flatten()
 
     def forward(self, x):
+        # print('input shape', x.shape)
+        if x.dim() == 3:  # Check if the input is of shape (batchsize, 32, 32)
+            x = x.unsqueeze(1)  # Add channel dimension, becomes (batchsize, 1, 32, 32)
+        # print('shape after potential unsqeeze', x.shape)
         x = nn.functional.relu(self.conv1(x))
+        # print('shape after conv1', x.shape)
         x = nn.functional.relu(self.conv2(x))
+        # print('shape after conv2', x.shape)
         x = self.pool1(x)
+        # print('shape after pool1', x.shape)
         x = nn.functional.relu(self.conv3(x))
+        # print('shape after conv3', x.shape)
         x = self.pool2(x)
+        # print('shape after pool2', x.shape)
         x = nn.functional.relu(self.conv4(x))
+        # print('shape after conv4', x.shape)
         x = nn.functional.relu(self.conv5(x))
+        # print('shape after conv5', x.shape)
         x = self.flatten(x)
+        # print('shape after flatten', x.shape)
         return x
 
 
@@ -110,13 +122,14 @@ def model_setup_DER(loss_type,
         # Initialize the rest of the model
         model = torch.nn.Sequential(
             conv_layers,
-            Model(5 * 8 * 8, n_hidden),  # Adjust input size according to the flattened output size
+            Model(n_hidden=n_hidden, n_input=405, n_output=4),  # Adjust input size according to the flattened output size
             Layer()
         )
     elif data_type == "0D":
         # from https://github.com/pasteurlabs/unreasonable_effective_der
         # /blob/main/x3_indepth.ipynb
-        model = torch.nn.Sequential(Model(4, n_hidden), Layer())
+        model = torch.nn.Sequential(Model(
+            n_hidden=n_hidden, n_input=4, n_output=4), Layer())
     model = model.to(DEVICE)
     return model, lossFn
 
@@ -158,10 +171,13 @@ def model_setup_DE(loss_type, DEVICE):
 
 
 class Model(nn.Module):
-    def __init__(self, n_output, n_hidden):
+    def __init__(self,
+                 n_output=4,
+                 n_hidden=64,
+                 n_input=3):
         super().__init__()
         self.model = nn.Sequential(
-            nn.Linear(3, n_hidden),
+            nn.Linear(n_input, n_hidden),
             nn.ReLU(),
             nn.Linear(n_hidden, n_hidden),
             nn.ReLU(),
