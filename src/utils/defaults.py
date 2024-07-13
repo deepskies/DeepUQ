@@ -50,6 +50,7 @@ DefaultsDER = {
     "data": {
         "data_path": "./data/",
         "data_engine": "DataLoader",
+        "data_dimension": "0D",
         "data_prescription": "linear_homoskedastic",
         "data_injection": "predictive",
         "size_df": 1000,
