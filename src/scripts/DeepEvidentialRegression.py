@@ -357,7 +357,7 @@ if __name__ == "__main__":
         n_hidden=config.get_item("model", "n_hidden", "DER"),
     )
     print("model name is ", model_name)
-    model_ensemble = train.train_DER(
+    model = train.train_DER(
         trainDataLoader,
         x_val,
         y_val,
