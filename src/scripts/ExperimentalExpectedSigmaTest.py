@@ -256,10 +256,12 @@ if __name__ == "__main__":
                 model_inputs, model_outputs, val_proportion=0.1,
                 random_state=41
             )
+            
             chk = chk_module.load_checkpoint(
                 model,
                 prescription,
                 typei,
+                "0D",
                 noise,
                 99,
                 DEVICE,
@@ -267,12 +269,14 @@ if __name__ == "__main__":
                 COEFF=COEFF,
                 loss=loss_type,
             )
+            
             # first, define the model at this epoch
             DERmodel.load_state_dict(chk.get("model_state_dict"))
             # checkpoint['model_state_dict'])
             DERmodel.eval()
             # now run on the x_test
             y_pred = DERmodel(torch.Tensor(x_test)).detach().numpy()
+            
             print(x_test)
             print(x_test[:, 1])
             if typei == "predictive":
@@ -294,8 +298,9 @@ if __name__ == "__main__":
             plt.show()
 
             plt.clf()
-            _, bins = np.histogram(sub, bins=50)  # , range=[0, 5])
+            _, bins = np.histogram(sub, bins=50)#, range=[-20, 20])
             plt.hist(sub, bins=bins, alpha=0.5, label=label, color="#610345")
+            '''
             plt.hist(
                 np.sqrt(y_pred[:, 1]),
                 bins=bins,
@@ -303,6 +308,7 @@ if __name__ == "__main__":
                 label="predicted sigma",
                 color="#9EB25D",
             )
+            '''
 
             plt.axvline(x=np.mean(sub), color="black", ls="--")
             plt.axvline(x=np.std(sub), color="black", ls="--")
