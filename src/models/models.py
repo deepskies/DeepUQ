@@ -69,6 +69,8 @@ class SDERLayer(nn.Module):
 class ConvLayers(nn.Module):
     def __init__(self):
         super(ConvLayers, self).__init__()
+        # a little strange = # of filters, usually goes from small to large
+        # double check on architecture decisions
         self.conv1 = nn.Conv2d(1, 10, kernel_size=3, padding=1)
         self.conv2 = nn.Conv2d(10, 10, kernel_size=3, padding=1)
         self.pool1 = nn.AvgPool2d(kernel_size=2, stride=2, padding=1)
@@ -129,7 +131,7 @@ def model_setup_DER(loss_type,
         # from https://github.com/pasteurlabs/unreasonable_effective_der
         # /blob/main/x3_indepth.ipynb
         model = torch.nn.Sequential(Model(
-            n_hidden=n_hidden, n_input=4, n_output=4), Layer())
+            n_hidden=n_hidden, n_input=3, n_output=4), Layer())
     model = model.to(DEVICE)
     return model, lossFn
 
@@ -146,7 +148,10 @@ class MuVarLayer(nn.Module):
         return torch.stack((mu, var), dim=1)
 
 
-def model_setup_DE(loss_type, DEVICE):
+def model_setup_DE(loss_type,
+                   DEVICE,
+                   n_hidden=64,
+                   data_type="0D"):
     # initialize the model from scratch
     if loss_type == "no_var_loss":
         # model = de_no_var().to(DEVICE)
@@ -161,7 +166,20 @@ def model_setup_DE(loss_type, DEVICE):
         # model = de_var().to(DEVICE)
         Layer = MuVarLayer
         lossFn = loss_bnll
-    model = torch.nn.Sequential(Model(2, 64), Layer())
+    if data_type == "2D":
+        # Define the convolutional layers
+        conv_layers = ConvLayers()
+        # Initialize the rest of the model
+        model = torch.nn.Sequential(
+            conv_layers,
+            Model(n_hidden=n_hidden, n_input=405, n_output=2),  # Adjust input size according to the flattened output size
+            Layer()
+        )
+    elif data_type == "0D":
+        # from https://github.com/pasteurlabs/unreasonable_effective_der
+        # /blob/main/x3_indepth.ipynb
+        model = torch.nn.Sequential(Model(
+            n_hidden=n_hidden, n_input=3, n_output=2), Layer())
     model = model.to(DEVICE)
     return model, lossFn
 
