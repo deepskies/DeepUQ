@@ -37,6 +37,10 @@ def parse_args():
         default=DefaultsDE["data"]["data_path"],
     )
     parser.add_argument(
+        "--data_dimension",
+        "-dd", default=DefaultsDE["data"]["data_dimension"]
+    )
+    parser.add_argument(
         "--data_prescription",
         "-dp", default=DefaultsDE["data"]["data_prescription"]
     )
@@ -185,6 +189,32 @@ def parse_args():
         help="option to save a figure of the true and predicted values",
     )
     parser.add_argument(
+        "--save_chk_random_seed_init",
+        action="store_true",
+        default=DefaultsDE["model"]["save_chk_random_seed_init"],
+        help="option to save the chk with a random seed",
+    )
+    parser.add_argument(
+        "--rs_list",
+        type=list[int],
+        default=DefaultsDE["model"]["rs_list"],
+        help="random seed list for the pytorch model initialization, \
+            should be the same length as n_models",
+    )
+    parser.add_argument(
+        "--save_n_hidden",
+        action="store_true",
+        default=DefaultsDE["model"]["save_n_hidden"],
+        help="save chk with the number of neurons in the hidden layer",
+    )
+    parser.add_argument(
+        "--n_hidden",
+        type=int,
+        required=False,
+        default=DefaultsDE["model"]["n_hidden"],
+        help="Number of hidden neurons in the hidden layer, default 64",
+    )
+    parser.add_argument(
         "--verbose",
         action="store_true",
         default=DefaultsDE["model"]["verbose"],
@@ -229,11 +259,16 @@ def parse_args():
                 "overwrite_final_checkpoint": args.overwrite_final_checkpoint,
                 "plot": args.plot,
                 "savefig": args.savefig,
+                "save_chk_random_seed_init": args.save_chk_random_seed_init,
+                "rs_list": args.rs_list,
+                "save_n_hidden": args.save_n_hidden,
+                "n_hidden": args.n_hidden,
                 "verbose": args.verbose,
             },
             "data": {
                 "data_path": args.data_path,
                 "data_engine": args.data_engine,
+                "data_dimension": args.data_dimension,
                 "data_prescription": args.data_prescription,
                 "data_injection": args.data_injection,
                 "size_df": args.size_df,
@@ -277,54 +312,69 @@ if __name__ == "__main__":
     noise = config.get_item("data", "noise_level", "DE")
     norm = config.get_item("data", "normalize", "DE", raise_exception=False)
     val_prop = config.get_item("data", "val_proportion", "DE")
+    # this is the data rs
     rs = config.get_item("data", "randomseed", "DE")
     BATCH_SIZE = config.get_item("data", "batchsize", "DE")
     sigma = DataPreparation.get_sigma(noise)
     path_to_data = config.get_item("data", "data_path", "DE")
     prescription = config.get_item("data", "data_prescription", "DE")
     injection = config.get_item("data", "data_injection", "DE")
+    dim = config.get_item("data", "data_dimension", "DE")
     if config.get_item("data", "generatedata", "DE", raise_exception=False):
         # generate the df
+        print('generating the data')
         data = DataPreparation()
-        data.sample_params_from_prior(size_df)
-        data.simulate_data(data.params, sigma, prescription)
-        df_array = data.get_dict()
-        # Convert non-tensor entries to tensors
-        df = {}
-        for key, value in df_array.items():
+        if dim == "0D":
+            data.sample_params_from_prior(size_df)
+            data.simulate_data(data.params, sigma, prescription)
+            df_array = data.get_dict()
+            # Convert non-tensor entries to tensors
+            df = {}
+            for key, value in df_array.items():
 
-            if isinstance(value, TensorDataset):
-                # Keep tensors as they are
-                df[key] = value
-            else:
-                # Convert lists to tensors
-                df[key] = torch.tensor(value)
+                if isinstance(value, TensorDataset):
+                    # Keep tensors as they are
+                    df[key] = value
+                else:
+                    # Convert lists to tensors
+                    df[key] = torch.tensor(value)
+        elif dim == "2D":
+            print('2D data')
+            data.sample_params_from_prior(
+                size_df,
+                low=[1, 1, -1.5],
+                high=[10, 10, 1.5],
+                n_params=3,
+                seed=42)
+            model_inputs, model_outputs = data.simulate_data_2d(
+                size_df,
+                data.params,
+                image_size=32,
+                inject_type=injection)
     else:
         loader = MyDataLoader()
-        filename = (
-            str(prescription)
-            + "_"
-            + str(injection)
-            + "_sigma_"
-            + str(sigma)
-            + "_size_"
-            + str(size_df)
-        )
-        df = loader.load_data_h5(filename, path=path_to_data)
-        print("loaded this file: ", filename)
-    len_df = len(df["params"][:, 0].numpy())
-    len_x = np.shape(df["output"])[1]
-    ms_array = np.repeat(df["params"][:, 0].numpy(), len_x)
-    bs_array = np.repeat(df["params"][:, 1].numpy(), len_x)
-    # xs_array = np.tile(df["inputs"].numpy(), len_df)
-    # print('shape of inputs', np.shape(df["inputs"]))
-    # print('shape of outputs', np.shape(df["output"]))
-    xs_array = np.reshape(df["inputs"].numpy(), (len_df * len_x))
-    ys_array = np.reshape(df["output"].numpy(), (len_df * len_x))
-
-    inputs = np.array([xs_array, ms_array, bs_array]).T
+        if dim == "0D":
+            filename = (
+                str(prescription)
+                + "_"
+                + str(injection)
+                + "_sigma_"
+                + str(sigma)
+                + "_size_"
+                + str(size_df)
+            )
+            df = loader.load_data_h5(filename, path=path_to_data)
+            print("loaded this file: ", filename)
+    if dim == "0D":
+        len_df = len(df["params"][:, 0].numpy())
+        len_x = np.shape(df["output"])[1]
+        ms_array = np.repeat(df["params"][:, 0].numpy(), len_x)
+        bs_array = np.repeat(df["params"][:, 1].numpy(), len_x)
+        xs_array = np.reshape(df["inputs"].numpy(), (len_df * len_x))
+        model_outputs = np.reshape(df["output"].numpy(), (len_df * len_x))
+        model_inputs = np.array([xs_array, ms_array, bs_array]).T
     model_inputs, model_outputs = DataPreparation.normalize(
-        inputs, ys_array, norm)
+        model_inputs, model_outputs, norm)
     x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
         model_inputs, model_outputs, val_proportion=val_prop, random_state=rs
     )
@@ -365,6 +415,7 @@ if __name__ == "__main__":
         path_to_model=config.get_item("common", "out_dir", "DE"),
         data_prescription=prescription,
         inject_type=injection,
+        data_dim=dim,
         noise_level=noise,
         save_all_checkpoints=config.get_item(
             "model", "save_all_checkpoints", "DE"),
@@ -375,6 +426,11 @@ if __name__ == "__main__":
         ),
         plot=config.get_item("model", "plot", "DE"),
         savefig=config.get_item("model", "savefig", "DE"),
+        set_and_save_rs=config.get_item(
+            "model", "save_chk_random_seed_init", "DE"),
+        rs_list=config.get_item("model", "rs_list", "DE"),
+        save_n_hidden=config.get_item("model", "save_n_hidden", "DE"),
+        n_hidden=config.get_item("model", "n_hidden", "DE"),
         verbose=config.get_item("model", "verbose", "DE"),
     )
     """
