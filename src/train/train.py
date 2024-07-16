@@ -89,15 +89,14 @@ def train_DER(
     start_epoch = 0
 
     if set_and_save_rs:
-        print('setting and saving the rs')
+        print("setting and saving the rs")
         # Set the random seed
         set_random_seeds(seed_value=rs)
 
     best_loss = np.inf  # init to infinity
-    model, lossFn = models.model_setup_DER(loss_type,
-                                           DEVICE,
-                                           n_hidden=n_hidden,
-                                           data_type=data_dim)
+    model, lossFn = models.model_setup_DER(
+        loss_type, DEVICE, n_hidden=n_hidden, data_type=data_dim
+    )
     if verbose:
         print("model is", model, "lossfn", lossFn)
     opt = torch.optim.Adam(model.parameters(), lr=INIT_LR)
@@ -154,9 +153,7 @@ def train_DER(
                                 color="grey")
                 """
             loss_this_epoch.append(loss[0].item())
-            mse_this_epoch.append(
-                mse_loss(pred[:, 0], y).item()
-            )
+            mse_this_epoch.append(mse_loss(pred[:, 0], y).item())
             # zero out the gradients
             opt.zero_grad()
             # perform the backpropagation step
@@ -184,7 +181,7 @@ def train_DER(
                 print("meanwhile mse is", mse)
             # best_weights = copy.deepcopy(model.state_dict())
         if (plot or savefig) and (e != 0) and (e % (EPOCHS - 1) == 0):
-            #ax1.plot(range(0, 1000), range(0, 1000), color="black", ls="--")
+            # ax1.plot(range(0, 1000), range(0, 1000), color="black", ls="--")
             if loss_type == "no_var_loss":
                 ax1.scatter(
                     y_val,
@@ -240,13 +237,12 @@ def train_DER(
                 bbox=dict(
                     boxstyle="round,pad=0.5",
                     facecolor="lightgrey",
-                    alpha=0.5
-                ),
+                    alpha=0.5),
             )
             ax1.set_ylabel("Prediction")
             ax1.set_title("Epoch " + str(e))
-            #ax1.set_xlim([0, 1000])
-            #ax1.set_ylim([0, 1000])
+            # ax1.set_xlim([0, 1000])
+            # ax1.set_ylim([0, 1000])
             ax1.legend()
             if savefig:
                 # ax1.errorbar(200, 600, yerr=5,
@@ -315,10 +311,10 @@ def train_DER(
                     "std_u_al_validation": std_u_al_val,
                     "std_u_ep_validation": std_u_ep_val,
                 },
-                filename
+                filename,
             )
             if epoch == 99:
-                print('checkpoint saved here', filename)
+                print("checkpoint saved here", filename)
 
         if save_final_checkpoint and (e % (EPOCHS - 1) == 0) and (e != 0):
             filename = (
@@ -350,21 +346,21 @@ def train_DER(
             filename += ".pt"
             # option to just save final epoch
             torch.save(
-                    {
-                        "epoch": epoch,
-                        "model_state_dict": model.state_dict(),
-                        "optimizer_state_dict": opt.state_dict(),
-                        "train_loss": np.mean(loss_this_epoch),
-                        "valid_loss": NIGloss_val,
-                        "train_mse": np.mean(mse_this_epoch),
-                        "valid_mse": mse,
-                        "mean_u_al_validation": mean_u_al_val,
-                        "mean_u_ep_validation": mean_u_ep_val,
-                        "std_u_al_validation": std_u_al_val,
-                        "std_u_ep_validation": std_u_ep_val,
-                    },
-                    filename
-                )
+                {
+                    "epoch": epoch,
+                    "model_state_dict": model.state_dict(),
+                    "optimizer_state_dict": opt.state_dict(),
+                    "train_loss": np.mean(loss_this_epoch),
+                    "valid_loss": NIGloss_val,
+                    "train_mse": np.mean(mse_this_epoch),
+                    "valid_mse": mse,
+                    "mean_u_al_validation": mean_u_al_val,
+                    "mean_u_ep_validation": mean_u_ep_val,
+                    "std_u_al_validation": std_u_al_val,
+                    "std_u_ep_validation": std_u_ep_val,
+                },
+                filename,
+            )
     endTime = time.time()
     if verbose:
         print("start at", startTime, "end at", endTime)
@@ -473,17 +469,18 @@ def train_DE(
             else:
                 print("model does not exist yet, going to save")
         if set_and_save_rs:
-            assert len(rs_list) == n_models, \
-                "you are attempting to use the random seed list but the lens don't match"
+            assert (
+                len(rs_list) == n_models
+            ), "you are attempting to use the random seed list \
+                  but the lengths don't match"
             rs = rs_list[m]
-            print('setting and saving the rs')
+            print("setting and saving the rs")
             # Set the random seed
             set_random_seeds(seed_value=rs)
         # initialize the model again each time from scratch
-        model, lossFn = models.model_setup_DE(loss_type,
-                                              DEVICE,
-                                              n_hidden=n_hidden,
-                                              data_type=data_dim)
+        model, lossFn = models.model_setup_DE(
+            loss_type, DEVICE, n_hidden=n_hidden, data_type=data_dim
+        )
         opt = torch.optim.Adam(model.parameters(), lr=INIT_LR)
         mse_loss = torch.nn.MSELoss(reduction="mean")
 
@@ -521,8 +518,7 @@ def train_DE(
                     loss = lossFn(pred.flatten(), y)
                 if loss_type == "var_loss":
                     loss = lossFn(pred[:, 0].flatten(),
-                                  y,
-                                  pred[:, 1].flatten())
+                                  y, pred[:, 1].flatten())
                 if loss_type == "bnll_loss":
                     """
                     if e/EPOCHS < 0.2:
@@ -553,13 +549,10 @@ def train_DE(
                     except ValueError:
                         pass
                     loss = lossFn(
-                        pred[:, 0].flatten(),
-                        pred[:, 1].flatten(),
-                        y,
-                        beta=beta_epoch
+                        pred[:, 0].flatten(), pred[:, 1].flatten(),
+                        y, beta=beta_epoch
                     )
-                    mse = mse_loss(pred[:, 0],
-                                   y)
+                    mse = mse_loss(pred[:, 0], y)
                 if plot or savefig:
                     if (e % (EPOCHS - 1) == 0) and (e != 0):
                         if loss_type == "no_var_loss":
@@ -633,10 +626,8 @@ def train_DE(
                     print("new best loss", loss_val, "in epoch", epoch)
                 # best_weights = copy.deepcopy(model.state_dict())
             if (plot or savefig) and (e % (EPOCHS - 1) == 0) and (e != 0):
-                ax1.plot(range(0, 1000),
-                         range(0, 1000),
-                         color="black",
-                         ls="--")
+                ax1.plot(range(0, 1000), range(0, 1000),
+                         color="black", ls="--")
                 if loss_type == "no_var_loss":
                     ax1.scatter(
                         y_val,
@@ -758,10 +749,19 @@ def train_DE(
                 plt.close()
 
             if save_all_checkpoints:
-                filename = str(path_to_model) + 'checkpoints/' + \
-                    str(model_name) + "_" + str(data_prescription) + \
-                    "_" + str(inject_type) + "_" + str(data_dim) + \
-                    "_noise_" + str(noise_level)
+                filename = (
+                    str(path_to_model)
+                    + "checkpoints/"
+                    + str(model_name)
+                    + "_"
+                    + str(data_prescription)
+                    + "_"
+                    + str(inject_type)
+                    + "_"
+                    + str(data_dim)
+                    + "_noise_"
+                    + str(noise_level)
+                )
                 if loss_type == "bnll_loss":
                     filename += "_beta_" + str(BETA)
                 filename += "_nmodel_" + str(m) + "_epoch_" + str(epoch)
@@ -784,14 +784,23 @@ def train_DE(
                         "x_val": x_val,
                         "y_val": y_val,
                     },
-                    filename
+                    filename,
                 )
             if save_final_checkpoint and (e % (EPOCHS - 1) == 0) and (e != 0):
                 # option to just save final epoch
-                filename = str(path_to_model) + 'checkpoints/' + \
-                    str(model_name) + "_" + str(data_prescription) + \
-                    "_" + str(inject_type) + "_" + str(data_dim) + \
-                    "_noise_" + str(noise_level)
+                filename = (
+                    str(path_to_model)
+                    + "checkpoints/"
+                    + str(model_name)
+                    + "_"
+                    + str(data_prescription)
+                    + "_"
+                    + str(inject_type)
+                    + "_"
+                    + str(data_dim)
+                    + "_noise_"
+                    + str(noise_level)
+                )
                 if loss_type == "bnll_loss":
                     filename += "_beta_" + str(BETA)
                 filename += "_nmodel_" + str(m) + "_epoch_" + str(epoch)
@@ -814,7 +823,7 @@ def train_DE(
                         "x_val": x_val,
                         "y_val": y_val,
                     },
-                    filename
+                    filename,
                 )
         model_ensemble.append(model)
         final_mse.append(mse)

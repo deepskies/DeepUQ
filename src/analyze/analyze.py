@@ -50,13 +50,13 @@ class AggregateCheckpoints:
             file_name += ".pt"
         elif model_name[0:2] == "DE":
             file_name = (
-                str(path)
-                + f"{model_name}_{prescription}_{inject_type}_{data_dim}"
+                str(path) +
+                f"{model_name}_{prescription}_{inject_type}_{data_dim}"
                 f"_noise_{noise}_beta_{BETA}_nmodel_{nmodel}_epoch_{epoch}.pt"
             )
-        #import os
-        #print('cwd', os.getcwd())
-        #print(os.listdir(path))
+        # import os
+        # print('cwd', os.getcwd())
+        # print(os.listdir(path))
         checkpoint = torch.load(file_name, map_location=device)
         return checkpoint
 

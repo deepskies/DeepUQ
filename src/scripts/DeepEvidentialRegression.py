@@ -30,19 +30,18 @@ def parse_args():
 
     # data info
     parser.add_argument(
-        "--data_path",
-        "-d", default=DefaultsDER["data"]["data_path"])
+        "--data_path", "-d", default=DefaultsDER["data"]["data_path"])
     parser.add_argument(
-        "--data_dimension",
-        "-dd", default=DefaultsDER["data"]["data_dimension"]
+        "--data_dimension", "-dd",
+        default=DefaultsDER["data"]["data_dimension"]
     )
     parser.add_argument(
-        "--data_prescription",
-        "-dp", default=DefaultsDER["data"]["data_prescription"]
+        "--data_prescription", "-dp",
+        default=DefaultsDER["data"]["data_prescription"]
     )
     parser.add_argument(
-        "--data_injection",
-        "-di", default=DefaultsDER["data"]["data_injection"]
+        "--data_injection", "-di",
+        default=DefaultsDER["data"]["data_injection"]
     )
     parser.add_argument(
         "--data_engine",
@@ -254,7 +253,7 @@ def parse_args():
                 "randomseed": args.randomseed,
                 "batchsize": args.batchsize,
                 "generatedata": args.generatedata,
-                "normalize": args.normalize
+                "normalize": args.normalize,
             },
             # "plots": {key: {} for key in args.plots},
             # "metrics": {key: {} for key in args.metrics},
@@ -281,7 +280,7 @@ if __name__ == "__main__":
     injection = config.get_item("data", "data_injection", "DER")
     if config.get_item("data", "generatedata", "DER", raise_exception=False):
         # generate the df
-        print('generating the data')
+        print("generating the data")
         data = DataPreparation()
         if dim == "0D":
             data.sample_params_from_prior(size_df)
@@ -298,17 +297,14 @@ if __name__ == "__main__":
                     # Convert lists to tensors
                     df[key] = torch.tensor(value)
         elif dim == "2D":
-            print('2D data')
-            data.sample_params_from_prior(size_df,
-                              low=[1, 1, -1.5],
-                              high=[10, 10, 1.5],
-                              n_params=3,
-                              seed=42)
+            print("2D data")
+            data.sample_params_from_prior(
+                size_df, low=[1, 1, -1.5], high=[10, 10, 1.5], n_params=3,
+                seed=42
+            )
             model_inputs, model_outputs = data.simulate_data_2d(
-                size_df,
-                data.params,
-                image_size=32,
-                inject_type=injection)
+                size_df, data.params, image_size=32, inject_type=injection
+            )
     else:
         loader = MyDataLoader()
         if dim == "0D":
@@ -332,18 +328,19 @@ if __name__ == "__main__":
         model_outputs = np.reshape(df["output"].numpy(), (len_df * len_x))
         model_inputs = np.array([xs_array, ms_array, bs_array]).T
     model_inputs, model_outputs = DataPreparation.normalize(
-        model_inputs, model_outputs, norm)
+        model_inputs, model_outputs, norm
+    )
     x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
         model_inputs, model_outputs, val_proportion=val_prop, random_state=rs
     )
-    '''
+    """
     import matplotlib.pyplot as plt
     plt.clf()
     plt.imshow(x_train[0,:,:])
     plt.title(y_train[0])
     plt.colorbar()
     plt.show()
-    '''
+    """
     trainData = TensorDataset(torch.Tensor(x_train), torch.Tensor(y_train))
     trainDataLoader = DataLoader(
         trainData, batch_size=BATCH_SIZE, shuffle=True)

@@ -66,6 +66,7 @@ class SDERLayer(nn.Module):
         beta = nn.functional.softplus(x[:, 3])
         return torch.stack((gamma, nu, alpha, beta), dim=1)
 
+
 class ConvLayers(nn.Module):
     def __init__(self):
         super(ConvLayers, self).__init__()
@@ -83,7 +84,8 @@ class ConvLayers(nn.Module):
     def forward(self, x):
         # print('input shape', x.shape)
         if x.dim() == 3:  # Check if the input is of shape (batchsize, 32, 32)
-            x = x.unsqueeze(1)  # Add channel dimension, becomes (batchsize, 1, 32, 32)
+            # Add channel dimension, becomes (batchsize, 1, 32, 32)
+            x = x.unsqueeze(1)
         # print('shape after potential unsqeeze', x.shape)
         x = nn.functional.relu(self.conv1(x))
         # print('shape after conv1', x.shape)
@@ -104,10 +106,7 @@ class ConvLayers(nn.Module):
         return x
 
 
-def model_setup_DER(loss_type,
-                    DEVICE,
-                    n_hidden=64,
-                    data_type="0D"):
+def model_setup_DER(loss_type, DEVICE, n_hidden=64, data_type="0D"):
     # initialize the model from scratch
     if loss_type == "SDER":
         Layer = SDERLayer
@@ -120,18 +119,21 @@ def model_setup_DER(loss_type,
     if data_type == "2D":
         # Define the convolutional layers
         conv_layers = ConvLayers()
-        
+
         # Initialize the rest of the model
         model = torch.nn.Sequential(
             conv_layers,
-            Model(n_hidden=n_hidden, n_input=405, n_output=4),  # Adjust input size according to the flattened output size
-            Layer()
+            Model(
+                n_hidden=n_hidden, n_input=405, n_output=4
+            ),  # Adjust input size according to the flattened output size
+            Layer(),
         )
     elif data_type == "0D":
         # from https://github.com/pasteurlabs/unreasonable_effective_der
         # /blob/main/x3_indepth.ipynb
-        model = torch.nn.Sequential(Model(
-            n_hidden=n_hidden, n_input=3, n_output=4), Layer())
+        model = torch.nn.Sequential(
+            Model(n_hidden=n_hidden, n_input=3, n_output=4), Layer()
+        )
     model = model.to(DEVICE)
     return model, lossFn
 
@@ -148,10 +150,7 @@ class MuVarLayer(nn.Module):
         return torch.stack((mu, var), dim=1)
 
 
-def model_setup_DE(loss_type,
-                   DEVICE,
-                   n_hidden=64,
-                   data_type="0D"):
+def model_setup_DE(loss_type, DEVICE, n_hidden=64, data_type="0D"):
     # initialize the model from scratch
     if loss_type == "no_var_loss":
         # model = de_no_var().to(DEVICE)
@@ -159,9 +158,8 @@ def model_setup_DE(loss_type,
     if loss_type == "var_loss":
         # model = de_var().to(DEVICE)
         Layer = MuVarLayer
-        lossFn = torch.nn.GaussianNLLLoss(full=False,
-                                          eps=1e-06,
-                                          reduction="mean")
+        lossFn = torch.nn.GaussianNLLLoss(
+            full=False, eps=1e-06, reduction="mean")
     if loss_type == "bnll_loss":
         # model = de_var().to(DEVICE)
         Layer = MuVarLayer
@@ -172,14 +170,17 @@ def model_setup_DE(loss_type,
         # Initialize the rest of the model
         model = torch.nn.Sequential(
             conv_layers,
-            Model(n_hidden=n_hidden, n_input=405, n_output=2),  # Adjust input size according to the flattened output size
-            Layer()
+            Model(
+                n_hidden=n_hidden, n_input=405, n_output=2
+            ),  # Adjust input size according to the flattened output size
+            Layer(),
         )
     elif data_type == "0D":
         # from https://github.com/pasteurlabs/unreasonable_effective_der
         # /blob/main/x3_indepth.ipynb
-        model = torch.nn.Sequential(Model(
-            n_hidden=n_hidden, n_input=3, n_output=2), Layer())
+        model = torch.nn.Sequential(
+            Model(n_hidden=n_hidden, n_input=3, n_output=2), Layer()
+        )
     model = model.to(DEVICE)
     return model, lossFn
 
@@ -189,10 +190,7 @@ def model_setup_DE(loss_type,
 
 
 class Model(nn.Module):
-    def __init__(self,
-                 n_output=4,
-                 n_hidden=64,
-                 n_input=3):
+    def __init__(self, n_output=4, n_hidden=64, n_input=3):
         super().__init__()
         self.model = nn.Sequential(
             nn.Linear(n_input, n_hidden),
@@ -245,8 +243,8 @@ def loss_sder(y, y_pred, coeff):
     )
     u_ep = 1 / np.sqrt(nu.detach().numpy())
 
-    return torch.mean(torch.log(var) +
-                      (1.0 + coeff * nu) * error**2 / var), u_al, u_ep
+    return torch.mean(torch.log(var) + (1.0 + coeff * nu) * error**2 / var), \
+        u_al, u_ep
 
 
 # from martius lab

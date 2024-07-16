@@ -151,7 +151,7 @@ class DataPreparation:
                         loc=0, scale=sigma))
             elif inject_type == "feature":
                 noisy_image = image + np.random.normal(
-                        loc=0, scale=sigma, size=(image_size, image_size)) 
+                        loc=0, scale=sigma, size=(image_size, image_size))
                 image_array[i, :, :] = noisy_image
                 total_brightness.append(np.sum(image))
             # we'll need the noisy image summed if we want to
