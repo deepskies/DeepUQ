@@ -101,7 +101,7 @@ class DataPreparation:
     def __init__(self):
         self.data = None
 
-    def simulate_data_2d(
+    def image_gen(
         self,
         image_size=100,
         amplitude=10,
@@ -125,6 +125,39 @@ class DataPreparation:
                     center_y=center_y
                         )
         return image
+
+    def simulate_data_2d(self,
+                         size_df,
+                         params,
+                         image_size=32,
+                         inject_type="predictive",
+                         sigma=1):
+        image_size = 32
+        image_array = np.zeros((size_df, image_size, image_size))
+        total_brightness = []
+        for i in range(size_df):
+            image = self.image_gen(
+                image_size=image_size,
+                amplitude=params[i, 0],
+                radius=params[i, 1],
+                center_x=16,
+                center_y=16,
+                theta=params[i, 2],
+                noise_level=0)
+            if inject_type == "predictive":
+                image_array[i, :, :] = image
+                total_brightness.append(
+                    np.sum(image) + np.random.normal(
+                        loc=0, scale=sigma))
+            elif inject_type == "feature":
+                noisy_image = image + np.random.normal(
+                        loc=0, scale=sigma, size=(image_size, image_size))
+                image_array[i, :, :] = noisy_image
+                total_brightness.append(np.sum(image))
+            # we'll need the noisy image summed if we want to
+            # do a comparison of y - y':
+            # total_brightness_prop_noisy.append(np.sum(noisy_image))
+        return image_array, total_brightness
 
     def simulate_data(
         self,

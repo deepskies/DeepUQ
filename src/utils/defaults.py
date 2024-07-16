@@ -6,6 +6,7 @@ DefaultsDE = {
     "data": {
         "data_path": "./data/",
         "data_engine": "DataLoader",
+        "data_dimension": "0D",
         "data_prescription": "linear_homoskedastic",
         "data_injection": "predictive",
         "size_df": 1000,
@@ -29,6 +30,10 @@ DefaultsDE = {
         "overwrite_final_checkpoint": False,
         "plot": False,
         "savefig": False,
+        "save_chk_random_seed_init": False,
+        "rs_list": [41, 42],
+        "save_n_hidden": False,
+        "n_hidden": 64,
         "verbose": False,
     },
     "plots_common": {
@@ -50,6 +55,7 @@ DefaultsDER = {
     "data": {
         "data_path": "./data/",
         "data_engine": "DataLoader",
+        "data_dimension": "0D",
         "data_prescription": "linear_homoskedastic",
         "data_injection": "predictive",
         "size_df": 1000,
@@ -99,6 +105,7 @@ DefaultsAnalysis = {
         "model_engine": "DE",
         "model_type": "DE",
         "data_prescription": "linear_homoskedastic",
+        "data_dimension": "0D",
         "n_models": 100,
         "n_epochs": 100,
         "BETA": 0.5,
@@ -107,8 +114,8 @@ DefaultsAnalysis = {
     },
     "analysis": {
         "noise_level_list": ["low"],
-        "model_names_list": ["DER"],
-        "inject_type_list": ["predictive", "feature"],
+        "model_names_list": ["DE"],
+        "inject_type_list": ["feature"],
         # ["DER_wst", "DE_desiderata_2"],
         # for architecture: ["DER"], #, "DE_desiderata_2"],
         # for the inits changed to "DER_wst"

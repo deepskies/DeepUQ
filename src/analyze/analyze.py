@@ -12,6 +12,7 @@ class AggregateCheckpoints:
         model_name,
         prescription,
         inject_type,
+        data_dim,
         noise,
         epoch,
         device,
@@ -35,10 +36,11 @@ class AggregateCheckpoints:
         :param model: PyTorch model to load the checkpoint into
         :return: Loaded model
         """
+        print(model_name)
         if model_name[0:3] == "DER":
             file_name = (
                 str(path)
-                + f"{model_name}_{prescription}_{inject_type}"
+                + f"{model_name}_{prescription}_{inject_type}_{data_dim}"
                 + f"_noise_{noise}_loss_{loss}_COEFF_{COEFF}_epoch_{epoch}"
             )
             if load_rs_chk:
@@ -48,10 +50,13 @@ class AggregateCheckpoints:
             file_name += ".pt"
         elif model_name[0:2] == "DE":
             file_name = (
-                str(path)
-                + f"{model_name}_{prescription}_{inject_type}"
+                str(path) +
+                f"{model_name}_{prescription}_{inject_type}_{data_dim}"
                 f"_noise_{noise}_beta_{BETA}_nmodel_{nmodel}_epoch_{epoch}.pt"
             )
+        # import os
+        # print('cwd', os.getcwd())
+        # print(os.listdir(path))
         checkpoint = torch.load(file_name, map_location=device)
         return checkpoint
 

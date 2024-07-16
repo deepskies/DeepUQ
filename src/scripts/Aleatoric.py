@@ -33,6 +33,11 @@ def parse_args():
         default=DefaultsAnalysis["model"]["data_prescription"],
     )
     parser.add_argument(
+        "--data_dimension",
+        "-dd",
+        default=DefaultsAnalysis["model"]["data_dimension"],
+    )
+    parser.add_argument(
         "--n_models",
         type=int,
         default=DefaultsAnalysis["model"]["n_models"],
@@ -179,6 +184,8 @@ if __name__ == "__main__":
         "model", "data_prescription", "Analysis")
     inject_type_list = config.get_item(
         "analysis", "inject_type_list", "Analysis")
+    dim = config.get_item(
+        "model", "data_dimension", "Analysis")
     sigma_list = []
     for noise in noise_list:
         sigma_list.append(DataPreparation.get_sigma(noise))
@@ -220,6 +227,7 @@ if __name__ == "__main__":
                         model,
                         prescription,
                         typei,
+                        dim,
                         noise,
                         epoch,
                         DEVICE,
@@ -245,6 +253,7 @@ if __name__ == "__main__":
                             model,
                             prescription,
                             typei,
+                            dim,
                             noise,
                             epoch,
                             DEVICE,
