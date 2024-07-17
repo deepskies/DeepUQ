@@ -326,7 +326,12 @@ if __name__ == "__main__":
         data = DataPreparation()
         if dim == "0D":
             data.sample_params_from_prior(size_df)
-            data.simulate_data(data.params, sigma, prescription)
+            print('injecting this noise', noise, sigma)
+            data.simulate_data(
+                data.params,
+                sigma,
+                prescription,
+                inject_type=injection)
             df_array = data.get_dict()
             # Convert non-tensor entries to tensors
             df = {}
@@ -373,6 +378,14 @@ if __name__ == "__main__":
         xs_array = np.reshape(df["inputs"].numpy(), (len_df * len_x))
         model_outputs = np.reshape(df["output"].numpy(), (len_df * len_x))
         model_inputs = np.array([xs_array, ms_array, bs_array]).T
+        '''
+        print(np.shape(xs_array), np.shape(model_outputs))
+        import matplotlib.pyplot as plt
+        plt.scatter(xs_array[0:100], model_outputs[0:100])
+        plt.plot(xs_array[0:100], model_outputs[0:100])
+        plt.show()
+        STOP
+        '''
     model_inputs, model_outputs = DataPreparation.normalize(
         model_inputs, model_outputs, norm)
     x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
