@@ -113,9 +113,9 @@ DefaultsAnalysis = {
         "loss_type": "DER"
     },
     "analysis": {
-        "noise_level": "high",
-        "model_names_list": ["DER"],
-        "inject_type_list": ["feature"],
+        "noise_level_list": ["low", "medium", "high"],
+        "model_names_list": ["DE"],
+        "inject_type_list": ["feature", "predictive"],
         # ["DER_wst", "DE_desiderata_2"],
         # for architecture: ["DER"], #, "DE_desiderata_2"],
         # for the inits changed to "DER_wst"

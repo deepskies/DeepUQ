@@ -78,6 +78,13 @@ def parse_args():
         help="Beginning of name for saved checkpoints and figures",
     )
     parser.add_argument(
+        "--inject_type_list",
+        type=list,
+        required=False,
+        default=DefaultsAnalysis["analysis"]["inject_type_list"],
+        help="Options are predictive and feature",
+    )
+    parser.add_argument(
         "--n_epochs",
         type=int,
         required=False,
@@ -135,6 +142,7 @@ def parse_args():
             "analysis": {
                 "noise_level_list": args.noise_level_list,
                 "model_names_list": args.model_names_list,
+                "inject_type_list": args.inject_type_list,
                 "plot": args.plot,
                 "savefig": args.savefig,
                 "verbose": args.verbose,
@@ -178,6 +186,7 @@ if __name__ == "__main__":
     inject_type_list = config.get_item("analysis",
                                        "inject_type_list",
                                        "Analysis")
+    dim = config.get_item("model", "data_dimension", "Analysis")
     sigma_list = []
     for noise in noise_list:
         sigma_list.append(DataPreparation.get_sigma(noise))
@@ -201,12 +210,14 @@ if __name__ == "__main__":
     # make an empty nested dictionary with keys for
     # model names followed by noise levels
     al_dict = {
-        model_name: {noise: [] for noise in noise_list}
-        for model_name in model_name_list
+        typei: {model_name: {noise: [] for noise in noise_list}
+                for model_name in model_name_list}
+        for typei in inject_type_list
     }
     al_std_dict = {
-        model_name: {noise: [] for noise in noise_list}
-        for model_name in model_name_list
+        typei: {model_name: {noise: [] for noise in noise_list}
+                for model_name in model_name_list}
+        for typei in inject_type_list
     }
     n_epochs = config.get_item("model", "n_epochs", "Analysis")
     # switching from two panels for different models to
@@ -214,78 +225,63 @@ if __name__ == "__main__":
     # could eventually make this into a four panel plot
     # for model in model_name_list:
     for inject_type in inject_type_list:
-        for noise in noise_list:
-            # append a noise key
-            # now run the analysis on the resulting checkpoints
-            if model[0:3] == "DER":
-                for epoch in range(n_epochs):
-                    '''
-                    self,
-        model_name,
-        prescription,
-        noise,
-        epoch,
-        device,
-        path="models/",
-        BETA=0.5,
-        nmodel=None,
-        COEFF=0.5,
-        loss="SDER",
-        load_rs_chk=False,
-        rs=42,
-        load_nh_chk=False,
-        nh=64,
-    ):
-                    '''
-                    chk = chk_module.load_checkpoint(
-                        model,
-                        prescription,
-                        inject_type,
-                        noise,
-                        epoch,
-                        DEVICE,
-                        path=path_to_chk,
-                        COEFF=COEFF,
-                        loss=loss_type,
-                        load_nh_chk=False,
-                    )
-                    # path=path_to_chk)
-                    # things to grab: 'valid_mse' and 'valid_bnll'
-                    epistemic_m, aleatoric_m, e_std, a_std = (
-                        chk_module.ep_al_checkpoint_DER(chk)
-                    )
-                    al_dict[model][noise].append(aleatoric_m)
-                    al_std_dict[model][noise].append(a_std)
-
-            elif model[0:2] == "DE":
-                n_models = config.get_item("model", "n_models", "DE")
-                for epoch in range(n_epochs):
-                    list_mus = []
-                    list_vars = []
-                    for nmodels in range(n_models):
+        for model_name in model_name_list:
+            for noise in noise_list:
+                # append a noise key
+                # now run the analysis on the resulting checkpoints
+                if model[0:3] == "DER":
+                    for epoch in range(n_epochs):
                         chk = chk_module.load_checkpoint(
-                            model,
+                            model_name,
                             prescription,
                             inject_type,
+                            dim,
                             noise,
                             epoch,
                             DEVICE,
                             path=path_to_chk,
-                            BETA=BETA,
-                            nmodel=nmodels,
+                            COEFF=COEFF,
+                            loss=loss_type,
+                            load_nh_chk=False,
                         )
-                        mu_vals, var_vals = chk_module.ep_al_checkpoint_DE(chk)
-                        list_mus.append(mu_vals)
-                        list_vars.append(var_vals)
-                    # first taking the mean across the validation data
-                    # then looking at the mean and standard deviation
-                    # across all of the nmodels
-                    al_dict[model][noise].append(
-                        np.mean(np.mean(list_vars, axis=0))
-                    )
-                    al_std_dict[model][noise].append(
-                        np.std(np.mean(list_vars, axis=0))
-                    )
+                        # path=path_to_chk)
+                        # things to grab: 'valid_mse' and 'valid_bnll'
+                        epistemic_m, aleatoric_m, e_std, a_std = (
+                            chk_module.ep_al_checkpoint_DER(chk)
+                        )
+                        al_dict[inject_type][model][noise].append(aleatoric_m)
+                        al_std_dict[inject_type][model][noise].append(a_std)
+
+                elif model[0:2] == "DE":
+                    n_models = config.get_item("model", "n_models", "DE")
+                    for epoch in range(n_epochs):
+                        list_mus = []
+                        list_vars = []
+                        for nmodels in range(n_models):
+                            chk = chk_module.load_checkpoint(
+                                model,
+                                prescription,
+                                inject_type,
+                                dim,
+                                noise,
+                                epoch,
+                                DEVICE,
+                                path=path_to_chk,
+                                BETA=BETA,
+                                nmodel=nmodels,
+                            )
+                            mu_vals, var_vals = chk_module.ep_al_checkpoint_DE(chk)
+                            list_mus.append(mu_vals)
+                            list_vars.append(var_vals)
+                        # first taking the mean across the validation data
+                        # then looking at the mean and standard deviation
+                        # across all of the nmodels
+                        al_dict[inject_type][model][noise].append(
+                            np.mean(np.mean(list_vars, axis=0))
+                        )
+                        al_std_dict[inject_type][model][noise].append(
+                            np.std(np.mean(list_vars, axis=0))
+                        )
     # make a two-paneled plot for the different noise levels
     # make one panel per model
     # for the noise levels:
