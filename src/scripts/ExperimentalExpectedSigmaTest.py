@@ -232,36 +232,50 @@ if __name__ == "__main__":
     #for i, noise in enumerate(noise_list):
     for typei in inject_type_list:
         # now create a test set
+        size_df = 1000
         data = DataPreparation()
-        data.sample_params_from_prior(1000)
-        data.simulate_data(
-            data.params,
-            sigma_inject,
-            "linear_homoskedastic",
-            inject_type=typei,
-            seed=41,
-        )
-        df_array = data.get_dict()
-        # Convert non-tensor entries to tensors
-        df = {}
-        for key, value in df_array.items():
+        if dim == "0D":
+            data.sample_params_from_prior(size_df)
+            data.simulate_data(
+                data.params,
+                sigma_inject,
+                "linear_homoskedastic",
+                inject_type=typei,
+                seed=41,
+            )
+            df_array = data.get_dict()
+            # Convert non-tensor entries to tensors
+            df = {}
+            for key, value in df_array.items():
 
-            if isinstance(value, TensorDataset):
-                # Keep tensors as they are
-                df[key] = value
-            else:
-                # Convert lists to tensors
-                df[key] = torch.tensor(value)
-        len_df = len(df["params"][:, 0].numpy())
-        len_x = np.shape(df["output"])[1]
-        ms_array = np.repeat(df["params"][:, 0].numpy(), len_x)
-        bs_array = np.repeat(df["params"][:, 1].numpy(), len_x)
-        xs_array = np.reshape(df["inputs"].numpy(), (len_df * len_x))
-        ys_array = np.reshape(df["output"].numpy(), (len_df * len_x))
+                if isinstance(value, TensorDataset):
+                    # Keep tensors as they are
+                    df[key] = value
+                else:
+                    # Convert lists to tensors
+                    df[key] = torch.tensor(value)
+            len_df = len(df["params"][:, 0].numpy())
+            len_x = np.shape(df["output"])[1]
+            ms_array = np.repeat(df["params"][:, 0].numpy(), len_x)
+            bs_array = np.repeat(df["params"][:, 1].numpy(), len_x)
+            xs_array = np.reshape(df["inputs"].numpy(), (len_df * len_x))
+            ys_array = np.reshape(df["output"].numpy(), (len_df * len_x))
 
-        inputs = np.array([xs_array, ms_array, bs_array]).T
+            inputs = np.array([xs_array, ms_array, bs_array]).T
+        elif dim == "2D":
+            data.sample_params_from_prior(
+                size_df,
+                low=[1, 1, -1.5],
+                high=[10, 10, 1.5],
+                n_params=3,
+                seed=41)
+            model_inputs, model_outputs = data.simulate_data_2d(
+                size_df,
+                data.params,
+                image_size=32,
+                inject_type=typei)
         model_inputs, model_outputs = DataPreparation.normalize(
-            inputs, ys_array, False
+            model_inputs, model_outputs, False
         )
         _, x_test, _, y_test = DataPreparation.train_val_split(
             model_inputs, model_outputs, val_proportion=0.1,
@@ -301,6 +315,8 @@ if __name__ == "__main__":
         # checkpoint['model_state_dict'])
         model.eval()
         # now run on the x_test
+        y_pred = model(torch.Tensor(x_test))
+        print(y_pred)
         y_pred = model(torch.Tensor(x_test)).detach().numpy()
         if model_type == "DER":
             assert model_type == "DER", "stop haven't written this yet"
@@ -308,23 +324,53 @@ if __name__ == "__main__":
             sigma = np.sqrt(y_pred[:, 1])
 
 
-        print(x_test)
+        plt.clf()
+        plt.scatter(y_test, y_pred[:, 0])
+        plt.errorbar(y_test, y_pred[:, 0], yerr=sigma, fmt='o', linestyle='None')
+        plt.xlabel('true')
+        plt.ylabel('predicted')
+        plt.show()
+
+        plt.clf()
+        plt.hist(sigma, alpha=0.5)
+        plt.axvline(x=np.mean(sigma))
+        plt.title(str(round(np.mean(sigma), 2)))
+        plt.xlabel('output sigma')
+        plt.show()
+
+        STOP
+
+        print(np.shape(x_test))
+        for i in range(10):
+            plt.clf()
+            plt.imshow(x_test[i,:,:])
+            plt.title(f'y_true = {y_test[i]}, y_pred = {y_pred[i, 0]} +/- {sigma[i]}')
+            plt.show()
+        
+        
+
         print(x_test[:, 1])
         print('mean of predicted sigmas', np.mean(sigma))
-        if typei == "predictive":
-            y_noisy = y_test
-            y_noiseless = x_test[:, 1] * x_test[:, 0] + x_test[:, 2]
-            sub = y_noisy - y_noiseless
-            label = r"$y_{noisy} - y_{noiseless}$"
-        elif typei == "feature":
-            y_noisy = x_test[:, 1] * x_test[:, 0] + x_test[:, 2]
-            y_noiseless = y_test
-            sub = y_noisy - y_noiseless  # / x_test[:, 1]
-            label = r"$(y_{noisy} - y_{noiseless})$"  # / m$'
-            # finally, analytically propagate
-            if dim == "0D":
-                print('mean of ms', np.mean(x_test[:, 1]))
-                true_analytic = sigma_inject * np.mean(x_test[:, 1])
+        if dim == "0D":
+            if typei == "predictive":
+                y_noisy = y_test
+                y_noiseless = x_test[:, 1] * x_test[:, 0] + x_test[:, 2]
+                sub = y_noisy - y_noiseless
+                label = r"$y_{noisy} - y_{noiseless}$"
+            elif typei == "feature":
+                y_noisy = x_test[:, 1] * x_test[:, 0] + x_test[:, 2]
+                y_noiseless = y_test
+                sub = y_noisy - y_noiseless  # / x_test[:, 1]
+                label = r"$(y_{noisy} - y_{noiseless})$"  # / m$'
+                # finally, analytically propagate
+                if dim == "0D":
+                    print('mean of ms', np.mean(x_test[:, 1]))
+                    true_analytic = sigma_inject * np.mean(x_test[:, 1])
+        elif dim == "2D":
+            if typei == "predictive":
+                assert "haven't done this yet"
+            elif typei == "feature":
+                assert "haven't done this yet"
 
         plt.clf()
         if noise == "high":

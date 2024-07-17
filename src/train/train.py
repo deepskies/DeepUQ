@@ -825,6 +825,7 @@ def train_DE(
                     },
                     filename,
                 )
+                print('saved final checkpoint', filename)
         model_ensemble.append(model)
         final_mse.append(mse)
 
