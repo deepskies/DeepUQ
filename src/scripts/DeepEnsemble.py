@@ -407,13 +407,7 @@ if __name__ == "__main__":
         config.get_item("model", "save_final_checkpoint", "DE"),
     )
     print("model name is ", model_name)
-    """
-    EPOCHS=100,
-    path_to_model="models/",
-    data_prescription="linear_homoskedastic",
-    inject_type="predictive",
-    noise_level="low",
-    save_all_checkpoints=False,"""
+    print("dim is ", dim)
     model_ensemble = train.train_DE(
         trainDataLoader,
         x_val,
@@ -446,20 +440,3 @@ if __name__ == "__main__":
         n_hidden=config.get_item("model", "n_hidden", "DE"),
         verbose=config.get_item("model", "verbose", "DE"),
     )
-    """
-    if config.get_item("analysis", "run_analysis", "DE"):
-        # now run the analysis on the resulting checkpoints
-        chk_module = AggregateCheckpoints()
-        print('n_models', config.get_item("model", "n_models", "DE"))
-        print('n_epochs', config.get_item("model", "n_epochs", "DE"))
-        for nmodel in range(config.get_item("model", "n_models", "DE")):
-            for epoch in range(config.get_item("model", "n_epochs", "DE")):
-                chk = chk_module.load_DE_checkpoint(
-                                model_name,
-                                nmodel,
-                                epoch,
-                                config.get_item("model", "BETA", "DE"),
-                                DEVICE)
-                # things to grab: 'valid_mse' and 'valid_bnll'
-                print(chk)
-    """
