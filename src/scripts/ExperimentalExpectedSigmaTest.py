@@ -367,7 +367,7 @@ if __name__ == "__main__":
                      xy=(np.std(sub),
                          np.max([np.max(heights1), np.max(heights2)])/2),
                      xycoords='data',
-                     color="black",
+                     color="grey",
                      )
         plt.axvline(
             x=np.percentile(sub, 50) - np.percentile(sub, 16),
