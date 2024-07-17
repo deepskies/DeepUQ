@@ -106,14 +106,14 @@ DefaultsAnalysis = {
         "model_type": "DE",
         "data_prescription": "linear_homoskedastic",
         "data_dimension": "0D",
-        "n_models": 100,
+        "n_models": 1,
         "n_epochs": 100,
         "BETA": 0.5,
         "COEFF": 0.01,
-        "loss_type": "DER"
+        "loss_type": "bnll_loss"
     },
     "analysis": {
-        "noise_level_list": ["low"],
+        "noise_level": "low",
         "model_names_list": ["DE"],
         "inject_type_list": ["feature"],
         # ["DER_wst", "DE_desiderata_2"],
