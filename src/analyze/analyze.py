@@ -18,7 +18,7 @@ class AggregateCheckpoints:
         device,
         path="models/",
         BETA=0.5,
-        nmodel=99,
+        nmodel=1,
         COEFF=0.5,
         loss="SDER",
         load_rs_chk=False,

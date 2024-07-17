@@ -201,7 +201,7 @@ if __name__ == "__main__":
     print("inject type list", inject_type_list)
 
     noise_to_sigma = {"low": 1, "medium": 5, "high": 10, "vhigh": 100}
-    sigma = noise_to_sigma[noise]
+    sigma_inject = noise_to_sigma[noise]
     root_dir = config.get_item("common", "dir", "Analysis")
     path_to_chk = root_dir + "checkpoints/"
     path_to_out = root_dir + "analysis/"
@@ -236,7 +236,7 @@ if __name__ == "__main__":
         data.sample_params_from_prior(1000)
         data.simulate_data(
             data.params,
-            noise_to_sigma[noise],
+            sigma_inject,
             "linear_homoskedastic",
             inject_type=typei,
             seed=41,
@@ -321,10 +321,16 @@ if __name__ == "__main__":
             y_noiseless = y_test
             sub = y_noisy - y_noiseless  # / x_test[:, 1]
             label = r"$(y_{noisy} - y_{noiseless})$"  # / m$'
+            # finally, analytically propagate
+            if dim == "0D":
+                print('mean of ms', np.mean(x_test[:, 1]))
+                true_analytic = sigma_inject * np.mean(x_test[:, 1])
 
         plt.clf()
         if noise == "high":
             heights1, bins = np.histogram(sub, bins=50, range=[-200, 200])
+        elif noise == "medium":
+            heights1, bins = np.histogram(sub, bins=50, range=[-100, 100])
         elif noise == "low":
             heights1, bins = np.histogram(sub, bins=50, range=[-20, 20])
         heights2, _ = np.histogram(sigma, bins=bins)
@@ -342,10 +348,16 @@ if __name__ == "__main__":
             label="predicted sigma",
             color="#9EB25D",
             )
+        plt.annotate(str(round(true_analytic, 2)),
+                     xy=(np.mean(true_analytic),
+                         np.max([np.max(heights1), np.max(heights2)])/2 + 200),
+                     xycoords='data',
+                     color="black",
+                     )
         plt.axvline(x=np.mean(sigma), color="#9EB25D", ls='-')
         plt.annotate(str(round(np.mean(sigma), 2)),
                      xy=(np.mean(sigma),
-                         np.max([np.max(heights1), np.max(heights2)])/2),
+                         np.max([np.max(heights1), np.max(heights2)])/2 + 100),
                      xycoords='data',
                      color="#9EB25D",
                      )
