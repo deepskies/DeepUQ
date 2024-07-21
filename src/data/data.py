@@ -302,17 +302,32 @@ class DataPreparation:
     def get_data(self):
         return self.data
 
-    def get_sigma(noise):
-        if noise == "low":
-            sigma = 1
-        elif noise == "medium":
-            sigma = 5
-        elif noise == "high":
-            sigma = 10
-        elif noise == "vhigh":
-            sigma = 100
-        else:
-            print("cannot find a match for this noise", noise)
+    def get_sigma(noise, inject_type="predictive", data_dimension="0D"):
+        if inject_type == "predictive":
+            if noise == "low":
+                sigma = 1
+            elif noise == "medium":
+                sigma = 5
+            elif noise == "high":
+                sigma = 10
+            elif noise == "vhigh":
+                sigma = 100
+            else:
+                print("cannot find a match for this noise", noise)
+        elif inject_type == "feature" and data_dimension=="0D":
+            if noise == "low":
+                sigma = 1 / 5
+            elif noise == "medium":
+                sigma = 5 / 5
+            elif noise == "high":
+                sigma = 10 / 5
+        elif inject_type == "feature" and data_dimension=="2D":
+            if noise == "low":
+                sigma = 1 / np.sqrt(32)
+            elif noise == "medium":
+                sigma = 5 / np.sqrt(32)
+            elif noise == "high":
+                sigma = 10 / np.sqrt(32)
         return sigma
 
     def normalize(inputs, ys_array, norm=False):

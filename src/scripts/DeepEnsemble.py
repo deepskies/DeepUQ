@@ -3,6 +3,7 @@ import os
 import yaml
 import argparse
 import numpy as np
+import matplotlib.pyplot as plt
 import torch
 from torch.utils.data import TensorDataset, DataLoader
 
@@ -315,11 +316,13 @@ if __name__ == "__main__":
     # this is the data rs
     rs = config.get_item("data", "randomseed", "DE")
     BATCH_SIZE = config.get_item("data", "batchsize", "DE")
-    sigma = DataPreparation.get_sigma(noise)
     path_to_data = config.get_item("data", "data_path", "DE")
     prescription = config.get_item("data", "data_prescription", "DE")
     injection = config.get_item("data", "data_injection", "DE")
     dim = config.get_item("data", "data_dimension", "DE")
+    sigma = DataPreparation.get_sigma(
+        noise, inject_type=injection, data_dimension=dim)
+    print(f"inject type is {injection}, dim is {dim}, sigma is {sigma}")
     if config.get_item("data", "generatedata", "DE", raise_exception=False):
         # generate the df
         print('generating the data')
@@ -378,14 +381,12 @@ if __name__ == "__main__":
         xs_array = np.reshape(df["inputs"].numpy(), (len_df * len_x))
         model_outputs = np.reshape(df["output"].numpy(), (len_df * len_x))
         model_inputs = np.array([xs_array, ms_array, bs_array]).T
-        '''
+        
         print(np.shape(xs_array), np.shape(model_outputs))
-        import matplotlib.pyplot as plt
+        
         plt.scatter(xs_array[0:100], model_outputs[0:100])
         plt.plot(xs_array[0:100], model_outputs[0:100])
         plt.show()
-        STOP
-        '''
     model_inputs, model_outputs = DataPreparation.normalize(
         model_inputs, model_outputs, norm)
     x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
