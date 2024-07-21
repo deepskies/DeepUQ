@@ -381,11 +381,22 @@ if __name__ == "__main__":
         xs_array = np.reshape(df["inputs"].numpy(), (len_df * len_x))
         model_outputs = np.reshape(df["output"].numpy(), (len_df * len_x))
         model_inputs = np.array([xs_array, ms_array, bs_array]).T
-        
+    # briefly plot what some of the data looks like
+    if dim == "0D":
         print(np.shape(xs_array), np.shape(model_outputs))
-        
+        plt.clf()
         plt.scatter(xs_array[0:100], model_outputs[0:100])
         plt.plot(xs_array[0:100], model_outputs[0:100])
+        plt.show()
+    if dim == "2D":
+        print(np.shape(model_inputs), np.shape(model_outputs))
+        plt.clf()
+        plt.imshow(model_inputs[0])
+        plt.annotate('Pixel sum = ' + str(round(model_outputs[0], 2)),
+             xy=(0.02, 0.9),
+             xycoords='axes fraction',
+             color='white',
+             size=10)
         plt.show()
     model_inputs, model_outputs = DataPreparation.normalize(
         model_inputs, model_outputs, norm)
@@ -402,6 +413,7 @@ if __name__ == "__main__":
     model, lossFn = models.model_setup_DE(
         config.get_item("model", "loss_type", "DE"),
         DEVICE,
+        data_dim=dim
     )
     print(
         "save final checkpoint has this value",
