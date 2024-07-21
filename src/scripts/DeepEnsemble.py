@@ -413,7 +413,7 @@ if __name__ == "__main__":
     model, lossFn = models.model_setup_DE(
         config.get_item("model", "loss_type", "DE"),
         DEVICE,
-        data_dim=dim
+        data_type=dim
     )
     print(
         "save final checkpoint has this value",

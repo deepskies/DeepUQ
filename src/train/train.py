@@ -1,3 +1,4 @@
+import math
 import torch
 import time
 import glob
@@ -167,6 +168,8 @@ def train_DER(
         y_pred = model(torch.Tensor(x_val))
         loss = lossFn(y_pred, torch.Tensor(y_val), COEFF)
         NIGloss_val = loss[0].item()
+        assert not math.isnan(NIGloss_val), \
+            f"loss is: {NIGloss_val}, terminating training"
         mean_u_al_val = np.mean(loss[1])
         mean_u_ep_val = np.mean(loss[2])
         std_u_al_val = np.std(loss[1])
@@ -618,6 +621,8 @@ def train_DE(
                     torch.Tensor(y_val),
                     beta=beta_epoch,
                 ).item()
+            assert not math.isnan(loss_val), \
+                f"loss is: {loss_val}, terminating training"
             loss_validation.append(loss_val)
             mse = mse_loss(y_pred_val[:, 0], torch.Tensor(y_val)).item()
             if loss_val < best_loss:
