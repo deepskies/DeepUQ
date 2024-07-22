@@ -23,6 +23,7 @@ def train_DER(
     DEVICE,
     COEFF,
     loss_type,
+    norm_params,
     model_name="DER",
     EPOCHS=100,
     path_to_model="models/",
@@ -313,6 +314,7 @@ def train_DER(
                     "mean_u_ep_validation": mean_u_ep_val,
                     "std_u_al_validation": std_u_al_val,
                     "std_u_ep_validation": std_u_ep_val,
+                    "norm_params": norm_params,
                 },
                 filename,
             )
@@ -361,6 +363,7 @@ def train_DER(
                     "mean_u_ep_validation": mean_u_ep_val,
                     "std_u_al_validation": std_u_al_val,
                     "std_u_ep_validation": std_u_ep_val,
+                    "norm_params": norm_params,
                 },
                 filename,
             )
@@ -484,6 +487,8 @@ def train_DE(
         model, lossFn = models.model_setup_DE(
             loss_type, DEVICE, n_hidden=n_hidden, data_type=data_dim
         )
+        if verbose:
+            print("model is", model, "lossfn", lossFn)
         opt = torch.optim.Adam(model.parameters(), lr=INIT_LR)
         mse_loss = torch.nn.MSELoss(reduction="mean")
 

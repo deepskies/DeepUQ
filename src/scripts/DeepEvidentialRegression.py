@@ -362,10 +362,20 @@ if __name__ == "__main__":
              xycoords='axes fraction',
              color='white',
              size=10)
+        plt.colorbar()
         plt.show()
-    model_inputs, model_outputs = DataPreparation.normalize(
+    model_inputs, model_outputs, norm_params = DataPreparation.normalize(
         model_inputs, model_outputs, norm
     )
+    plt.clf()
+    plt.imshow(model_inputs[0])
+    plt.annotate('Pixel sum = ' + str(round(model_outputs[0], 2)),
+            xy=(0.02, 0.9),
+            xycoords='axes fraction',
+            color='white',
+            size=10)
+    plt.colorbar()
+    plt.show()
     x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
         model_inputs, model_outputs, val_proportion=val_prop, random_state=rs
     )
@@ -399,7 +409,8 @@ if __name__ == "__main__":
         DEVICE,
         config.get_item("model", "COEFF", "DER"),
         config.get_item("model", "loss_type", "DER"),
-        model_name,
+        norm_params,
+        model_name=model_name,
         EPOCHS=config.get_item("model", "n_epochs", "DER"),
         path_to_model=config.get_item("common", "out_dir", "DER"),
         data_prescription=prescription,
