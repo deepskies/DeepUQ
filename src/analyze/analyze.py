@@ -57,6 +57,7 @@ class AggregateCheckpoints:
         # import os
         # print('cwd', os.getcwd())
         # print(os.listdir(path))
+        print('loading this chk', file_name)
         checkpoint = torch.load(file_name, map_location=device)
         return checkpoint
 

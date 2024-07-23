@@ -118,6 +118,7 @@ class DataPreparation:
             image_dimensions=(image_size, image_size),
             amplitude=amplitude,
             noise_level=noise_level,
+            ellipse=0.5,
             theta=theta,
             radius=radius
                 ).create_object(
@@ -129,9 +130,10 @@ class DataPreparation:
     def simulate_data_2d(self,
                          size_df,
                          params,
+                         sigma,
                          image_size=32,
                          inject_type="predictive",
-                         sigma=1):
+                         ):
         image_size = 32
         image_array = np.zeros((size_df, image_size, image_size))
         total_brightness = []
@@ -303,6 +305,17 @@ class DataPreparation:
         return self.data
 
     def get_sigma(noise, inject_type="predictive", data_dimension="0D"):
+        """_summary_
+
+        Args:
+            noise (_type_): _description_
+            inject_type (str, optional): _description_. Defaults to "predictive".
+            data_dimension (str, optional): _description_. Defaults to "0D".
+
+        Returns:
+            _type_: the value of injected sigma, for the feature injection this
+            is sigma_x, for the predictive injection, this is sigma_y
+        """
         if inject_type == "predictive":
             if noise == "low":
                 sigma = 1
@@ -333,16 +346,24 @@ class DataPreparation:
     def normalize(inputs, ys_array, norm=False):
         if norm:
             # normalize everything before it goes into a network
-            inputmin = np.min(inputs, axis=0)
-            inputmax = np.max(inputs, axis=0)
+            inputmin = np.min(inputs)#, axis=0)
+            inputmax = np.max(inputs)#, axis=0)
             outputmin = np.min(ys_array)
             outputmax = np.max(ys_array)
             model_inputs = (inputs - inputmin) / (inputmax - inputmin)
             model_outputs = (ys_array - outputmin) / (outputmax - outputmin)
+            # save the normalization parameters
+            normalization_params = {
+                "inputmin": inputmin,
+                "inputmax": inputmax,
+                "outputmin": outputmin,
+                "outputmax": outputmax
+            }
         else:
+            normalization_params = None
             model_inputs = inputs
             model_outputs = ys_array
-        return model_inputs, model_outputs
+        return model_inputs, model_outputs, normalization_params
 
     def train_val_split(
         model_inputs, model_outputs, val_proportion=0.1, random_state=42

@@ -231,6 +231,8 @@ if __name__ == "__main__":
     for inject_type in inject_type_list:
         for model in model_name_list:
             for i, noise in enumerate(noise_list):
+                sigma = DataPreparation.get_sigma(
+                    noise, inject_type=inject_type, data_dimension=dim)
                 # now create a test set
                 size_df = 1000
                 data = DataPreparation()
@@ -272,6 +274,7 @@ if __name__ == "__main__":
                     model_inputs, model_outputs = data.simulate_data_2d(
                         size_df,
                         data.params,
+                        sigma,
                         image_size=32,
                         inject_type=inject_type)
                 model_inputs, model_outputs = DataPreparation.normalize(
