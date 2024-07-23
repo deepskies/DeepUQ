@@ -120,20 +120,18 @@ class DataPreparation:
             noise_level=noise_level,
             ellipse=0.5,
             theta=theta,
-            radius=radius
-                ).create_object(
-                    center_x=center_x,
-                    center_y=center_y
-                        )
+            radius=radius,
+        ).create_object(center_x=center_x, center_y=center_y)
         return image
 
-    def simulate_data_2d(self,
-                         size_df,
-                         params,
-                         sigma,
-                         image_size=32,
-                         inject_type="predictive",
-                         ):
+    def simulate_data_2d(
+        self,
+        size_df,
+        params,
+        sigma,
+        image_size=32,
+        inject_type="predictive",
+    ):
         image_size = 32
         image_array = np.zeros((size_df, image_size, image_size))
         total_brightness = []
@@ -145,15 +143,17 @@ class DataPreparation:
                 center_x=16,
                 center_y=16,
                 theta=params[i, 2],
-                noise_level=0)
+                noise_level=0,
+            )
             if inject_type == "predictive":
                 image_array[i, :, :] = image
                 total_brightness.append(
-                    np.sum(image) + np.random.normal(
-                        loc=0, scale=sigma))
+                    np.sum(image) + np.random.normal(loc=0, scale=sigma)
+                )
             elif inject_type == "feature":
                 noisy_image = image + np.random.normal(
-                        loc=0, scale=sigma, size=(image_size, image_size))
+                    loc=0, scale=sigma, size=(image_size, image_size)
+                )
                 image_array[i, :, :] = noisy_image
                 total_brightness.append(np.sum(image))
             # we'll need the noisy image summed if we want to
@@ -268,19 +268,18 @@ class DataPreparation:
                 with noise injected type: {inject_type}."
         )
 
-    def sample_params_from_prior(self,
-                                 n_samples,
-                                 low=[0, -10],
-                                 high=[10, 10],
-                                 n_params=2,
-                                 seed=42):
-        assert len(low) == len(high) == n_params, \
-            "the length of the bounds must match that of the n_params"
+    def sample_params_from_prior(
+        self, n_samples, low=[0, -10], high=[10, 10], n_params=2, seed=42
+    ):
+        assert (
+            len(low) == len(high) == n_params
+        ), "the length of the bounds must match that of the n_params"
         low_bounds = torch.tensor(low, dtype=torch.float32)
         high_bounds = torch.tensor(high, dtype=torch.float32)
         rs = np.random.RandomState(seed)  # 2147483648)#
         prior = rs.uniform(
-            low=low_bounds, high=high_bounds, size=(n_samples, n_params))
+            low=low_bounds, high=high_bounds, size=(n_samples, n_params)
+        )
         """
         the prior way of doing this (lol)
         #print(np.shape(prior), prior)
@@ -327,14 +326,14 @@ class DataPreparation:
                 sigma = 100
             else:
                 print("cannot find a match for this noise", noise)
-        elif inject_type == "feature" and data_dimension=="0D":
+        elif inject_type == "feature" and data_dimension == "0D":
             if noise == "low":
                 sigma = 1 / 5
             elif noise == "medium":
                 sigma = 5 / 5
             elif noise == "high":
                 sigma = 10 / 5
-        elif inject_type == "feature" and data_dimension=="2D":
+        elif inject_type == "feature" and data_dimension == "2D":
             if noise == "low":
                 sigma = 1 / np.sqrt(32)
             elif noise == "medium":
@@ -346,8 +345,8 @@ class DataPreparation:
     def normalize(inputs, ys_array, norm=False):
         if norm:
             # normalize everything before it goes into a network
-            inputmin = np.min(inputs)#, axis=0)
-            inputmax = np.max(inputs)#, axis=0)
+            inputmin = np.min(inputs)  # , axis=0)
+            inputmax = np.max(inputs)  # , axis=0)
             outputmin = np.min(ys_array)
             outputmax = np.max(ys_array)
             model_inputs = (inputs - inputmin) / (inputmax - inputmin)
@@ -357,7 +356,7 @@ class DataPreparation:
                 "inputmin": inputmin,
                 "inputmax": inputmax,
                 "outputmin": outputmin,
-                "outputmax": outputmax
+                "outputmax": outputmax,
             }
         else:
             normalization_params = None
