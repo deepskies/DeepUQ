@@ -322,6 +322,7 @@ if __name__ == "__main__":
             model_inputs, model_outputs = data.simulate_data_2d(
                 size_df,
                 data.params,
+                sigma,
                 image_size=32,
                 inject_type=injection)
     else:
@@ -379,14 +380,6 @@ if __name__ == "__main__":
     x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
         model_inputs, model_outputs, val_proportion=val_prop, random_state=rs
     )
-    """
-    import matplotlib.pyplot as plt
-    plt.clf()
-    plt.imshow(x_train[0,:,:])
-    plt.title(y_train[0])
-    plt.colorbar()
-    plt.show()
-    """
     trainData = TensorDataset(torch.Tensor(x_train), torch.Tensor(y_train))
     trainDataLoader = DataLoader(
         trainData, batch_size=BATCH_SIZE, shuffle=True)

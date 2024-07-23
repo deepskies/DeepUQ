@@ -357,6 +357,7 @@ if __name__ == "__main__":
             model_inputs, model_outputs = data.simulate_data_2d(
                 size_df,
                 data.params,
+                sigma,
                 image_size=32,
                 inject_type=injection)
     else:
@@ -398,8 +399,24 @@ if __name__ == "__main__":
              color='white',
              size=10)
         plt.show()
-    model_inputs, model_outputs = DataPreparation.normalize(
-        model_inputs, model_outputs, norm)
+    model_inputs, model_outputs, norm_params = DataPreparation.normalize(
+        model_inputs, model_outputs, norm
+    )
+    if dim == "2D":
+        plt.clf()
+        plt.imshow(model_inputs[0])
+        plt.annotate('Pixel sum = ' + str(round(model_outputs[0], 2)),
+                xy=(0.02, 0.9),
+                xycoords='axes fraction',
+                color='white',
+                size=10)
+        plt.colorbar()
+        plt.show()
+    elif dim == "0D":
+        plt.clf()
+        plt.scatter(model_inputs[0, 0:100], model_outputs[0:100])
+        plt.plot(model_inputs[0, 0:100], model_outputs[0:100])
+        plt.show()
     x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
         model_inputs, model_outputs, val_proportion=val_prop, random_state=rs
     )
@@ -413,6 +430,7 @@ if __name__ == "__main__":
     model, lossFn = models.model_setup_DE(
         config.get_item("model", "loss_type", "DE"),
         DEVICE,
+        n_hidden=config.get_item("model", "n_hidden", "DE"),
         data_type=dim
     )
     print(
@@ -429,7 +447,8 @@ if __name__ == "__main__":
         DEVICE,
         config.get_item("model", "loss_type", "DE"),
         config.get_item("model", "n_models", "DE"),
-        model_name,
+        norm_params,
+        model_name=model_name,
         BETA=config.get_item("model", "BETA", "DE"),
         EPOCHS=config.get_item("model", "n_epochs", "DE"),
         path_to_model=config.get_item("common", "out_dir", "DE"),
