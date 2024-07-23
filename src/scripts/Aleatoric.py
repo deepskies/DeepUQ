@@ -180,12 +180,11 @@ if __name__ == "__main__":
     COEFF = config.get_item("model", "COEFF", "Analysis")
     n_models = config.get_item("model", "n_models", "Analysis")
     loss_type = config.get_item("model", "loss_type", "Analysis")
-    prescription = config.get_item(
-        "model", "data_prescription", "Analysis")
+    prescription = config.get_item("model", "data_prescription", "Analysis")
     inject_type_list = config.get_item(
-        "analysis", "inject_type_list", "Analysis")
-    dim = config.get_item(
-        "model", "data_dimension", "Analysis")
+        "analysis", "inject_type_list", "Analysis"
+    )
+    dim = config.get_item("model", "data_dimension", "Analysis")
     sigma_list = []
     for noise in noise_list:
         sigma_list.append(DataPreparation.get_sigma(noise))
@@ -199,7 +198,8 @@ if __name__ == "__main__":
     else:
         print("already exists", path_to_out)
     model_name_list = config.get_item(
-        "analysis", "model_names_list", "Analysis")
+        "analysis", "model_names_list", "Analysis"
+    )
     print("model list", model_name_list)
     if len(model_name_list) > 1:
         assert "model_name_list should only be one item"
@@ -208,8 +208,10 @@ if __name__ == "__main__":
     chk_module = AggregateCheckpoints()
     # make an empty nested dictionary with keys for
     # model names followed by noise levels
-    al_dict = {typei: {noise: [] for noise in noise_list}
-               for typei in inject_type_list}
+    al_dict = {
+        typei: {noise: [] for noise in noise_list}
+        for typei in inject_type_list
+    }
     al_std_dict = {
         typei: {noise: [] for noise in noise_list}
         for typei in inject_type_list
@@ -268,9 +270,11 @@ if __name__ == "__main__":
                     # then looking at the mean and standard deviation
                     # across all of the nmodels
                     al_dict[typei][noise].append(
-                        np.mean(np.mean(list_vars, axis=0)))
+                        np.mean(np.mean(list_vars, axis=0))
+                    )
                     al_std_dict[typei][noise].append(
-                        np.std(np.mean(list_vars, axis=0)))
+                        np.std(np.mean(list_vars, axis=0))
+                    )
     # make a two-paneled plot for the different noise levels
     # make one panel per model
     # for the noise levels:

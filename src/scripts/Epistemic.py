@@ -25,8 +25,7 @@ def parse_args():
     # model
     # we need some info about the model to run this analysis
     # path to save the model results
-    parser.add_argument("--dir",
-                        default=DefaultsAnalysis["common"]["dir"])
+    parser.add_argument("--dir", default=DefaultsAnalysis["common"]["dir"])
     # now args for model
     parser.add_argument(
         "--n_models",
@@ -120,11 +119,13 @@ def parse_args():
         # check if args were specified in cli
         input_yaml = {
             "common": {"dir": args.dir},
-            "model": {"n_models": args.n_models,
-                      "n_epochs": args.n_epochs,
-                      "BETA": args.BETA,
-                      "COEFF": args.COEFF,
-                      "loss_type": args.loss_type},
+            "model": {
+                "n_models": args.n_models,
+                "n_epochs": args.n_epochs,
+                "BETA": args.BETA,
+                "COEFF": args.COEFF,
+                "loss_type": args.loss_type,
+            },
             "analysis": {
                 "noise_level_list": args.noise_level_list,
                 "model_names_list": args.model_names_list,
@@ -175,13 +176,13 @@ if __name__ == "__main__":
     path_to_out = root_dir + "analysis/"
     # check that this exists and if not make it
     if not os.path.isdir(path_to_out):
-        print('does not exist, making dir', path_to_out)
+        print("does not exist, making dir", path_to_out)
         os.mkdir(path_to_out)
     else:
-        print('already exists', path_to_out)
-    model_name_list = config.get_item("analysis",
-                                      "model_names_list",
-                                      "Analysis")
+        print("already exists", path_to_out)
+    model_name_list = config.get_item(
+        "analysis", "model_names_list", "Analysis"
+    )
     print("model list", model_name_list)
     print("noise list", noise_list)
     chk_module = AggregateCheckpoints()
@@ -218,7 +219,7 @@ if __name__ == "__main__":
                         DEVICE,
                         path=path_to_chk,
                         COEFF=COEFF,
-                        loss=loss_type
+                        loss=loss_type,
                     )
                     # things to grab: 'valid_mse' and 'valid_bnll'
                     epistemic_m, aleatoric_m, e_std, a_std = (
@@ -247,14 +248,18 @@ if __name__ == "__main__":
                         mu_vals, sig_vals = chk_module.ep_al_checkpoint_DE(chk)
                         list_mus.append(mu_vals)
                         list_sigs.append(sig_vals)
-                    ep_dict[model][noise].append(np.median(np.std(list_mus,
-                                                                  axis=0)))
-                    al_dict[model][noise].append(np.median(np.mean(list_sigs,
-                                                                   axis=0)))
-                    ep_std_dict[model][noise].append(np.std(np.std(list_mus,
-                                                                   axis=0)))
-                    al_std_dict[model][noise].append(np.std(np.mean(list_sigs,
-                                                                    axis=0)))
+                    ep_dict[model][noise].append(
+                        np.median(np.std(list_mus, axis=0))
+                    )
+                    al_dict[model][noise].append(
+                        np.median(np.mean(list_sigs, axis=0))
+                    )
+                    ep_std_dict[model][noise].append(
+                        np.std(np.std(list_mus, axis=0))
+                    )
+                    al_std_dict[model][noise].append(
+                        np.std(np.mean(list_sigs, axis=0))
+                    )
     # make a two-paneled plot for the different noise levels
     # make one panel per model
     # for the noise levels:
@@ -274,7 +279,7 @@ if __name__ == "__main__":
                 ep + ep_std,
                 color=color_list[i],
                 alpha=0.25,
-                edgecolor=None
+                edgecolor=None,
             )
             ax.plot(
                 range(n_epochs),

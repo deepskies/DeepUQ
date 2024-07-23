@@ -1,3 +1,4 @@
+import math
 import torch
 import time
 import glob
@@ -22,6 +23,7 @@ def train_DER(
     DEVICE,
     COEFF,
     loss_type,
+    norm_params: dict,
     model_name="DER",
     EPOCHS=100,
     path_to_model="models/",
@@ -167,6 +169,8 @@ def train_DER(
         y_pred = model(torch.Tensor(x_val))
         loss = lossFn(y_pred, torch.Tensor(y_val), COEFF)
         NIGloss_val = loss[0].item()
+        assert not math.isnan(NIGloss_val), \
+            f"loss is: {NIGloss_val}, terminating training"
         mean_u_al_val = np.mean(loss[1])
         mean_u_ep_val = np.mean(loss[2])
         std_u_al_val = np.std(loss[1])
@@ -310,6 +314,7 @@ def train_DER(
                     "mean_u_ep_validation": mean_u_ep_val,
                     "std_u_al_validation": std_u_al_val,
                     "std_u_ep_validation": std_u_ep_val,
+                    "norm_params": norm_params,
                 },
                 filename,
             )
@@ -358,6 +363,7 @@ def train_DER(
                     "mean_u_ep_validation": mean_u_ep_val,
                     "std_u_al_validation": std_u_al_val,
                     "std_u_ep_validation": std_u_ep_val,
+                    "norm_params": norm_params,
                 },
                 filename,
             )
@@ -376,6 +382,7 @@ def train_DE(
     DEVICE,
     loss_type: str,
     n_models: float,
+    norm_params: dict,
     model_name: str = "DE",
     BETA: float = 0.5,
     EPOCHS: float = 100,
@@ -481,6 +488,8 @@ def train_DE(
         model, lossFn = models.model_setup_DE(
             loss_type, DEVICE, n_hidden=n_hidden, data_type=data_dim
         )
+        if verbose:
+            print("model is", model, "lossfn", lossFn)
         opt = torch.optim.Adam(model.parameters(), lr=INIT_LR)
         mse_loss = torch.nn.MSELoss(reduction="mean")
 
@@ -618,6 +627,8 @@ def train_DE(
                     torch.Tensor(y_val),
                     beta=beta_epoch,
                 ).item()
+            assert not math.isnan(loss_val), \
+                f"loss is: {loss_val}, terminating training"
             loss_validation.append(loss_val)
             mse = mse_loss(y_pred_val[:, 0], torch.Tensor(y_val)).item()
             if loss_val < best_loss:
@@ -783,6 +794,7 @@ def train_DE(
                         "valid_var": y_pred_val[:, 1].flatten(),
                         "x_val": x_val,
                         "y_val": y_val,
+                        "norm_params": norm_params,
                     },
                     filename,
                 )
@@ -822,6 +834,7 @@ def train_DE(
                         "valid_var": y_pred_val[:, 1].flatten(),
                         "x_val": x_val,
                         "y_val": y_val,
+                        "norm_params": norm_params,
                     },
                     filename,
                 )

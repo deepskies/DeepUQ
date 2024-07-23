@@ -183,7 +183,8 @@ if __name__ == "__main__":
     else:
         print("already exists", path_to_out)
     model_name_list = config.get_item(
-        "analysis", "model_names_list", "Analysis")
+        "analysis", "model_names_list", "Analysis"
+    )
     print("model list", model_name_list)
     print("noise list", noise_list)
     chk_module = AggregateCheckpoints()
@@ -212,7 +213,8 @@ if __name__ == "__main__":
 
     inputs = np.array([xs_array, ms_array, bs_array]).T
     model_inputs, model_outputs = DataPreparation.normalize(
-        inputs, ys_array, False)
+        inputs, ys_array, False
+    )
     _, x_test, _, y_test = DataPreparation.train_val_split(
         model_inputs, model_outputs, val_proportion=0.1, random_state=41
     )

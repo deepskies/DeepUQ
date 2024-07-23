@@ -193,9 +193,9 @@ if __name__ == "__main__":
     COEFF = config.get_item("model", "COEFF", "Analysis")
     loss_type = config.get_item("model", "loss_type", "Analysis")
     prescription = config.get_item("model", "data_prescription", "Analysis")
-    inject_type_list = config.get_item("analysis",
-                                       "inject_type_list",
-                                       "Analysis")
+    inject_type_list = config.get_item(
+        "analysis", "inject_type_list", "Analysis"
+    )
     dim = config.get_item("model", "data_dimension", "Analysis")
     sigma_list = []
     for noise in noise_list:
@@ -210,20 +210,25 @@ if __name__ == "__main__":
     else:
         print("already exists", path_to_out)
     model_name_list = config.get_item(
-        "analysis", "model_names_list", "Analysis")
+        "analysis", "model_names_list", "Analysis"
+    )
     print("model list", model_name_list)
     print("noise list", noise_list)
     chk_module = AggregateCheckpoints()
     # make an empty nested dictionary with keys for
     # model names followed by noise levels
     al_dict = {
-        typei: {model_name: {noise: [] for noise in noise_list}
-                for model_name in model_name_list}
+        typei: {
+            model_name: {noise: [] for noise in noise_list}
+            for model_name in model_name_list
+        }
         for typei in inject_type_list
     }
     al_std_dict = {
-        typei: {model_name: {noise: [] for noise in noise_list}
-                for model_name in model_name_list}
+        typei: {
+            model_name: {noise: [] for noise in noise_list}
+            for model_name in model_name_list
+        }
         for typei in inject_type_list
     }
     n_epochs = config.get_item("model", "n_epochs", "Analysis")
@@ -231,6 +236,9 @@ if __name__ == "__main__":
     for inject_type in inject_type_list:
         for model in model_name_list:
             for i, noise in enumerate(noise_list):
+                sigma = DataPreparation.get_sigma(
+                    noise, inject_type=inject_type, data_dimension=dim
+                )
                 # now create a test set
                 size_df = 1000
                 data = DataPreparation()
@@ -258,8 +266,12 @@ if __name__ == "__main__":
                     len_x = np.shape(df["output"])[1]
                     ms_array = np.repeat(df["params"][:, 0].numpy(), len_x)
                     bs_array = np.repeat(df["params"][:, 1].numpy(), len_x)
-                    xs_array = np.reshape(df["inputs"].numpy(), (len_df * len_x))
-                    ys_array = np.reshape(df["output"].numpy(), (len_df * len_x))
+                    xs_array = np.reshape(
+                        df["inputs"].numpy(), (len_df * len_x)
+                    )
+                    ys_array = np.reshape(
+                        df["output"].numpy(), (len_df * len_x)
+                    )
 
                     inputs = np.array([xs_array, ms_array, bs_array]).T
                 elif dim == "2D":
@@ -268,18 +280,23 @@ if __name__ == "__main__":
                         low=[1, 1, -1.5],
                         high=[10, 10, 1.5],
                         n_params=3,
-                        seed=41)
+                        seed=41,
+                    )
                     model_inputs, model_outputs = data.simulate_data_2d(
                         size_df,
                         data.params,
+                        sigma,
                         image_size=32,
-                        inject_type=inject_type)
+                        inject_type=inject_type,
+                    )
                 model_inputs, model_outputs = DataPreparation.normalize(
                     model_inputs, model_outputs, False
                 )
                 _, x_test, _, y_test = DataPreparation.train_val_split(
-                    model_inputs, model_outputs, val_proportion=0.1,
-                    random_state=41
+                    model_inputs,
+                    model_outputs,
+                    val_proportion=0.1,
+                    random_state=41,
                 )
                 # append a noise key
                 # now run the analysis on the resulting checkpoints
@@ -315,12 +332,17 @@ if __name__ == "__main__":
                         mean_u_ep_test = np.mean(loss[2])
                         std_u_al_test = np.std(loss[1])
                         std_u_ep_test = np.std(loss[2])
-                        al_dict[inject_type][model][noise].append(mean_u_al_test)
-                        al_std_dict[inject_type][model][noise].append(std_u_al_test)
+                        al_dict[inject_type][model][noise].append(
+                            mean_u_al_test
+                        )
+                        al_std_dict[inject_type][model][noise].append(
+                            std_u_al_test
+                        )
 
                 elif model[0:2] == "DE":
                     DEmodel, lossFn = models.model_setup_DE(
-                        "bnll_loss", DEVICE, n_hidden=64, data_type=dim)
+                        "bnll_loss", DEVICE, n_hidden=64, data_type=dim
+                    )
                     n_models = config.get_item("model", "n_models", "DE")
                     for epoch in range(n_epochs):
                         list_mus = []
@@ -338,15 +360,21 @@ if __name__ == "__main__":
                                 BETA=BETA,
                                 nmodel=nmodels,
                             )
-                            DEmodel.load_state_dict(chk.get("model_state_dict"))
+                            DEmodel.load_state_dict(
+                                chk.get("model_state_dict")
+                            )
                             DEmodel.eval()
-                            y_pred = DEmodel(torch.Tensor(x_test)).detach().numpy()
+                            y_pred = (
+                                DEmodel(torch.Tensor(x_test)).detach().numpy()
+                            )
                             list_mus.append(y_pred[:, 0].flatten())
                             list_vars.append(y_pred[:, 1].flatten())
                         al_dict[inject_type][model][noise].append(
-                            np.mean(np.mean(list_vars, axis=0)))
+                            np.mean(np.mean(list_vars, axis=0))
+                        )
                         al_std_dict[inject_type][model][noise].append(
-                            np.std(np.mean(list_vars, axis=0)))
+                            np.std(np.mean(list_vars, axis=0))
+                        )
     # make a two-paneled plot for the different noise levels
     # make one panel per model
     # for the noise levels:
@@ -356,7 +384,7 @@ if __name__ == "__main__":
     # try this instead with a fill_between method
     sym_list = ["^", "*"]
 
-    #for m, model in enumerate(model_name_list):
+    # for m, model in enumerate(model_name_list):
     for j, inject_type in enumerate(inject_type_list):
         if inject_type == "predictive":
             true_sigma = {"low": 1, "medium": 5, "high": 10}
@@ -365,13 +393,15 @@ if __name__ == "__main__":
                 true_sigma = {
                     "low": 1 * np.mean(x_test[:, 1]),
                     "medium": 5 * np.mean(x_test[:, 1]),
-                    "high": 10 * np.mean(x_test[:, 1])}
+                    "high": 10 * np.mean(x_test[:, 1]),
+                }
             elif dim == "2D":
                 true_sigma = {
                     "low": 1 * np.mean(x_test[:, 1]),
                     "medium": np.sqrt(5) * 32,
-                    "high": np.sqrt(10) * 32}
-        
+                    "high": np.sqrt(10) * 32,
+                }
+
         ax = fig.add_subplot(1, len(inject_type_list), j + 1)
         # Your plotting code for each model here
         for i, noise in enumerate(noise_list):
@@ -382,15 +412,17 @@ if __name__ == "__main__":
                 # only take the sqrt for the case of DE,
                 # which is the variance
                 al = np.array(np.sqrt(al_dict[inject_type][model][noise]))
-                al_std = np.array(np.sqrt(al_std_dict[inject_type][model][noise]))
+                al_std = np.array(
+                    np.sqrt(al_std_dict[inject_type][model][noise])
+                )
             # summarize the aleatoric
             ax.errorbar(
-                #sigma_list[i],
+                # sigma_list[i],
                 true_sigma[noise],
                 al[-1],
                 yerr=al_std[-1],
                 color=color_list[i],
-                capsize=5
+                capsize=5,
             )
             ax.scatter(
                 true_sigma[noise],
@@ -401,8 +433,8 @@ if __name__ == "__main__":
         ax.set_ylabel("Aleatoric Uncertainty")
         ax.set_xlabel("True (Injected) Uncertainty")
         ax.plot(range(0, 15), range(0, 15), ls="--", color="black")
-        #ax.set_ylim([0, 14])
-        #ax.set_xlim([0, 14])
+        # ax.set_ylim([0, 14])
+        # ax.set_xlim([0, 14])
         if model[0:3] == "DER":
             title = "Deep Evidential Regression"
         elif model[0:2] == "DE":

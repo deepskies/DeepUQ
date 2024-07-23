@@ -72,7 +72,7 @@ class ConvLayers(nn.Module):
         super(ConvLayers, self).__init__()
         # a little strange = # of filters, usually goes from small to large
         # double check on architecture decisions
-        '''
+        """
         self.conv1 = nn.Conv2d(1, 10, kernel_size=3, padding=1)
         self.conv2 = nn.Conv2d(10, 10, kernel_size=3, padding=1)
         self.pool1 = nn.AvgPool2d(kernel_size=2, stride=2, padding=1)
@@ -80,7 +80,7 @@ class ConvLayers(nn.Module):
         self.pool2 = nn.AvgPool2d(kernel_size=2, stride=2, padding=1)
         self.conv4 = nn.Conv2d(10, 5, kernel_size=3, padding=1)
         self.conv5 = nn.Conv2d(5, 5, kernel_size=3, padding=1)
-        '''
+        """
         self.conv1 = nn.Conv2d(1, 5, kernel_size=7, padding=1)
         self.conv2 = nn.Conv2d(5, 5, kernel_size=7, padding=1)
         self.pool1 = nn.AvgPool2d(kernel_size=2, stride=2, padding=1)
@@ -88,13 +88,14 @@ class ConvLayers(nn.Module):
         self.pool2 = nn.AvgPool2d(kernel_size=2, stride=2, padding=1)
         self.conv4 = nn.Conv2d(5, 10, kernel_size=3, padding=1)
         self.conv5 = nn.Conv2d(10, 10, kernel_size=3, padding=1)
-        
+
         self.flatten = nn.Flatten()
 
     def forward(self, x):
-        assert x.dim() != 2, \
-            f"should enter here with a dimension of at least 3, " \
+        assert x.dim() != 2, (
+            f"should enter here with a dimension of at least 3, "
             f"{x.dim()}, {x.shape}"
+        )
         if x.dim() == 3:  # Check if the input is of shape (batchsize, 32, 32)
             # Add channel dimension, becomes (batchsize, 1, 32, 32)
             x = x.unsqueeze(1)
@@ -171,7 +172,8 @@ def model_setup_DE(loss_type, DEVICE, n_hidden=64, data_type="0D"):
         # model = de_var().to(DEVICE)
         Layer = MuVarLayer
         lossFn = torch.nn.GaussianNLLLoss(
-            full=False, eps=1e-06, reduction="mean")
+            full=False, eps=1e-06, reduction="mean"
+        )
     if loss_type == "bnll_loss":
         # model = de_var().to(DEVICE)
         Layer = MuVarLayer
@@ -255,8 +257,11 @@ def loss_sder(y, y_pred, coeff):
     )
     u_ep = 1 / np.sqrt(nu.detach().numpy())
 
-    return torch.mean(torch.log(var) + (1.0 + coeff * nu) * error**2 / var), \
-        u_al, u_ep
+    return (
+        torch.mean(torch.log(var) + (1.0 + coeff * nu) * error**2 / var),
+        u_al,
+        u_ep,
+    )
 
 
 # from martius lab

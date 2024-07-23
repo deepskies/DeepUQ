@@ -184,22 +184,24 @@ if __name__ == "__main__":
         os.mkdir(path_to_out)
     else:
         print("already exists", path_to_out)
-    model_name_list = config.get_item("analysis",
-                                      "model_names_list",
-                                      "Analysis")
+    model_name_list = config.get_item(
+        "analysis", "model_names_list", "Analysis"
+    )
     print("model list", model_name_list)
     print("noise list", noise_list)
     chk_module = AggregateCheckpoints()
     # make an empty nested dictionary with keys for
     # model names followed by noise levels
     al_dict = {
-        model_name: {noise: {nh: [] for nh in n_hidden_list}
-                     for noise in noise_list}
+        model_name: {
+            noise: {nh: [] for nh in n_hidden_list} for noise in noise_list
+        }
         for model_name in model_name_list
     }
     al_std_dict = {
-        model_name: {noise: {nh: [] for nh in n_hidden_list}
-                     for noise in noise_list}
+        model_name: {
+            noise: {nh: [] for nh in n_hidden_list} for noise in noise_list
+        }
         for model_name in model_name_list
     }
     n_epochs = config.get_item("model", "n_epochs", "Analysis")

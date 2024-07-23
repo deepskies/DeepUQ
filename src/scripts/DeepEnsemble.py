@@ -3,6 +3,7 @@ import os
 import yaml
 import argparse
 import numpy as np
+import matplotlib.pyplot as plt
 import torch
 from torch.utils.data import TensorDataset, DataLoader
 
@@ -37,12 +38,12 @@ def parse_args():
         default=DefaultsDE["data"]["data_path"],
     )
     parser.add_argument(
-        "--data_dimension",
-        "-dd", default=DefaultsDE["data"]["data_dimension"]
+        "--data_dimension", "-dd", default=DefaultsDE["data"]["data_dimension"]
     )
     parser.add_argument(
         "--data_prescription",
-        "-dp", default=DefaultsDE["data"]["data_prescription"]
+        "-dp",
+        default=DefaultsDE["data"]["data_prescription"],
     )
     parser.add_argument(
         "--data_injection", "-di", default=DefaultsDE["data"]["data_injection"]
@@ -277,7 +278,7 @@ def parse_args():
                 "randomseed": args.randomseed,
                 "batchsize": args.batchsize,
                 "generatedata": args.generatedata,
-                "normalize": args.normalize
+                "normalize": args.normalize,
             },
             # "plots": {key: {} for key in args.plots},
             # "metrics": {key: {} for key in args.metrics},
@@ -315,23 +316,24 @@ if __name__ == "__main__":
     # this is the data rs
     rs = config.get_item("data", "randomseed", "DE")
     BATCH_SIZE = config.get_item("data", "batchsize", "DE")
-    sigma = DataPreparation.get_sigma(noise)
     path_to_data = config.get_item("data", "data_path", "DE")
     prescription = config.get_item("data", "data_prescription", "DE")
     injection = config.get_item("data", "data_injection", "DE")
     dim = config.get_item("data", "data_dimension", "DE")
+    sigma = DataPreparation.get_sigma(
+        noise, inject_type=injection, data_dimension=dim
+    )
+    print(f"inject type is {injection}, dim is {dim}, sigma is {sigma}")
     if config.get_item("data", "generatedata", "DE", raise_exception=False):
         # generate the df
-        print('generating the data')
+        print("generating the data")
         data = DataPreparation()
         if dim == "0D":
             data.sample_params_from_prior(size_df)
-            print('injecting this noise', noise, sigma)
+            print("injecting this noise", noise, sigma)
             data.simulate_data(
-                data.params,
-                sigma,
-                prescription,
-                inject_type=injection)
+                data.params, sigma, prescription, inject_type=injection
+            )
             df_array = data.get_dict()
             # Convert non-tensor entries to tensors
             df = {}
@@ -344,18 +346,21 @@ if __name__ == "__main__":
                     # Convert lists to tensors
                     df[key] = torch.tensor(value)
         elif dim == "2D":
-            print('2D data')
+            print("2D data")
             data.sample_params_from_prior(
                 size_df,
                 low=[1, 1, -1.5],
                 high=[10, 10, 1.5],
                 n_params=3,
-                seed=42)
+                seed=42,
+            )
             model_inputs, model_outputs = data.simulate_data_2d(
                 size_df,
                 data.params,
+                sigma,
                 image_size=32,
-                inject_type=injection)
+                inject_type=injection,
+            )
     else:
         loader = MyDataLoader()
         if dim == "0D":
@@ -378,22 +383,56 @@ if __name__ == "__main__":
         xs_array = np.reshape(df["inputs"].numpy(), (len_df * len_x))
         model_outputs = np.reshape(df["output"].numpy(), (len_df * len_x))
         model_inputs = np.array([xs_array, ms_array, bs_array]).T
-        '''
-        print(np.shape(xs_array), np.shape(model_outputs))
-        import matplotlib.pyplot as plt
-        plt.scatter(xs_array[0:100], model_outputs[0:100])
-        plt.plot(xs_array[0:100], model_outputs[0:100])
-        plt.show()
-        STOP
-        '''
-    model_inputs, model_outputs = DataPreparation.normalize(
-        model_inputs, model_outputs, norm)
+    plot_value = config.get_item("model", "plot", "DE")
+    print(f"Value: {plot_value}, Type: {type(plot_value)}")
+    if plot_value:
+        # briefly plot what some of the data looks like
+        if dim == "0D":
+            print(np.shape(xs_array), np.shape(model_outputs))
+            plt.clf()
+            plt.scatter(xs_array[0:100], model_outputs[0:100])
+            plt.plot(xs_array[0:100], model_outputs[0:100])
+            plt.show()
+        if dim == "2D":
+            print(np.shape(model_inputs), np.shape(model_outputs))
+            plt.clf()
+            plt.imshow(model_inputs[0])
+            plt.annotate(
+                "Pixel sum = " + str(round(model_outputs[0], 2)),
+                xy=(0.02, 0.9),
+                xycoords="axes fraction",
+                color="white",
+                size=10,
+            )
+            plt.show()
+    model_inputs, model_outputs, norm_params = DataPreparation.normalize(
+        model_inputs, model_outputs, norm
+    )
+    if plot_value:
+        if dim == "2D":
+            plt.clf()
+            plt.imshow(model_inputs[0])
+            plt.annotate(
+                "Pixel sum = " + str(round(model_outputs[0], 2)),
+                xy=(0.02, 0.9),
+                xycoords="axes fraction",
+                color="white",
+                size=10,
+            )
+            plt.colorbar()
+            plt.show()
+        elif dim == "0D":
+            plt.clf()
+            plt.scatter(model_inputs[0:100, 0], model_outputs[0:100])
+            plt.plot(model_inputs[0:100, 0], model_outputs[0:100])
+            plt.show()
     x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
         model_inputs, model_outputs, val_proportion=val_prop, random_state=rs
     )
     trainData = TensorDataset(torch.Tensor(x_train), torch.Tensor(y_train))
     trainDataLoader = DataLoader(
-        trainData, batch_size=BATCH_SIZE, shuffle=True)
+        trainData, batch_size=BATCH_SIZE, shuffle=True
+    )
     # set the device we will be using to train the model
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -401,6 +440,8 @@ if __name__ == "__main__":
     model, lossFn = models.model_setup_DE(
         config.get_item("model", "loss_type", "DE"),
         DEVICE,
+        n_hidden=config.get_item("model", "n_hidden", "DE"),
+        data_type=dim,
     )
     print(
         "save final checkpoint has this value",
@@ -408,6 +449,7 @@ if __name__ == "__main__":
     )
     print("model name is ", model_name)
     print("dim is ", dim)
+    print("norm params", norm_params)
     model_ensemble = train.train_DE(
         trainDataLoader,
         x_val,
@@ -416,7 +458,8 @@ if __name__ == "__main__":
         DEVICE,
         config.get_item("model", "loss_type", "DE"),
         config.get_item("model", "n_models", "DE"),
-        model_name,
+        norm_params,
+        model_name=model_name,
         BETA=config.get_item("model", "BETA", "DE"),
         EPOCHS=config.get_item("model", "n_epochs", "DE"),
         path_to_model=config.get_item("common", "out_dir", "DE"),
@@ -425,16 +468,19 @@ if __name__ == "__main__":
         data_dim=dim,
         noise_level=noise,
         save_all_checkpoints=config.get_item(
-            "model", "save_all_checkpoints", "DE"),
+            "model", "save_all_checkpoints", "DE"
+        ),
         save_final_checkpoint=config.get_item(
-            "model", "save_final_checkpoint", "DE"),
+            "model", "save_final_checkpoint", "DE"
+        ),
         overwrite_final_checkpoint=config.get_item(
             "model", "overwrite_final_checkpoint", "DE"
         ),
         plot=config.get_item("model", "plot", "DE"),
         savefig=config.get_item("model", "savefig", "DE"),
         set_and_save_rs=config.get_item(
-            "model", "save_chk_random_seed_init", "DE"),
+            "model", "save_chk_random_seed_init", "DE"
+        ),
         rs_list=config.get_item("model", "rs_list", "DE"),
         save_n_hidden=config.get_item("model", "save_n_hidden", "DE"),
         n_hidden=config.get_item("model", "n_hidden", "DE"),

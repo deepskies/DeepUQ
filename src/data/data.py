@@ -118,20 +118,20 @@ class DataPreparation:
             image_dimensions=(image_size, image_size),
             amplitude=amplitude,
             noise_level=noise_level,
+            ellipse=0.5,
             theta=theta,
-            radius=radius
-                ).create_object(
-                    center_x=center_x,
-                    center_y=center_y
-                        )
+            radius=radius,
+        ).create_object(center_x=center_x, center_y=center_y)
         return image
 
-    def simulate_data_2d(self,
-                         size_df,
-                         params,
-                         image_size=32,
-                         inject_type="predictive",
-                         sigma=1):
+    def simulate_data_2d(
+        self,
+        size_df,
+        params,
+        sigma,
+        image_size=32,
+        inject_type="predictive",
+    ):
         image_size = 32
         image_array = np.zeros((size_df, image_size, image_size))
         total_brightness = []
@@ -143,15 +143,17 @@ class DataPreparation:
                 center_x=16,
                 center_y=16,
                 theta=params[i, 2],
-                noise_level=0)
+                noise_level=0,
+            )
             if inject_type == "predictive":
                 image_array[i, :, :] = image
                 total_brightness.append(
-                    np.sum(image) + np.random.normal(
-                        loc=0, scale=sigma))
+                    np.sum(image) + np.random.normal(loc=0, scale=sigma)
+                )
             elif inject_type == "feature":
                 noisy_image = image + np.random.normal(
-                        loc=0, scale=sigma, size=(image_size, image_size))
+                    loc=0, scale=sigma, size=(image_size, image_size)
+                )
                 image_array[i, :, :] = noisy_image
                 total_brightness.append(np.sum(image))
             # we'll need the noisy image summed if we want to
@@ -266,19 +268,18 @@ class DataPreparation:
                 with noise injected type: {inject_type}."
         )
 
-    def sample_params_from_prior(self,
-                                 n_samples,
-                                 low=[0, -10],
-                                 high=[10, 10],
-                                 n_params=2,
-                                 seed=42):
-        assert len(low) == len(high) == n_params, \
-            "the length of the bounds must match that of the n_params"
+    def sample_params_from_prior(
+        self, n_samples, low=[0, -10], high=[10, 10], n_params=2, seed=42
+    ):
+        assert (
+            len(low) == len(high) == n_params
+        ), "the length of the bounds must match that of the n_params"
         low_bounds = torch.tensor(low, dtype=torch.float32)
         high_bounds = torch.tensor(high, dtype=torch.float32)
         rs = np.random.RandomState(seed)  # 2147483648)#
         prior = rs.uniform(
-            low=low_bounds, high=high_bounds, size=(n_samples, n_params))
+            low=low_bounds, high=high_bounds, size=(n_samples, n_params)
+        )
         """
         the prior way of doing this (lol)
         #print(np.shape(prior), prior)
@@ -302,32 +303,68 @@ class DataPreparation:
     def get_data(self):
         return self.data
 
-    def get_sigma(noise):
-        if noise == "low":
-            sigma = 1
-        elif noise == "medium":
-            sigma = 5
-        elif noise == "high":
-            sigma = 10
-        elif noise == "vhigh":
-            sigma = 100
-        else:
-            print("cannot find a match for this noise", noise)
+    def get_sigma(noise, inject_type="predictive", data_dimension="0D"):
+        """_summary_
+
+        Args:
+            noise (_type_): _description_
+            inject_type (str, optional): _description_.
+            Defaults to "predictive".
+            data_dimension (str, optional): _description_.
+            Defaults to "0D".
+
+        Returns:
+            _type_: the value of injected sigma, for the feature injection this
+            is sigma_x, for the predictive injection, this is sigma_y
+        """
+        if inject_type == "predictive":
+            if noise == "low":
+                sigma = 1
+            elif noise == "medium":
+                sigma = 5
+            elif noise == "high":
+                sigma = 10
+            elif noise == "vhigh":
+                sigma = 100
+            else:
+                print("cannot find a match for this noise", noise)
+        elif inject_type == "feature" and data_dimension == "0D":
+            if noise == "low":
+                sigma = 1 / 5
+            elif noise == "medium":
+                sigma = 5 / 5
+            elif noise == "high":
+                sigma = 10 / 5
+        elif inject_type == "feature" and data_dimension == "2D":
+            if noise == "low":
+                sigma = 1 / np.sqrt(32)
+            elif noise == "medium":
+                sigma = 5 / np.sqrt(32)
+            elif noise == "high":
+                sigma = 10 / np.sqrt(32)
         return sigma
 
     def normalize(inputs, ys_array, norm=False):
         if norm:
             # normalize everything before it goes into a network
-            inputmin = np.min(inputs, axis=0)
-            inputmax = np.max(inputs, axis=0)
+            inputmin = np.min(inputs)  # , axis=0)
+            inputmax = np.max(inputs)  # , axis=0)
             outputmin = np.min(ys_array)
             outputmax = np.max(ys_array)
             model_inputs = (inputs - inputmin) / (inputmax - inputmin)
             model_outputs = (ys_array - outputmin) / (outputmax - outputmin)
+            # save the normalization parameters
+            normalization_params = {
+                "inputmin": inputmin,
+                "inputmax": inputmax,
+                "outputmin": outputmin,
+                "outputmax": outputmax,
+            }
         else:
+            normalization_params = None
             model_inputs = inputs
             model_outputs = ys_array
-        return model_inputs, model_outputs
+        return model_inputs, model_outputs, normalization_params
 
     def train_val_split(
         model_inputs, model_outputs, val_proportion=0.1, random_state=42

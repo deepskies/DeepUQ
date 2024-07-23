@@ -3,6 +3,7 @@ import os
 import yaml
 import argparse
 import numpy as np
+import matplotlib.pyplot as plt
 import torch
 from torch.utils.data import TensorDataset, DataLoader
 
@@ -30,18 +31,22 @@ def parse_args():
 
     # data info
     parser.add_argument(
-        "--data_path", "-d", default=DefaultsDER["data"]["data_path"])
-    parser.add_argument(
-        "--data_dimension", "-dd",
-        default=DefaultsDER["data"]["data_dimension"]
+        "--data_path", "-d", default=DefaultsDER["data"]["data_path"]
     )
     parser.add_argument(
-        "--data_prescription", "-dp",
-        default=DefaultsDER["data"]["data_prescription"]
+        "--data_dimension",
+        "-dd",
+        default=DefaultsDER["data"]["data_dimension"],
     )
     parser.add_argument(
-        "--data_injection", "-di",
-        default=DefaultsDER["data"]["data_injection"]
+        "--data_prescription",
+        "-dp",
+        default=DefaultsDER["data"]["data_prescription"],
+    )
+    parser.add_argument(
+        "--data_injection",
+        "-di",
+        default=DefaultsDER["data"]["data_injection"],
     )
     parser.add_argument(
         "--data_engine",
@@ -218,6 +223,12 @@ def parse_args():
         # Modify name with timestamp
         temp_config = temp_config_prefix.replace(".yml", f"_{timestamp}.yml")
 
+        print(
+            "Reading settings from cli and default, \
+              dumping to temp config: ",
+            temp_config,
+        )
+
         os.makedirs(os.path.dirname(temp_config), exist_ok=True)
 
         input_yaml = {
@@ -276,19 +287,22 @@ if __name__ == "__main__":
     sigma = DataPreparation.get_sigma(noise)
     path_to_data = config.get_item("data", "data_path", "DER")
     prescription = config.get_item("data", "data_prescription", "DER")
-    dim = config.get_item("data", "data_dimension", "DER")
-    injection = config.get_item("data", "data_injection", "DER")
+    injection = config.get_item("data", "data_injection", "DE")
+    dim = config.get_item("data", "data_dimension", "DE")
+    sigma = DataPreparation.get_sigma(
+        noise, inject_type=injection, data_dimension=dim
+    )
+    print(f"inject type is {injection}, dim is {dim}, sigma is {sigma}")
     if config.get_item("data", "generatedata", "DER", raise_exception=False):
         # generate the df
         print("generating the data")
         data = DataPreparation()
         if dim == "0D":
             data.sample_params_from_prior(size_df)
+            print("injecting this noise", noise, sigma)
             data.simulate_data(
-                data.params,
-                sigma,
-                prescription,
-                inject_type=injection)
+                data.params, sigma, prescription, inject_type=injection
+            )
             df_array = data.get_dict()
             # Convert non-tensor entries to tensors
             df = {}
@@ -303,11 +317,18 @@ if __name__ == "__main__":
         elif dim == "2D":
             print("2D data")
             data.sample_params_from_prior(
-                size_df, low=[1, 1, -1.5], high=[10, 10, 1.5], n_params=3,
-                seed=42
+                size_df,
+                low=[1, 1, -1.5],
+                high=[10, 10, 1.5],
+                n_params=3,
+                seed=42,
             )
             model_inputs, model_outputs = data.simulate_data_2d(
-                size_df, data.params, image_size=32, inject_type=injection
+                size_df,
+                data.params,
+                sigma,
+                image_size=32,
+                inject_type=injection,
             )
     else:
         loader = MyDataLoader()
@@ -331,23 +352,58 @@ if __name__ == "__main__":
         xs_array = np.reshape(df["inputs"].numpy(), (len_df * len_x))
         model_outputs = np.reshape(df["output"].numpy(), (len_df * len_x))
         model_inputs = np.array([xs_array, ms_array, bs_array]).T
-    model_inputs, model_outputs = DataPreparation.normalize(
+    plot_value = config.get_item("model", "plot", "DER")
+    print(f"Value: {plot_value}, Type: {type(plot_value)}")
+    if plot_value:
+        assert f"entered loop incorrectly: {plot_value}"
+        # briefly plot what some of the data looks like
+        if dim == "0D":
+            print(np.shape(xs_array), np.shape(model_outputs))
+            plt.clf()
+            plt.scatter(xs_array[0:100], model_outputs[0:100])
+            plt.plot(xs_array[0:100], model_outputs[0:100])
+            plt.show()
+        if dim == "2D":
+            print(np.shape(model_inputs), np.shape(model_outputs))
+            plt.clf()
+            plt.imshow(model_inputs[0])
+            plt.annotate(
+                "Pixel sum = " + str(round(model_outputs[0], 2)),
+                xy=(0.02, 0.9),
+                xycoords="axes fraction",
+                color="white",
+                size=10,
+            )
+            plt.colorbar()
+            plt.show()
+    model_inputs, model_outputs, norm_params = DataPreparation.normalize(
         model_inputs, model_outputs, norm
     )
+    if plot_value:
+        if dim == "2D":
+            plt.clf()
+            plt.imshow(model_inputs[0])
+            plt.annotate(
+                "Pixel sum = " + str(round(model_outputs[0], 2)),
+                xy=(0.02, 0.9),
+                xycoords="axes fraction",
+                color="white",
+                size=10,
+            )
+            plt.colorbar()
+            plt.show()
+        elif dim == "0D":
+            plt.clf()
+            plt.scatter(model_inputs[0:100, 0], model_outputs[0:100])
+            plt.plot(model_inputs[0:100, 0], model_outputs[0:100])
+            plt.show()
     x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
         model_inputs, model_outputs, val_proportion=val_prop, random_state=rs
     )
-    """
-    import matplotlib.pyplot as plt
-    plt.clf()
-    plt.imshow(x_train[0,:,:])
-    plt.title(y_train[0])
-    plt.colorbar()
-    plt.show()
-    """
     trainData = TensorDataset(torch.Tensor(x_train), torch.Tensor(y_train))
     trainDataLoader = DataLoader(
-        trainData, batch_size=BATCH_SIZE, shuffle=True)
+        trainData, batch_size=BATCH_SIZE, shuffle=True
+    )
     print("[INFO] initializing the gal model...")
     # set the device we will be using to train the model
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -356,6 +412,7 @@ if __name__ == "__main__":
         config.get_item("model", "loss_type", "DER"),
         DEVICE,
         n_hidden=config.get_item("model", "n_hidden", "DER"),
+        data_type=dim,
     )
     print("model name is ", model_name)
     model = train.train_DER(
@@ -366,7 +423,8 @@ if __name__ == "__main__":
         DEVICE,
         config.get_item("model", "COEFF", "DER"),
         config.get_item("model", "loss_type", "DER"),
-        model_name,
+        norm_params,
+        model_name=model_name,
         EPOCHS=config.get_item("model", "n_epochs", "DER"),
         path_to_model=config.get_item("common", "out_dir", "DER"),
         data_prescription=prescription,
@@ -374,16 +432,19 @@ if __name__ == "__main__":
         data_dim=dim,
         noise_level=noise,
         save_all_checkpoints=config.get_item(
-            "model", "save_all_checkpoints", "DER"),
+            "model", "save_all_checkpoints", "DER"
+        ),
         save_final_checkpoint=config.get_item(
-            "model", "save_final_checkpoint", "DER"),
+            "model", "save_final_checkpoint", "DER"
+        ),
         overwrite_final_checkpoint=config.get_item(
             "model", "overwrite_final_checkpoint", "DER"
         ),
         plot=config.get_item("model", "plot", "DER"),
         savefig=config.get_item("model", "savefig", "DER"),
         set_and_save_rs=config.get_item(
-            "model", "save_chk_random_seed_init", "DER"),
+            "model", "save_chk_random_seed_init", "DER"
+        ),
         rs=config.get_item("model", "rs", "DER"),
         save_n_hidden=config.get_item("model", "save_n_hidden", "DER"),
         n_hidden=config.get_item("model", "n_hidden", "DER"),

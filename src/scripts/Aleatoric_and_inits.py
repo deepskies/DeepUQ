@@ -25,8 +25,7 @@ def parse_args():
     # model
     # we need some info about the model to run this analysis
     # path to save the model results
-    parser.add_argument("--dir",
-                        default=DefaultsAnalysis["common"]["dir"])
+    parser.add_argument("--dir", default=DefaultsAnalysis["common"]["dir"])
     # now args for model
     parser.add_argument(
         "--n_models",
@@ -133,12 +132,14 @@ def parse_args():
         # check if args were specified in cli
         input_yaml = {
             "common": {"dir": args.dir},
-            "model": {"n_models": args.n_models,
-                      "n_epochs": args.n_epochs,
-                      "data_prescription": args.data_prescription,
-                      "BETA": args.BETA,
-                      "COEFF": args.COEFF,
-                      "loss_type": args.loss_type},
+            "model": {
+                "n_models": args.n_models,
+                "n_epochs": args.n_epochs,
+                "data_prescription": args.data_prescription,
+                "BETA": args.BETA,
+                "COEFF": args.COEFF,
+                "loss_type": args.loss_type,
+            },
             "analysis": {
                 "noise_level_list": args.noise_level_list,
                 "model_names_list": args.model_names_list,
@@ -183,9 +184,9 @@ if __name__ == "__main__":
     COEFF = config.get_item("model", "COEFF", "Analysis")
     loss_type = config.get_item("model", "loss_type", "Analysis")
     prescription = config.get_item("model", "data_prescription", "Analysis")
-    inject_type_list = config.get_item("analysis",
-                                       "inject_type_list",
-                                       "Analysis")
+    inject_type_list = config.get_item(
+        "analysis", "inject_type_list", "Analysis"
+    )
     dim = config.get_item("model", "data_dimension", "Analysis")
     sigma_list = []
     for noise in noise_list:
@@ -195,13 +196,13 @@ if __name__ == "__main__":
     path_to_out = root_dir + "analysis/"
     # check that this exists and if not make it
     if not os.path.isdir(path_to_out):
-        print('does not exist, making dir', path_to_out)
+        print("does not exist, making dir", path_to_out)
         os.mkdir(path_to_out)
     else:
-        print('already exists', path_to_out)
-    model_name_list = config.get_item("analysis",
-                                      "model_names_list",
-                                      "Analysis")
+        print("already exists", path_to_out)
+    model_name_list = config.get_item(
+        "analysis", "model_names_list", "Analysis"
+    )
     print("model list", model_name_list)
     model = model_name_list[0]
     print("one model at a time", model)
@@ -210,13 +211,17 @@ if __name__ == "__main__":
     # make an empty nested dictionary with keys for
     # model names followed by noise levels
     al_dict = {
-        typei: {model_name: {noise: [] for noise in noise_list}
-                for model_name in model_name_list}
+        typei: {
+            model_name: {noise: [] for noise in noise_list}
+            for model_name in model_name_list
+        }
         for typei in inject_type_list
     }
     al_std_dict = {
-        typei: {model_name: {noise: [] for noise in noise_list}
-                for model_name in model_name_list}
+        typei: {
+            model_name: {noise: [] for noise in noise_list}
+            for model_name in model_name_list
+        }
         for typei in inject_type_list
     }
     n_epochs = config.get_item("model", "n_epochs", "Analysis")
@@ -270,7 +275,9 @@ if __name__ == "__main__":
                                 BETA=BETA,
                                 nmodel=nmodels,
                             )
-                            mu_vals, var_vals = chk_module.ep_al_checkpoint_DE(chk)
+                            mu_vals, var_vals = chk_module.ep_al_checkpoint_DE(
+                                chk
+                            )
                             list_mus.append(mu_vals)
                             list_vars.append(var_vals)
                         # first taking the mean across the validation data
@@ -293,12 +300,12 @@ if __name__ == "__main__":
         model_name: {noise: {rs: [] for rs in rs_list} for noise in noise_list}
         for model_name in model_name_list
     }
-    '''
+    """
     al_rs_std_dict = {
         model_name: {noise: {rs: [] for rs in rs_list} for noise in noise_list}
         for model_name in model_name_list
     }
-    '''
+    """
     n_epochs = config.get_item("model", "n_epochs", "Analysis")
     # for model in model_name_list:
     for inject_type in inject_type_list:
@@ -325,8 +332,9 @@ if __name__ == "__main__":
                         )
                         # path=path_to_chk)
                         # things to grab: 'valid_mse' and 'valid_bnll'
-                        _, aleatoric_m, _, a_std = \
+                        _, aleatoric_m, _, a_std = (
                             chk_module.ep_al_checkpoint_DER(chk)
+                        )
                         al_rs_dict[model][noise][rs].append(aleatoric_m)
                         # al_std_dict[model][noise][rs].append(a_std)
             if model[0:2] == "DE" and model[0:3] != "DER":
@@ -380,14 +388,14 @@ if __name__ == "__main__":
                 al + al_std,
                 color=color_list[n],
                 alpha=0.25,
-                edgecolor=None
+                edgecolor=None,
             )
             ax.plot(
                 range(n_epochs),
                 al,
                 color=color_list[n],
                 label=r"$\sigma = $" + str(sigma_list[n]),
-                lw=3
+                lw=3,
             )
             for r, rs in enumerate(rs_list):
                 if model[0:3] == "DER":
@@ -399,7 +407,7 @@ if __name__ == "__main__":
                 # case of the DE because each individual model
                 # makes up one in the ensemble
                 """
-                '''
+                """
                 if model[0:3] == "DER":
                     al_std = np.array(al_std_dict[model][noise][rs])
                     ax.fill_between(
@@ -410,7 +418,7 @@ if __name__ == "__main__":
                         alpha=0.1,
                         edgecolor=None,
                     )
-                '''
+                """
                 if r == 0:
                     ax.plot(
                         range(n_epochs),

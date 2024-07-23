@@ -179,9 +179,9 @@ if __name__ == "__main__":
         os.mkdir(path_to_out)
     else:
         print("already exists", path_to_out)
-    model_name_list = config.get_item("analysis",
-                                      "model_names_list",
-                                      "Analysis")
+    model_name_list = config.get_item(
+        "analysis", "model_names_list", "Analysis"
+    )
     print("model list", model_name_list)
     print("noise list", noise_list)
     chk_module = AggregateCheckpoints()
@@ -247,7 +247,8 @@ if __name__ == "__main__":
                     mse_loss[model][noise].append(mse_loss_one_model)
                     loss[model][noise].append(loss_one_model)
                     mse_loss_train[model][noise].append(
-                        train_mse_loss_one_model)
+                        train_mse_loss_one_model
+                    )
                     loss_train[model][noise].append(train_loss_one_model)
     # make a two-paneled plot for the different noise levels
     # make one panel per model
@@ -266,7 +267,7 @@ if __name__ == "__main__":
                     mse_loss_train[model][noise],
                     color=color_list[i],
                     label=r"Train; $\sigma = $" + str(sigma_list[i]),
-                    ls='--'
+                    ls="--",
                 )
                 ax.plot(
                     range(n_epochs),
@@ -279,12 +280,12 @@ if __name__ == "__main__":
                     range(n_epochs),
                     mse_loss_train[model][noise][0],
                     color=color_list[i],
-                    ls='--'
+                    ls="--",
                 )
                 ax.plot(
                     range(n_epochs),
                     mse_loss[model][noise][0],
-                    color=color_list[i]
+                    color=color_list[i],
                 )
         ax.set_ylabel("MSE Loss")
         ax.set_xlabel("Epoch")
@@ -305,7 +306,7 @@ if __name__ == "__main__":
                     loss_train[model][noise],
                     color=color_list[i],
                     label=r"Train; $\sigma = $" + str(sigma_list[i]),
-                    ls='--'
+                    ls="--",
                 )
                 ax.plot(
                     range(n_epochs),
@@ -318,7 +319,7 @@ if __name__ == "__main__":
                     range(n_epochs),
                     loss_train[model][noise][0],
                     color=color_list[i],
-                    ls='--'
+                    ls="--",
                 )
                 ax.plot(
                     range(n_epochs),

@@ -188,7 +188,8 @@ if __name__ == "__main__":
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     noise = config.get_item("analysis", "noise_level", "Analysis")
     inject_type_list = config.get_item(
-        "analysis", "inject_type_list", "Analysis")
+        "analysis", "inject_type_list", "Analysis"
+    )
     color_list = config.get_item("plots", "color_list", "Analysis")
     BETA = config.get_item("model", "BETA", "Analysis")
     COEFF = config.get_item("model", "COEFF", "Analysis")
@@ -213,23 +214,24 @@ if __name__ == "__main__":
         print("already exists", path_to_out)
     chk_module = AggregateCheckpoints()
 
-    
     print("model_type", model_type)
     if model_type == "DER":
         # load up the checkpoints for DER
         # and run it on the test data, make a parity plot
         model, lossFn = models.model_setup_DER(
-            "DER", DEVICE, n_hidden=64, data_type=dim)
+            "DER", DEVICE, n_hidden=64, data_type=dim
+        )
     elif model_type == "DE":
-        print('loss_type', loss_type)
+        print("loss_type", loss_type)
         model, lossFn = models.model_setup_DE(
-            loss_type, DEVICE, n_hidden=64, data_type=dim)
+            loss_type, DEVICE, n_hidden=64, data_type=dim
+        )
     plt.clf()
     fig = plt.figure()
     ax = fig.add_subplot(211)
     axr = fig.add_subplot(212)
 
-    #for i, noise in enumerate(noise_list):
+    # for i, noise in enumerate(noise_list):
     for typei in inject_type_list:
         # now create a test set
         size_df = 1000
@@ -268,18 +270,16 @@ if __name__ == "__main__":
                 low=[1, 1, -1.5],
                 high=[10, 10, 1.5],
                 n_params=3,
-                seed=41)
+                seed=41,
+            )
             model_inputs, model_outputs = data.simulate_data_2d(
-                size_df,
-                data.params,
-                image_size=32,
-                inject_type=typei)
+                size_df, data.params, image_size=32, inject_type=typei
+            )
         model_inputs, model_outputs = DataPreparation.normalize(
             model_inputs, model_outputs, False
         )
         _, x_test, _, y_test = DataPreparation.train_val_split(
-            model_inputs, model_outputs, val_proportion=0.1,
-            random_state=41
+            model_inputs, model_outputs, val_proportion=0.1, random_state=41
         )
         if model_type == "DER":
             chk = chk_module.load_checkpoint(
@@ -308,7 +308,6 @@ if __name__ == "__main__":
                 COEFF=COEFF,
                 loss=loss_type,
             )
-        
 
         # first, define the model at this epoch
         model.load_state_dict(chk.get("model_state_dict"))
@@ -323,34 +322,31 @@ if __name__ == "__main__":
         elif model_type == "DE":
             sigma = np.sqrt(y_pred[:, 1])
 
-
         plt.clf()
         plt.scatter(y_test, y_pred[:, 0])
-        plt.errorbar(y_test, y_pred[:, 0], yerr=sigma, fmt='o', linestyle='None')
-        plt.xlabel('true')
-        plt.ylabel('predicted')
+        plt.errorbar(
+            y_test, y_pred[:, 0], yerr=sigma, fmt="o", linestyle="None"
+        )
+        plt.xlabel("true")
+        plt.ylabel("predicted")
         plt.show()
 
         plt.clf()
         plt.hist(sigma, alpha=0.5)
         plt.axvline(x=np.mean(sigma))
         plt.title(str(round(np.mean(sigma), 2)))
-        plt.xlabel('output sigma')
+        plt.xlabel("output sigma")
         plt.show()
-
-        STOP
-
-        print(np.shape(x_test))
         for i in range(10):
             plt.clf()
-            plt.imshow(x_test[i,:,:])
-            plt.title(f'y_true = {y_test[i]}, y_pred = {y_pred[i, 0]} +/- {sigma[i]}')
+            plt.imshow(x_test[i, :, :])
+            plt.title(
+                f"y_true = {y_test[i]}, y_pred = {y_pred[i, 0]} +/- {sigma[i]}"
+            )
             plt.show()
-        
-        
 
         print(x_test[:, 1])
-        print('mean of predicted sigmas', np.mean(sigma))
+        print("mean of predicted sigmas", np.mean(sigma))
         if dim == "0D":
             if typei == "predictive":
                 y_noisy = y_test
@@ -364,7 +360,7 @@ if __name__ == "__main__":
                 label = r"$(y_{noisy} - y_{noiseless})$"  # / m$'
                 # finally, analytically propagate
                 if dim == "0D":
-                    print('mean of ms', np.mean(x_test[:, 1]))
+                    print("mean of ms", np.mean(x_test[:, 1]))
                     true_analytic = sigma_inject * np.mean(x_test[:, 1])
         elif dim == "2D":
             if typei == "predictive":
@@ -386,43 +382,51 @@ if __name__ == "__main__":
             alpha=0.5,
             label=label,
             color="#610345",
-            )
+        )
         plt.hist(
             sigma,
             bins=bins,
             alpha=0.5,
             label="predicted sigma",
             color="#9EB25D",
-            )
-        plt.annotate(str(round(true_analytic, 2)),
-                     xy=(np.mean(true_analytic),
-                         np.max([np.max(heights1), np.max(heights2)])/2 + 200),
-                     xycoords='data',
-                     color="black",
-                     )
-        plt.axvline(x=np.mean(sigma), color="#9EB25D", ls='-')
-        plt.annotate(str(round(np.mean(sigma), 2)),
-                     xy=(np.mean(sigma),
-                         np.max([np.max(heights1), np.max(heights2)])/2 + 100),
-                     xycoords='data',
-                     color="#9EB25D",
-                     )
+        )
+        plt.annotate(
+            str(round(true_analytic, 2)),
+            xy=(
+                np.mean(true_analytic),
+                np.max([np.max(heights1), np.max(heights2)]) / 2 + 200,
+            ),
+            xycoords="data",
+            color="black",
+        )
+        plt.axvline(x=np.mean(sigma), color="#9EB25D", ls="-")
+        plt.annotate(
+            str(round(np.mean(sigma), 2)),
+            xy=(
+                np.mean(sigma),
+                np.max([np.max(heights1), np.max(heights2)]) / 2 + 100,
+            ),
+            xycoords="data",
+            color="#9EB25D",
+        )
         # plt.axvline(x=np.mean(sub), color="black", ls="--")
         plt.axvline(x=np.std(sub), color="black", ls="--")
-        plt.annotate(str(round(np.std(sub), 2)),
-                     xy=(np.std(sub),
-                         np.max([np.max(heights1), np.max(heights2)])/2),
-                     xycoords='data',
-                     color="grey",
-                     )
+        plt.annotate(
+            str(round(np.std(sub), 2)),
+            xy=(np.std(sub), np.max([np.max(heights1), np.max(heights2)]) / 2),
+            xycoords="data",
+            color="grey",
+        )
         plt.axvline(
             x=np.percentile(sub, 50) - np.percentile(sub, 16),
-            color="red", ls="--"
+            color="red",
+            ls="--",
         )
-        
+
         plt.axvline(
             x=np.percentile(sub, 84) - np.percentile(sub, 50),
-            color="red", ls="--"
+            color="red",
+            ls="--",
         )
         # plt.axvline(x=noise_to_sigma[noise], color="black")
         plt.legend()

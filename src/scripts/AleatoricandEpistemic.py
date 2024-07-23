@@ -25,8 +25,7 @@ def parse_args():
     # model
     # we need some info about the model to run this analysis
     # path to save the model results
-    parser.add_argument("--dir",
-                        default=DefaultsAnalysis["common"]["dir"])
+    parser.add_argument("--dir", default=DefaultsAnalysis["common"]["dir"])
     # now args for model
     parser.add_argument(
         "--n_models",
@@ -120,11 +119,13 @@ def parse_args():
         # check if args were specified in cli
         input_yaml = {
             "common": {"dir": args.dir},
-            "model": {"n_models": args.n_models,
-                      "n_epochs": args.n_epochs,
-                      "BETA": args.BETA,
-                      "COEFF": args.COEFF,
-                      "loss_type": args.loss_type},
+            "model": {
+                "n_models": args.n_models,
+                "n_epochs": args.n_epochs,
+                "BETA": args.BETA,
+                "COEFF": args.COEFF,
+                "loss_type": args.loss_type,
+            },
             "analysis": {
                 "noise_level_list": args.noise_level_list,
                 "model_names_list": args.model_names_list,
@@ -175,13 +176,13 @@ if __name__ == "__main__":
     path_to_out = root_dir + "analysis/"
     # check that this exists and if not make it
     if not os.path.isdir(path_to_out):
-        print('does not exist, making dir', path_to_out)
+        print("does not exist, making dir", path_to_out)
         os.mkdir(path_to_out)
     else:
-        print('already exists', path_to_out)
-    model_name_list = config.get_item("analysis",
-                                      "model_names_list",
-                                      "Analysis")
+        print("already exists", path_to_out)
+    model_name_list = config.get_item(
+        "analysis", "model_names_list", "Analysis"
+    )
     print("model list", model_name_list)
     print("noise list", noise_list)
     chk_module = AggregateCheckpoints()
@@ -287,7 +288,7 @@ if __name__ == "__main__":
                 total + total_std,
                 color=color_list[i],
                 alpha=0.25,
-                edgecolor=None
+                edgecolor=None,
             )
             ax.plot(
                 range(n_epochs),
@@ -295,7 +296,7 @@ if __name__ == "__main__":
                 color=color_list[i],
                 label=r"$\sigma = $" + str(sigma_list[i]),
             )
-            ax.axhline(y=sigma_list[i], color=color_list[i], ls='--')
+            ax.axhline(y=sigma_list[i], color=color_list[i], ls="--")
         ax.set_ylabel("Total Uncertainty")
         ax.set_xlabel("Epoch")
         if model[0:3] == "DER":
@@ -340,20 +341,20 @@ if __name__ == "__main__":
                 total + total_std,
                 color=color_list[i],
                 alpha=0.25,
-                edgecolor=None
+                edgecolor=None,
             )
             ax.plot(
                 range(n_epochs),
                 al,
                 color=color_list[i],
-                ls='dashed',
+                ls="dashed",
                 label=r"Aleatoric, $\sigma = $" + str(sigma_list[i]),
             )
             ax.plot(
                 range(n_epochs),
                 ep,
                 color=color_list[i],
-                ls='dotted',
+                ls="dotted",
                 label=r"Epistemic, $\sigma = $" + str(sigma_list[i]),
             )
             ax.plot(
@@ -362,7 +363,7 @@ if __name__ == "__main__":
                 color=color_list[i],
                 label=r"Total, $\sigma = $" + str(sigma_list[i]),
             )
-            ax.axhline(y=sigma_list[i], color=color_list[i], ls='--')
+            ax.axhline(y=sigma_list[i], color=color_list[i], ls="--")
         ax.set_ylabel("Total Uncertainty")
         ax.set_xlabel("Epoch")
         if model[0:3] == "DER":
