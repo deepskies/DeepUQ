@@ -288,7 +288,7 @@ if __name__ == "__main__":
     sigma = DataPreparation.get_sigma(
         noise, inject_type=injection, data_dimension=dim)
     print(f"inject type is {injection}, dim is {dim}, sigma is {sigma}")
-    if config.get_item("data", "generatedata", "DE", raise_exception=False):
+    if config.get_item("data", "generatedata", "DER", raise_exception=False):
         # generate the df
         print('generating the data')
         data = DataPreparation()
@@ -347,36 +347,48 @@ if __name__ == "__main__":
         xs_array = np.reshape(df["inputs"].numpy(), (len_df * len_x))
         model_outputs = np.reshape(df["output"].numpy(), (len_df * len_x))
         model_inputs = np.array([xs_array, ms_array, bs_array]).T
-    # briefly plot what some of the data looks like
-    if dim == "0D":
-        print(np.shape(xs_array), np.shape(model_outputs))
-        plt.clf()
-        plt.scatter(xs_array[0:100], model_outputs[0:100])
-        plt.plot(xs_array[0:100], model_outputs[0:100])
-        plt.show()
-    if dim == "2D":
-        print(np.shape(model_inputs), np.shape(model_outputs))
-        plt.clf()
-        plt.imshow(model_inputs[0])
-        plt.annotate('Pixel sum = ' + str(round(model_outputs[0], 2)),
-             xy=(0.02, 0.9),
-             xycoords='axes fraction',
-             color='white',
-             size=10)
-        plt.colorbar()
-        plt.show()
+    plot_value = config.get_item("model", "plot", "DER")
+    print(f"Value: {plot_value}, Type: {type(plot_value)}")
+    if plot_value:
+        assert f"entered loop incorrectly: {plot_value}"
+        assert config.get_item("model", "plot", "DER") == True, "should not enter loop"
+        # briefly plot what some of the data looks like
+        if dim == "0D":
+            print(np.shape(xs_array), np.shape(model_outputs))
+            plt.clf()
+            plt.scatter(xs_array[0:100], model_outputs[0:100])
+            plt.plot(xs_array[0:100], model_outputs[0:100])
+            plt.show()
+        if dim == "2D":
+            print(np.shape(model_inputs), np.shape(model_outputs))
+            plt.clf()
+            plt.imshow(model_inputs[0])
+            plt.annotate('Pixel sum = ' + str(round(model_outputs[0], 2)),
+                xy=(0.02, 0.9),
+                xycoords='axes fraction',
+                color='white',
+                size=10)
+            plt.colorbar()
+            plt.show()
     model_inputs, model_outputs, norm_params = DataPreparation.normalize(
         model_inputs, model_outputs, norm
     )
-    plt.clf()
-    plt.imshow(model_inputs[0])
-    plt.annotate('Pixel sum = ' + str(round(model_outputs[0], 2)),
-            xy=(0.02, 0.9),
-            xycoords='axes fraction',
-            color='white',
-            size=10)
-    plt.colorbar()
-    plt.show()
+    if plot_value:
+        if dim == "2D":
+            plt.clf()
+            plt.imshow(model_inputs[0])
+            plt.annotate('Pixel sum = ' + str(round(model_outputs[0], 2)),
+                    xy=(0.02, 0.9),
+                    xycoords='axes fraction',
+                    color='white',
+                    size=10)
+            plt.colorbar()
+            plt.show()
+        elif dim == "0D":
+            plt.clf()
+            plt.scatter(model_inputs[0:100, 0], model_outputs[0:100])
+            plt.plot(model_inputs[0:100, 0], model_outputs[0:100])
+            plt.show()
     x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
         model_inputs, model_outputs, val_proportion=val_prop, random_state=rs
     )

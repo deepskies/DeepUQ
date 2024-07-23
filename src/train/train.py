@@ -23,7 +23,7 @@ def train_DER(
     DEVICE,
     COEFF,
     loss_type,
-    norm_params,
+    norm_params: dict,
     model_name="DER",
     EPOCHS=100,
     path_to_model="models/",
@@ -382,6 +382,7 @@ def train_DE(
     DEVICE,
     loss_type: str,
     n_models: float,
+    norm_params: dict,
     model_name: str = "DE",
     BETA: float = 0.5,
     EPOCHS: float = 100,
@@ -793,6 +794,7 @@ def train_DE(
                         "valid_var": y_pred_val[:, 1].flatten(),
                         "x_val": x_val,
                         "y_val": y_val,
+                        "norm_params": norm_params,
                     },
                     filename,
                 )
@@ -832,6 +834,7 @@ def train_DE(
                         "valid_var": y_pred_val[:, 1].flatten(),
                         "x_val": x_val,
                         "y_val": y_val,
+                        "norm_params": norm_params,
                     },
                     filename,
                 )

@@ -382,41 +382,45 @@ if __name__ == "__main__":
         xs_array = np.reshape(df["inputs"].numpy(), (len_df * len_x))
         model_outputs = np.reshape(df["output"].numpy(), (len_df * len_x))
         model_inputs = np.array([xs_array, ms_array, bs_array]).T
-    # briefly plot what some of the data looks like
-    if dim == "0D":
-        print(np.shape(xs_array), np.shape(model_outputs))
-        plt.clf()
-        plt.scatter(xs_array[0:100], model_outputs[0:100])
-        plt.plot(xs_array[0:100], model_outputs[0:100])
-        plt.show()
-    if dim == "2D":
-        print(np.shape(model_inputs), np.shape(model_outputs))
-        plt.clf()
-        plt.imshow(model_inputs[0])
-        plt.annotate('Pixel sum = ' + str(round(model_outputs[0], 2)),
-             xy=(0.02, 0.9),
-             xycoords='axes fraction',
-             color='white',
-             size=10)
-        plt.show()
-    model_inputs, model_outputs, norm_params = DataPreparation.normalize(
-        model_inputs, model_outputs, norm
-    )
-    if dim == "2D":
-        plt.clf()
-        plt.imshow(model_inputs[0])
-        plt.annotate('Pixel sum = ' + str(round(model_outputs[0], 2)),
+    plot_value = config.get_item("model", "plot", "DE")
+    print(f"Value: {plot_value}, Type: {type(plot_value)}")
+    if plot_value:
+        # briefly plot what some of the data looks like
+        if dim == "0D":
+            print(np.shape(xs_array), np.shape(model_outputs))
+            plt.clf()
+            plt.scatter(xs_array[0:100], model_outputs[0:100])
+            plt.plot(xs_array[0:100], model_outputs[0:100])
+            plt.show()
+        if dim == "2D":
+            print(np.shape(model_inputs), np.shape(model_outputs))
+            plt.clf()
+            plt.imshow(model_inputs[0])
+            plt.annotate('Pixel sum = ' + str(round(model_outputs[0], 2)),
                 xy=(0.02, 0.9),
                 xycoords='axes fraction',
                 color='white',
                 size=10)
-        plt.colorbar()
-        plt.show()
-    elif dim == "0D":
-        plt.clf()
-        plt.scatter(model_inputs[0, 0:100], model_outputs[0:100])
-        plt.plot(model_inputs[0, 0:100], model_outputs[0:100])
-        plt.show()
+            plt.show()
+    model_inputs, model_outputs, norm_params = DataPreparation.normalize(
+        model_inputs, model_outputs, norm
+    )
+    if plot_value:
+        if dim == "2D":
+            plt.clf()
+            plt.imshow(model_inputs[0])
+            plt.annotate('Pixel sum = ' + str(round(model_outputs[0], 2)),
+                    xy=(0.02, 0.9),
+                    xycoords='axes fraction',
+                    color='white',
+                    size=10)
+            plt.colorbar()
+            plt.show()
+        elif dim == "0D":
+            plt.clf()
+            plt.scatter(model_inputs[0:100, 0], model_outputs[0:100])
+            plt.plot(model_inputs[0:100, 0], model_outputs[0:100])
+            plt.show()
     x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
         model_inputs, model_outputs, val_proportion=val_prop, random_state=rs
     )
@@ -439,6 +443,7 @@ if __name__ == "__main__":
     )
     print("model name is ", model_name)
     print("dim is ", dim)
+    print("norm params", norm_params)
     model_ensemble = train.train_DE(
         trainDataLoader,
         x_val,
