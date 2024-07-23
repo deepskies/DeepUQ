@@ -308,8 +308,10 @@ class DataPreparation:
 
         Args:
             noise (_type_): _description_
-            inject_type (str, optional): _description_. Defaults to "predictive".
-            data_dimension (str, optional): _description_. Defaults to "0D".
+            inject_type (str, optional): _description_.
+            Defaults to "predictive".
+            data_dimension (str, optional): _description_.
+            Defaults to "0D".
 
         Returns:
             _type_: the value of injected sigma, for the feature injection this
