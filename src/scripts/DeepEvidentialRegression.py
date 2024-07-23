@@ -31,18 +31,22 @@ def parse_args():
 
     # data info
     parser.add_argument(
-        "--data_path", "-d", default=DefaultsDER["data"]["data_path"])
-    parser.add_argument(
-        "--data_dimension", "-dd",
-        default=DefaultsDER["data"]["data_dimension"]
+        "--data_path", "-d", default=DefaultsDER["data"]["data_path"]
     )
     parser.add_argument(
-        "--data_prescription", "-dp",
-        default=DefaultsDER["data"]["data_prescription"]
+        "--data_dimension",
+        "-dd",
+        default=DefaultsDER["data"]["data_dimension"],
     )
     parser.add_argument(
-        "--data_injection", "-di",
-        default=DefaultsDER["data"]["data_injection"]
+        "--data_prescription",
+        "-dp",
+        default=DefaultsDER["data"]["data_prescription"],
+    )
+    parser.add_argument(
+        "--data_injection",
+        "-di",
+        default=DefaultsDER["data"]["data_injection"],
     )
     parser.add_argument(
         "--data_engine",
@@ -286,20 +290,19 @@ if __name__ == "__main__":
     injection = config.get_item("data", "data_injection", "DE")
     dim = config.get_item("data", "data_dimension", "DE")
     sigma = DataPreparation.get_sigma(
-        noise, inject_type=injection, data_dimension=dim)
+        noise, inject_type=injection, data_dimension=dim
+    )
     print(f"inject type is {injection}, dim is {dim}, sigma is {sigma}")
     if config.get_item("data", "generatedata", "DER", raise_exception=False):
         # generate the df
-        print('generating the data')
+        print("generating the data")
         data = DataPreparation()
         if dim == "0D":
             data.sample_params_from_prior(size_df)
-            print('injecting this noise', noise, sigma)
+            print("injecting this noise", noise, sigma)
             data.simulate_data(
-                data.params,
-                sigma,
-                prescription,
-                inject_type=injection)
+                data.params, sigma, prescription, inject_type=injection
+            )
             df_array = data.get_dict()
             # Convert non-tensor entries to tensors
             df = {}
@@ -312,19 +315,21 @@ if __name__ == "__main__":
                     # Convert lists to tensors
                     df[key] = torch.tensor(value)
         elif dim == "2D":
-            print('2D data')
+            print("2D data")
             data.sample_params_from_prior(
                 size_df,
                 low=[1, 1, -1.5],
                 high=[10, 10, 1.5],
                 n_params=3,
-                seed=42)
+                seed=42,
+            )
             model_inputs, model_outputs = data.simulate_data_2d(
                 size_df,
                 data.params,
                 sigma,
                 image_size=32,
-                inject_type=injection)
+                inject_type=injection,
+            )
     else:
         loader = MyDataLoader()
         if dim == "0D":
@@ -351,7 +356,6 @@ if __name__ == "__main__":
     print(f"Value: {plot_value}, Type: {type(plot_value)}")
     if plot_value:
         assert f"entered loop incorrectly: {plot_value}"
-        assert config.get_item("model", "plot", "DER") == True, "should not enter loop"
         # briefly plot what some of the data looks like
         if dim == "0D":
             print(np.shape(xs_array), np.shape(model_outputs))
@@ -363,11 +367,13 @@ if __name__ == "__main__":
             print(np.shape(model_inputs), np.shape(model_outputs))
             plt.clf()
             plt.imshow(model_inputs[0])
-            plt.annotate('Pixel sum = ' + str(round(model_outputs[0], 2)),
+            plt.annotate(
+                "Pixel sum = " + str(round(model_outputs[0], 2)),
                 xy=(0.02, 0.9),
-                xycoords='axes fraction',
-                color='white',
-                size=10)
+                xycoords="axes fraction",
+                color="white",
+                size=10,
+            )
             plt.colorbar()
             plt.show()
     model_inputs, model_outputs, norm_params = DataPreparation.normalize(
@@ -377,11 +383,13 @@ if __name__ == "__main__":
         if dim == "2D":
             plt.clf()
             plt.imshow(model_inputs[0])
-            plt.annotate('Pixel sum = ' + str(round(model_outputs[0], 2)),
-                    xy=(0.02, 0.9),
-                    xycoords='axes fraction',
-                    color='white',
-                    size=10)
+            plt.annotate(
+                "Pixel sum = " + str(round(model_outputs[0], 2)),
+                xy=(0.02, 0.9),
+                xycoords="axes fraction",
+                color="white",
+                size=10,
+            )
             plt.colorbar()
             plt.show()
         elif dim == "0D":
@@ -394,7 +402,8 @@ if __name__ == "__main__":
     )
     trainData = TensorDataset(torch.Tensor(x_train), torch.Tensor(y_train))
     trainDataLoader = DataLoader(
-        trainData, batch_size=BATCH_SIZE, shuffle=True)
+        trainData, batch_size=BATCH_SIZE, shuffle=True
+    )
     print("[INFO] initializing the gal model...")
     # set the device we will be using to train the model
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -403,7 +412,7 @@ if __name__ == "__main__":
         config.get_item("model", "loss_type", "DER"),
         DEVICE,
         n_hidden=config.get_item("model", "n_hidden", "DER"),
-        data_type=dim
+        data_type=dim,
     )
     print("model name is ", model_name)
     model = train.train_DER(
@@ -423,16 +432,19 @@ if __name__ == "__main__":
         data_dim=dim,
         noise_level=noise,
         save_all_checkpoints=config.get_item(
-            "model", "save_all_checkpoints", "DER"),
+            "model", "save_all_checkpoints", "DER"
+        ),
         save_final_checkpoint=config.get_item(
-            "model", "save_final_checkpoint", "DER"),
+            "model", "save_final_checkpoint", "DER"
+        ),
         overwrite_final_checkpoint=config.get_item(
             "model", "overwrite_final_checkpoint", "DER"
         ),
         plot=config.get_item("model", "plot", "DER"),
         savefig=config.get_item("model", "savefig", "DER"),
         set_and_save_rs=config.get_item(
-            "model", "save_chk_random_seed_init", "DER"),
+            "model", "save_chk_random_seed_init", "DER"
+        ),
         rs=config.get_item("model", "rs", "DER"),
         save_n_hidden=config.get_item("model", "save_n_hidden", "DER"),
         n_hidden=config.get_item("model", "n_hidden", "DER"),
