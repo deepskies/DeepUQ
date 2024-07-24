@@ -205,6 +205,12 @@ def parse_args():
         help="Number of hidden neurons in the hidden layer, default 64",
     )
     parser.add_argument(
+        "--save_data_size",
+        action="store_true",
+        default=DefaultsDER["model"]["save_data_size"],
+        help="save chk with the number of examples in the dataset",
+    )
+    parser.add_argument(
         "--verbose",
         action="store_true",
         default=DefaultsDER["model"]["verbose"],
@@ -250,6 +256,7 @@ def parse_args():
                 "rs": args.rs,
                 "save_n_hidden": args.save_n_hidden,
                 "n_hidden": args.n_hidden,
+                "save_data_size": args.save_data_size,
                 "verbose": args.verbose,
             },
             "data": {
@@ -400,7 +407,8 @@ if __name__ == "__main__":
     x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
         model_inputs, model_outputs, val_proportion=val_prop, random_state=rs
     )
-    trainData = TensorDataset(torch.Tensor(x_train), torch.Tensor(y_train))
+    trainData = TensorDataset(
+        torch.Tensor(x_train), torch.Tensor(y_train))
     trainDataLoader = DataLoader(
         trainData, batch_size=BATCH_SIZE, shuffle=True
     )
@@ -448,5 +456,7 @@ if __name__ == "__main__":
         rs=config.get_item("model", "rs", "DER"),
         save_n_hidden=config.get_item("model", "save_n_hidden", "DER"),
         n_hidden=config.get_item("model", "n_hidden", "DER"),
+        save_size_df=config.get_item("model", "save_data_size", "DER"),
+        size_df=size_df,
         verbose=config.get_item("model", "verbose", "DER"),
     )

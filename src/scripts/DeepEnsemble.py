@@ -216,6 +216,12 @@ def parse_args():
         help="Number of hidden neurons in the hidden layer, default 64",
     )
     parser.add_argument(
+        "--save_data_size",
+        action="store_true",
+        default=DefaultsDE["model"]["save_data_size"],
+        help="save chk with the number of examples in the dataset",
+    )
+    parser.add_argument(
         "--verbose",
         action="store_true",
         default=DefaultsDE["model"]["verbose"],
@@ -264,6 +270,7 @@ def parse_args():
                 "rs_list": args.rs_list,
                 "save_n_hidden": args.save_n_hidden,
                 "n_hidden": args.n_hidden,
+                "save_data_size": args.save_data_size,
                 "verbose": args.verbose,
             },
             "data": {
@@ -309,6 +316,7 @@ def beta_type(value):
 
 if __name__ == "__main__":
     config = parse_args()
+    verbose = config.get_item("model", "verbose", "DE")
     size_df = int(config.get_item("data", "size_df", "DE"))
     noise = config.get_item("data", "noise_level", "DE")
     norm = config.get_item("data", "normalize", "DE", raise_exception=False)
@@ -385,7 +393,7 @@ if __name__ == "__main__":
         model_inputs = np.array([xs_array, ms_array, bs_array]).T
     plot_value = config.get_item("model", "plot", "DE")
     print(f"Value: {plot_value}, Type: {type(plot_value)}")
-    if plot_value:
+    if verbose:
         # briefly plot what some of the data looks like
         if dim == "0D":
             print(np.shape(xs_array), np.shape(model_outputs))
@@ -408,7 +416,7 @@ if __name__ == "__main__":
     model_inputs, model_outputs, norm_params = DataPreparation.normalize(
         model_inputs, model_outputs, norm
     )
-    if plot_value:
+    if verbose:
         if dim == "2D":
             plt.clf()
             plt.imshow(model_inputs[0])
@@ -484,5 +492,7 @@ if __name__ == "__main__":
         rs_list=config.get_item("model", "rs_list", "DE"),
         save_n_hidden=config.get_item("model", "save_n_hidden", "DE"),
         n_hidden=config.get_item("model", "n_hidden", "DE"),
-        verbose=config.get_item("model", "verbose", "DE"),
+        save_size_df=config.get_item("model", "save_data_size", "DE"),
+        size_df=size_df,
+        verbose=verbose,
     )

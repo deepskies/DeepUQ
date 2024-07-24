@@ -81,6 +81,13 @@ def parse_args():
         help="Beginning of name for saved checkpoints and figures",
     )
     parser.add_argument(
+        "--inject_type_list",
+        type=list,
+        required=False,
+        default=DefaultsAnalysis["analysis"]["inject_type_list"],
+        help="Feature and predictive",
+    )
+    parser.add_argument(
         "--n_epochs",
         type=int,
         required=False,
@@ -133,6 +140,7 @@ def parse_args():
                 "n_models": args.n_models,
                 "n_epochs": args.n_epochs,
                 "data_prescription": args.data_prescription,
+                "data_dimension": args.data_dimension,
                 "BETA": args.BETA,
                 "COEFF": args.COEFF,
                 "loss_type": args.loss_type,
@@ -140,6 +148,7 @@ def parse_args():
             "analysis": {
                 "noise_level_list": args.noise_level_list,
                 "model_names_list": args.model_names_list,
+                "inject_type_list": args.inject_type_list,
                 "plot": args.plot,
                 "savefig": args.savefig,
                 "verbose": args.verbose,
@@ -185,9 +194,6 @@ if __name__ == "__main__":
         "analysis", "inject_type_list", "Analysis"
     )
     dim = config.get_item("model", "data_dimension", "Analysis")
-    sigma_list = []
-    for noise in noise_list:
-        sigma_list.append(DataPreparation.get_sigma(noise))
     root_dir = config.get_item("common", "dir", "Analysis")
     path_to_chk = root_dir + "checkpoints/"
     path_to_out = root_dir + "analysis/"
@@ -302,13 +308,16 @@ if __name__ == "__main__":
                 alpha=0.25,
                 edgecolor=None,
             )
+            sigma = DataPreparation.get_sigma(
+                noise, inject_type=typei, data_dimension=dim
+            )
             ax.plot(
                 range(n_epochs),
                 al,
                 color=color_list[i],
-                label=r"$\sigma = $" + str(sigma_list[i]),
+                label=r"$\sigma = $" + str(sigma),
             )
-            ax.axhline(y=sigma_list[i], color=color_list[i], ls="--")
+            ax.axhline(y=sigma, color=color_list[i], ls="--")
         ax.set_ylabel("Aleatoric Uncertainty")
         ax.set_xlabel("Epoch")
         # if model[0:3] == "DER":
