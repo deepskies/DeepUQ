@@ -92,6 +92,7 @@ def create_test_config(
             "rs_list": [41, 42],
             "save_n_hidden": False,
             "n_hidden": 64,
+            "save_data_size": False,
             "verbose": False,
         },
         "data": {
