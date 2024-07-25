@@ -31,16 +31,22 @@ def temp_data():
             sigma = 10
         if noise_level == "vhigh":
             sigma = 100
-        print('params shape', np.shape(data.params))
-        data.simulate_data(data.params,
-                           sigma,
-                           "linear_homoskedastic",
-                           inject_type="predictive")
+        print("params shape", np.shape(data.params))
+        data.simulate_data(
+            data.params,
+            sigma,
+            "linear_homoskedastic",
+            inject_type="predictive",
+        )
         dict = data.get_dict()
         saver = MyDataLoader()
         # save the dataframe
-        filename = ("linear_homoskedastic_predictive_sigma_" + str(sigma) +
-                    "_size_" + str(size_df))
+        filename = (
+            "linear_homoskedastic_predictive_sigma_"
+            + str(sigma)
+            + "_size_"
+            + str(size_df)
+        )
         saver.save_data_h5(filename, dict, path=data_dir)
 
     yield data_dir  # provide the temporary directory path to the test function
@@ -71,10 +77,12 @@ def temp_directory():
 
 
 def create_test_config_aleatoric(
-    temp_directory, n_models, n_epochs,
+    temp_directory,
+    n_models,
+    n_epochs,
     noise_level_list=["low", "medium", "high"],
     model_names_list=["DER", "DE"],
-    inject_type_list=["predictive"]
+    inject_type_list=["predictive"],
 ):
     input_yaml = {
         "common": {"dir": str(temp_directory)},
@@ -97,11 +105,13 @@ def create_test_config_aleatoric(
         },
         "plots": {"color_list": ["#8EA8C3", "#406E8E", "#23395B"]},
     }
-    print("theoretically dumping here",
-          str(temp_directory) + "yamls/Aleatoric.yaml")
-    yaml.dump(input_yaml,
-              open(str(temp_directory) + "yamls/Aleatoric.yaml",
-                   "w"))
+    print(
+        "theoretically dumping here",
+        str(temp_directory) + "yamls/Aleatoric.yaml",
+    )
+    yaml.dump(
+        input_yaml, open(str(temp_directory) + "yamls/Aleatoric.yaml", "w")
+    )
 
 
 def create_test_config_DE(
@@ -192,7 +202,9 @@ def create_test_config_DER(
 
 class TestAleatoric:
     def test_aleatoric_from_config(
-        self, temp_directory, temp_data,
+        self,
+        temp_directory,
+        temp_data,
     ):
         # first you'll run both the DE and DER
         n_epochs = 2
@@ -200,8 +212,9 @@ class TestAleatoric:
         # do this three times for the different noise levels
         noise_level_list = ["low", "medium", "high"]
         for noise in noise_level_list:
-            create_test_config_DE(temp_directory + "/", temp_data, n_epochs,
-                                  noise_level=noise)
+            create_test_config_DE(
+                temp_directory + "/", temp_data, n_epochs, noise_level=noise
+            )
             subprocess_args = [
                 "python",
                 "src/scripts/DeepEnsemble.py",
@@ -210,8 +223,9 @@ class TestAleatoric:
             ]
             # now run the subprocess
             subprocess.run(subprocess_args, check=True)
-            create_test_config_DER(temp_directory + "/", temp_data, n_epochs,
-                                   noise_level=noise)
+            create_test_config_DER(
+                temp_directory + "/", temp_data, n_epochs, noise_level=noise
+            )
             subprocess_args = [
                 "python",
                 "src/scripts/DeepEvidentialRegression.py",
@@ -228,9 +242,7 @@ class TestAleatoric:
         files_in_models_folder = os.listdir(models_folder)
         print("files in checkpoints folder", files_in_models_folder)
         # now we run the analysis
-        create_test_config_aleatoric(temp_directory + "/",
-                                     n_models,
-                                     n_epochs)
+        create_test_config_aleatoric(temp_directory + "/", n_models, n_epochs)
         subprocess_args = [
             "python",
             "src/scripts/Aleatoric.py",
@@ -251,16 +263,14 @@ class TestAleatoric:
         ), "Expected 1 file in the 'analysis' folder"
         # now change the number of models
         n_models = 1
-        create_test_config_aleatoric(temp_directory + "/",
-                                     n_models,
-                                     n_epochs)
+        create_test_config_aleatoric(temp_directory + "/", n_models, n_epochs)
         subprocess_args = [
             "python",
             "src/scripts/Aleatoric.py",
             "--config",
             str(temp_directory) + "/yamls/Aleatoric.yaml",
             "--n_models",
-            str(n_models)
+            str(n_models),
         ]
         # now run the subprocess
         subprocess.run(subprocess_args, check=True)

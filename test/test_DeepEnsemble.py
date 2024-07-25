@@ -31,15 +31,18 @@ def temp_data():  # noise_level, size_df):
         sigma = 10
     if noise_level == "vhigh":
         sigma = 100
-    data.simulate_data(data.params,
-                       sigma,
-                       "linear_homoskedastic",
-                       inject_type="predictive")
+    data.simulate_data(
+        data.params, sigma, "linear_homoskedastic", inject_type="predictive"
+    )
     dict = data.get_dict()
     saver = MyDataLoader()
     # save the dataframe
-    filename = ("linear_homoskedastic_predictive_sigma_" + str(sigma) +
-                "_size_" + str(size_df))
+    filename = (
+        "linear_homoskedastic_predictive_sigma_"
+        + str(sigma)
+        + "_size_"
+        + str(size_df)
+    )
     saver.save_data_h5(filename, dict, path=data_dir)
 
     yield data_dir  # provide the temporary directory path to the test function
@@ -200,6 +203,7 @@ class TestDE:
         assert (
             len(files_in_models_folder) == n_models
         ), f"Expected {n_models} files in the 'checkpoints' folder"
+        f"What is in there {files_in_models_folder}"
 
         # check if the right number of images were saved
         animations_folder = os.path.join(temp_directory, "images/animations")
@@ -285,8 +289,9 @@ class TestDE:
         # list all files in the "models" folder
         files_in_models_folder = os.listdir(models_folder)
         # assert that the number of files is equal to 10
-        assert len(files_in_models_folder) == 0, \
-            "Expect 0 files in the 'models' folder"
+        assert (
+            len(files_in_models_folder) == 0
+        ), "Expect 0 files in the 'models' folder"
 
     def test_DE_run_simple_ensemble(
         self, temp_directory, temp_data, noise_level="low", size_df=10
