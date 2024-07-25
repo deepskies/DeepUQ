@@ -11,7 +11,7 @@ DefaultsDE = {
         "data_injection": "predictive",
         "size_df": 1000,
         "noise_level": "low",
-        "normalize": False,
+        "normalize": True,
         "val_proportion": 0.1,
         "randomseed": 42,
         "batchsize": 100,
@@ -34,6 +34,7 @@ DefaultsDE = {
         "rs_list": [41, 42],
         "save_n_hidden": False,
         "n_hidden": 64,
+        "save_data_size": False,
         "verbose": False,
     },
     "plots_common": {
@@ -60,7 +61,7 @@ DefaultsDER = {
         "data_injection": "predictive",
         "size_df": 1000,
         "noise_level": "low",
-        "normalize": False,
+        "normalize": True,
         "val_proportion": 0.1,
         "randomseed": 42,
         "batchsize": 100,
@@ -83,6 +84,7 @@ DefaultsDER = {
         "rs": 42,
         "save_n_hidden": False,
         "n_hidden": 64,
+        "save_data_size": False,
         "verbose": False,
     },
     "plots_common": {
@@ -114,7 +116,7 @@ DefaultsAnalysis = {
     },
     "analysis": {
         "noise_level_list": ["low", "medium", "high"],
-        "model_names_list": ["DE"],
+        "model_names_list": ["DER"],
         "inject_type_list": ["feature", "predictive"],
         # ["DER_wst", "DE_desiderata_2"],
         # for architecture: ["DER"], #, "DE_desiderata_2"],

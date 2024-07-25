@@ -29,16 +29,18 @@ def temp_data():  # noise_level, size_df):
         sigma = 10
     if noise_level == "vhigh":
         sigma = 100
-    data.simulate_data(data.params,
-                       sigma,
-                       "linear_homoskedastic",
-                       inject_type="predictive")
+    data.simulate_data(
+        data.params, sigma, "linear_homoskedastic", inject_type="predictive"
+    )
     dict = data.get_dict()
     saver = MyDataLoader()
     # save the dataframe
-    filename = ("linear_homoskedastic_predictive_sigma_" +
-                str(sigma) + "_size_" + str(size_df)
-                )
+    filename = (
+        "linear_homoskedastic_predictive_sigma_"
+        + str(sigma)
+        + "_size_"
+        + str(size_df)
+    )
     saver.save_data_h5(filename, dict, path=data_dir)
 
     yield data_dir  # provide the temporary directory path to the test function
@@ -90,6 +92,7 @@ def create_test_config(
             "rs": 42,
             "save_n_hidden": False,
             "n_hidden": 64,
+            "save_data_size": False,
             "verbose": False,
         },
         "data": {

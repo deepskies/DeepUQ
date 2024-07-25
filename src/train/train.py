@@ -40,6 +40,8 @@ def train_DER(
     rs=42,
     save_n_hidden=False,
     n_hidden=64,
+    save_size_df: bool = False,
+    size_df: float = 10000,
     verbose=True,
 ):
     # first determine if you even need to run anything
@@ -293,13 +295,12 @@ def train_DER(
                 + "_epoch_"
                 + str(epoch)
             )
-
             if set_and_save_rs:
                 filename += "_rs_" + str(rs)
-
             if save_n_hidden:
                 filename += "_n_hidden_" + str(n_hidden)
-
+            if save_size_df:
+                filename += "_sizedf_" + str(size_df)
             filename += ".pt"
             torch.save(
                 {
@@ -341,13 +342,12 @@ def train_DER(
                 + "_epoch_"
                 + str(epoch)
             )
-
             if set_and_save_rs:
                 filename += "_rs_" + str(rs)
-
             if save_n_hidden:
                 filename += "_n_hidden_" + str(n_hidden)
-
+            if save_size_df:
+                filename += "_sizedf_" + str(size_df)
             filename += ".pt"
             # option to just save final epoch
             torch.save(
@@ -400,6 +400,8 @@ def train_DE(
     rs_list: list[int] = [42, 42],
     save_n_hidden: bool = False,
     n_hidden: float = 64,
+    save_size_df: bool = False,
+    size_df: float = 10000,
     verbose: bool = True,
 ):
 
@@ -780,6 +782,8 @@ def train_DE(
                     filename += "_rs_" + str(rs)
                 if save_n_hidden:
                     filename += "_n_hidden_" + str(n_hidden)
+                if save_size_df:
+                    filename += "_sizedf_" + str(size_df)
                 filename += ".pt"
                 torch.save(
                     {
@@ -820,6 +824,8 @@ def train_DE(
                     filename += "_rs_" + str(rs)
                 if save_n_hidden:
                     filename += "_n_hidden_" + str(n_hidden)
+                if save_size_df:
+                    filename += "_sizedf_" + str(size_df)
                 filename += ".pt"
                 torch.save(
                     {
