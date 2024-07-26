@@ -337,11 +337,11 @@ class DataPreparation:
                 sigma = 10 / 5
         elif inject_type == "feature" and data_dimension == "2D":
             if noise == "low":
-                sigma = 1 / np.sqrt(32)
+                sigma = 1 / 32
             elif noise == "medium":
-                sigma = 5 / np.sqrt(32)
+                sigma = 5 / 32
             elif noise == "high":
-                sigma = 10 / np.sqrt(32)
+                sigma = 10 / 32
         return sigma
 
     def normalize(inputs, ys_array, norm=False):

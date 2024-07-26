@@ -340,7 +340,9 @@ if __name__ == "__main__":
             data.sample_params_from_prior(size_df)
             print("injecting this noise", noise, sigma)
             data.simulate_data(
-                data.params, sigma, prescription, inject_type=injection
+                data.params, sigma, prescription,
+                x=np.linspace(0, 10, 101),
+                inject_type=injection
             )
             df_array = data.get_dict()
             # Convert non-tensor entries to tensors
@@ -357,8 +359,8 @@ if __name__ == "__main__":
             print("2D data")
             data.sample_params_from_prior(
                 size_df,
-                low=[1, 1, -1.5],
-                high=[10, 10, 1.5],
+                low=[0, 1, -1.5],
+                high=[0.5, 10, 1.5],
                 n_params=3,
                 seed=42,
             )
@@ -403,16 +405,18 @@ if __name__ == "__main__":
             plt.show()
         if dim == "2D":
             print(np.shape(model_inputs), np.shape(model_outputs))
-            plt.clf()
-            plt.imshow(model_inputs[0])
-            plt.annotate(
-                "Pixel sum = " + str(round(model_outputs[0], 2)),
-                xy=(0.02, 0.9),
-                xycoords="axes fraction",
-                color="white",
-                size=10,
-            )
-            plt.show()
+            for k in range(10):
+                plt.clf()
+                plt.imshow(model_inputs[k])
+                plt.annotate(
+                    "Pixel sum = " + str(round(model_outputs[k], 2)),
+                    xy=(0.02, 0.9),
+                    xycoords="axes fraction",
+                    color="white",
+                    size=10,
+                )
+                plt.colorbar()
+                plt.show()
     model_inputs, model_outputs, norm_params = DataPreparation.normalize(
         model_inputs, model_outputs, norm
     )
