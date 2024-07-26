@@ -359,10 +359,8 @@ if __name__ == "__main__":
         xs_array = np.reshape(df["inputs"].numpy(), (len_df * len_x))
         model_outputs = np.reshape(df["output"].numpy(), (len_df * len_x))
         model_inputs = np.array([xs_array, ms_array, bs_array]).T
-    plot_value = config.get_item("model", "plot", "DER")
-    print(f"Value: {plot_value}, Type: {type(plot_value)}")
-    if plot_value:
-        assert f"entered loop incorrectly: {plot_value}"
+    verbose = config.get_item("model", "verbose", "DER")
+    if verbose:
         # briefly plot what some of the data looks like
         if dim == "0D":
             print(np.shape(xs_array), np.shape(model_outputs))
@@ -386,7 +384,7 @@ if __name__ == "__main__":
     model_inputs, model_outputs, norm_params = DataPreparation.normalize(
         model_inputs, model_outputs, norm
     )
-    if plot_value:
+    if verbose:
         if dim == "2D":
             plt.clf()
             plt.imshow(model_inputs[0])
