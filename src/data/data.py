@@ -166,9 +166,10 @@ class DataPreparation:
         thetas,
         sigma,
         simulation_name="linear_homoskedastic",
-        x=np.linspace(0, 100, 101),
+        x=np.linspace(0, 10, 101),
         inject_type="predictive",
         seed=42,
+        vary_sigma=False
     ):
         if simulation_name == "linear_homoskedastic":
             # convert to numpy array (if tensor):
@@ -193,8 +194,23 @@ class DataPreparation:
             # if we want to get fancy down the road
             # Generate random noise (epsilon) based
             # on a normal distribution with mean 0 and standard deviation sigma
-            ε = rs.normal(loc=0, scale=sigma, size=(len(x), thetas.shape[0]))
-
+            if vary_sigma:
+                print('YES WERE VARYING SIGMA')
+                print('sigma', sigma)
+                print('mean m', np.mean(m), '1/MEAN', 1/np.mean(m))
+                print('m', m)
+                new_sig = self.get_sigma_m(sigma, m)
+                print('new_sig', new_sig, np.shape(new_sig), np.mean(new_sig))
+                ε = rs.normal(loc=0, scale=new_sig, size=(len(x), thetas.shape[0]))
+                print('ε', ε)
+                print(np.shape(ε))
+            else:
+                print('NO WERE NOT VARYING SIGMA')
+                print('sigma', sigma)
+                print('mean m', np.mean(m))
+                ε = rs.normal(loc=0, scale=sigma, size=(len(x), thetas.shape[0]))
+                print('ε', ε)
+                print(np.shape(ε))
             # Initialize an empty array to store the results
             # for each set of parameters
             x_noisy = np.zeros((len(x), thetas.shape[0]))
@@ -263,6 +279,31 @@ class DataPreparation:
 
     def get_data(self):
         return self.data
+    
+    def get_sigma_m(self,
+                    noise,
+                    m
+                    ):
+        """_summary_
+
+        Args:
+            noise (_type_): _description_
+            inject_type (str, optional): _description_.
+            Defaults to "predictive".
+            data_dimension (str, optional): _description_.
+            Defaults to "0D".
+
+        Returns:
+            _type_: the value of injected sigma, for the feature injection this
+            is sigma_x, for the predictive injection, this is sigma_y
+        """
+        if noise == "low":
+            sigma = 1 / m
+        elif noise == "medium":
+            sigma = 5 / m
+        elif noise == "high":
+            sigma = 10 / m
+        return sigma
 
     def get_sigma(noise, inject_type="predictive", data_dimension="0D"):
         """_summary_
