@@ -119,7 +119,8 @@ class ConvLayers(nn.Module):
         return x
 
 
-def model_setup_DER(loss_type, DEVICE, n_hidden=64, data_type="0D"):
+def model_setup_DER(
+        loss_type, DEVICE, n_hidden=64, data_type="0D"):
     # initialize the model from scratch
     if loss_type == "SDER":
         Layer = SDERLayer
@@ -145,7 +146,8 @@ def model_setup_DER(loss_type, DEVICE, n_hidden=64, data_type="0D"):
         # from https://github.com/pasteurlabs/unreasonable_effective_der
         # /blob/main/x3_indepth.ipynb
         model = torch.nn.Sequential(
-            Model(n_hidden=n_hidden, n_input=3, n_output=4), Layer()
+            Model(n_hidden=n_hidden, n_input=3, n_output=4),
+            Layer()
         )
     model = model.to(DEVICE)
     return model, lossFn
@@ -185,7 +187,7 @@ def model_setup_DE(loss_type, DEVICE, n_hidden=64, data_type="0D"):
         model = torch.nn.Sequential(
             conv_layers,
             Model(
-                n_hidden=n_hidden, n_input=360, n_output=2
+                n_input=360, n_hidden=n_hidden, n_output=2
             ),  # Adjust input size according to the flattened output size
             Layer(),
         )
@@ -193,7 +195,7 @@ def model_setup_DE(loss_type, DEVICE, n_hidden=64, data_type="0D"):
         # from https://github.com/pasteurlabs/unreasonable_effective_der
         # /blob/main/x3_indepth.ipynb
         model = torch.nn.Sequential(
-            Model(n_hidden=n_hidden, n_input=3, n_output=2), Layer()
+            Model(n_input=3, n_hidden=n_hidden, n_output=2), Layer()
         )
     model = model.to(DEVICE)
     return model, lossFn
@@ -204,7 +206,7 @@ def model_setup_DE(loss_type, DEVICE, n_hidden=64, data_type="0D"):
 
 
 class Model(nn.Module):
-    def __init__(self, n_output=4, n_hidden=64, n_input=3):
+    def __init__(self, n_input=3, n_hidden=64, n_output=4):
         super().__init__()
         self.model = nn.Sequential(
             nn.Linear(n_input, n_hidden),
