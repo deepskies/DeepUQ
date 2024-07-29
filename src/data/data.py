@@ -197,17 +197,17 @@ class DataPreparation:
 
             # Initialize an empty array to store the results
             # for each set of parameters
-            x_prime = np.zeros((len(x), thetas.shape[0]))
-            y_prime = np.zeros((len(x), thetas.shape[0]))
+            x_noisy = np.zeros((len(x), thetas.shape[0]))
+            y_noisy = np.zeros((len(x), thetas.shape[0]))
             y = np.zeros((len(x), thetas.shape[0]))
             for i in range(thetas.shape[0]):
                 m, b = thetas[i, 0], thetas[i, 1]
                 if inject_type == "predictive":
-                    y_prime[:, i] = m * x + b + ε[:, i]
+                    y_noisy[:, i] = m * x + b + ε[:, i]
                 elif inject_type == "feature":
                     # y_prime[:, i] = m * (x + ε[:, i]) + b
                     y[:, i] = m * x + b
-                    x_prime[:, i] = x + ε[:, i]
+                    x_noisy[:, i] = x + ε[:, i]
 
         else:
             print(
@@ -215,52 +215,13 @@ class DataPreparation:
                     No data generated."
             )
             return
-        """
-        elif simulation_name == "linear_heteroskedastic":
-            # convert to numpy array (if tensor):
-            thetas = np.atleast_2d(thetas)
-            # Check if the input has the correct shape
-            if thetas.shape[1] != 2:
-                raise ValueError(
-                    "Input tensor must have shape (n, 2) where n is \
-                        the number of parameter sets."
-                )
-
-            # Unpack the parameters
-            if thetas.shape[0] == 1:
-                # If there's only one set of parameters, extract them directly
-                m, b = thetas[0, 0], thetas[0, 1]
-            else:
-                # If there are multiple sets of parameters,
-                # extract them for each row
-                m, b = thetas[:, 0], thetas[:, 1]
-            rs = np.random.RandomState(seed)  # 2147483648)#
-            # I'm thinking sigma could actually be a function of x
-            # if we want to get fancy down the road
-            # Generate random noise (epsilon) based
-            # on a normal distribution with mean 0 and standard deviation sigma
-            ε = rs.normal(loc=0, scale=sigma, size=(len(x), thetas.shape[0]))
-
-            # Initialize an empty array to store the results
-            # for each set of parameters
-            y = np.zeros((len(x), thetas.shape[0]))
-            scaling = 0.1
-            for i in range(thetas.shape[0]):
-                m, b = thetas[i, 0], thetas[i, 1]
-                y[:, i] = m * x + b + ε[:, i] * scaling * x
-            # simulated_data = pd.DataFrame({'Feature': x, 'Target': y})
-            print("Linear heteroskedastic simulation data generated.")
-        elif simulation_name == "quadratic":
-            # Example quadratic simulation
-            y = 3 * x**2 + 2 * x + 1 + np.random.normal(0, 1, len(x))
-        """
         if inject_type == "predictive":
             # self.input = x
             self.input = torch.Tensor(np.tile(x, thetas.shape[0]).T)
-            self.output = torch.Tensor(y_prime.T)
+            self.output = torch.Tensor(y_noisy.T)
             self.output_err = ε[:, i].T
         elif inject_type == "feature":
-            self.input = torch.Tensor(x_prime.T)
+            self.input = torch.Tensor(x_noisy.T)
             self.output = torch.Tensor(y.T)
             self.output_err = ε[:, i].T
         print(
