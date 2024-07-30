@@ -285,6 +285,7 @@ def parse_args():
 
 if __name__ == "__main__":
     config = parse_args()
+    verbose = config.get_item("model", "verbose", "DER")
     size_df = int(config.get_item("data", "size_df", "DER"))
     noise = config.get_item("data", "noise_level", "DER")
     norm = config.get_item("data", "normalize", "DER", raise_exception=False)
@@ -300,7 +301,7 @@ if __name__ == "__main__":
         noise, inject_type=injection, data_dimension=dim
     )
     print(f"inject type is {injection}, dim is {dim}, sigma is {sigma}")
-    if config.get_item("data", "generatedata", "DE", raise_exception=False):
+    if config.get_item("data", "generatedata", "DER", raise_exception=False):
         # generate the df
         print("generating the data")
         data = DataPreparation()
@@ -366,8 +367,6 @@ if __name__ == "__main__":
         xs_array = np.reshape(df["inputs"].numpy(), (len_df * len_x))
         model_outputs = np.reshape(df["output"].numpy(), (len_df * len_x))
         model_inputs = np.array([xs_array, ms_array, bs_array]).T
-    plot_value = config.get_item("model", "plot", "DE")
-    print(f"Value: {plot_value}, Type: {type(plot_value)}")
     if verbose:
         # briefly plot what some of the data looks like
         if dim == "0D":

@@ -398,8 +398,6 @@ if __name__ == "__main__":
         xs_array = np.reshape(df["inputs"].numpy(), (len_df * len_x))
         model_outputs = np.reshape(df["output"].numpy(), (len_df * len_x))
         model_inputs = np.array([xs_array, ms_array, bs_array]).T
-    plot_value = config.get_item("model", "plot", "DE")
-    print(f"Value: {plot_value}, Type: {type(plot_value)}")
     if verbose:
         # briefly plot what some of the data looks like
         if dim == "0D":

@@ -169,7 +169,7 @@ class DataPreparation:
         x=np.linspace(0, 10, 101),
         inject_type="predictive",
         seed=42,
-        vary_sigma=False
+        vary_sigma=False,
     ):
         if simulation_name == "linear_homoskedastic":
             # convert to numpy array (if tensor):
@@ -195,12 +195,16 @@ class DataPreparation:
             # Generate random noise (epsilon) based
             # on a normal distribution with mean 0 and standard deviation sigma
             if vary_sigma:
-                print('YES WERE VARYING SIGMA')
+                print("YES WERE VARYING SIGMA")
                 new_sig = self.get_sigma_m(sigma, m)
-                ε = rs.normal(loc=0, scale=new_sig, size=(len(x), thetas.shape[0]))
+                ε = rs.normal(
+                    loc=0, scale=new_sig, size=(len(x), thetas.shape[0])
+                )
             else:
-                print('NO WERE NOT VARYING SIGMA')
-                ε = rs.normal(loc=0, scale=sigma, size=(len(x), thetas.shape[0]))
+                print("NO WERE NOT VARYING SIGMA")
+                ε = rs.normal(
+                    loc=0, scale=sigma, size=(len(x), thetas.shape[0])
+                )
             # Initialize an empty array to store the results
             # for each set of parameters
             x_noisy = np.zeros((len(x), thetas.shape[0]))
@@ -269,11 +273,8 @@ class DataPreparation:
 
     def get_data(self):
         return self.data
-    
-    def get_sigma_m(self,
-                    noise,
-                    m
-                    ):
+
+    def get_sigma_m(self, noise, m):
         """_summary_
 
         Args:
@@ -295,10 +296,7 @@ class DataPreparation:
             sigma = 10 / m
         return sigma
 
-    def get_sigma(
-            noise,
-            inject_type="predictive",
-            data_dimension="0D"):
+    def get_sigma(noise, inject_type="predictive", data_dimension="0D"):
         """_summary_
 
         Args:
