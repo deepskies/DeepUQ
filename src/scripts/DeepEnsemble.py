@@ -339,10 +339,15 @@ if __name__ == "__main__":
         if dim == "0D":
             data.sample_params_from_prior(size_df)
             print("injecting this noise", noise, sigma)
+            vary_sigma = True
+            print('are we varying sigma', vary_sigma)
             data.simulate_data(
-                data.params, sigma, prescription,
+                data.params,
+                noise,
+                prescription,
                 x=np.linspace(0, 10, 101),
-                inject_type=injection
+                inject_type=injection,
+                vary_sigma=vary_sigma
             )
             df_array = data.get_dict()
             # Convert non-tensor entries to tensors
@@ -393,8 +398,6 @@ if __name__ == "__main__":
         xs_array = np.reshape(df["inputs"].numpy(), (len_df * len_x))
         model_outputs = np.reshape(df["output"].numpy(), (len_df * len_x))
         model_inputs = np.array([xs_array, ms_array, bs_array]).T
-    plot_value = config.get_item("model", "plot", "DE")
-    print(f"Value: {plot_value}, Type: {type(plot_value)}")
     if verbose:
         # briefly plot what some of the data looks like
         if dim == "0D":
@@ -402,6 +405,10 @@ if __name__ == "__main__":
             plt.clf()
             plt.scatter(xs_array[0:100], model_outputs[0:100])
             plt.plot(xs_array[0:100], model_outputs[0:100])
+            plt.title(r'$\mu_x = $' +
+                      str(round(np.mean(xs_array[0:100]), 2)) +
+                      r' $\sigma_x = $' +
+                      str(round(np.std(xs_array[0:100]), 2)))
             plt.show()
         if dim == "2D":
             print(np.shape(model_inputs), np.shape(model_outputs))
@@ -437,6 +444,7 @@ if __name__ == "__main__":
             plt.clf()
             plt.scatter(model_inputs[0:100, 0], model_outputs[0:100])
             plt.plot(model_inputs[0:100, 0], model_outputs[0:100])
+            plt.title('')
             plt.show()
     x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
         model_inputs, model_outputs, val_proportion=val_prop, random_state=rs

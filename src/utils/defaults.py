@@ -10,7 +10,7 @@ DefaultsDE = {
         "data_prescription": "linear_homoskedastic",
         "data_injection": "feature",
         "size_df": 1000,
-        "noise_level": "high",
+        "noise_level": "low",
         "normalize": False,
         "val_proportion": 0.1,
         "randomseed": 42,
