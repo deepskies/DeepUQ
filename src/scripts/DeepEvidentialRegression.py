@@ -300,21 +300,22 @@ if __name__ == "__main__":
         noise, inject_type=injection, data_dimension=dim
     )
     print(f"inject type is {injection}, dim is {dim}, sigma is {sigma}")
-    if config.get_item("data", "generatedata", "DER", raise_exception=False):
+    if config.get_item("data", "generatedata", "DE", raise_exception=False):
         # generate the df
         print("generating the data")
         data = DataPreparation()
         if dim == "0D":
-            data.sample_params_from_prior(
-                size_df,
-                low=[0, -10],
-                high=[10, 10],
-                seed=42)
+            data.sample_params_from_prior(size_df)
             print("injecting this noise", noise, sigma)
+            vary_sigma = True
+            print('are we varying sigma', vary_sigma)
             data.simulate_data(
-                data.params, sigma, prescription,
+                data.params,
+                noise,
+                prescription,
                 x=np.linspace(0, 10, 101),
-                inject_type=injection
+                inject_type=injection,
+                vary_sigma=vary_sigma
             )
             df_array = data.get_dict()
             # Convert non-tensor entries to tensors
@@ -329,7 +330,6 @@ if __name__ == "__main__":
                     df[key] = torch.tensor(value)
         elif dim == "2D":
             print("2D data")
-            # first one is amplitude
             data.sample_params_from_prior(
                 size_df,
                 low=[0, 1, -1.5],
@@ -344,8 +344,6 @@ if __name__ == "__main__":
                 image_size=32,
                 inject_type=injection,
             )
-            print(np.min(model_outputs), np.max(model_outputs))
-
     else:
         loader = MyDataLoader()
         if dim == "0D":
@@ -368,7 +366,8 @@ if __name__ == "__main__":
         xs_array = np.reshape(df["inputs"].numpy(), (len_df * len_x))
         model_outputs = np.reshape(df["output"].numpy(), (len_df * len_x))
         model_inputs = np.array([xs_array, ms_array, bs_array]).T
-    verbose = config.get_item("model", "verbose", "DER")
+    plot_value = config.get_item("model", "plot", "DE")
+    print(f"Value: {plot_value}, Type: {type(plot_value)}")
     if verbose:
         # briefly plot what some of the data looks like
         if dim == "0D":
@@ -376,6 +375,10 @@ if __name__ == "__main__":
             plt.clf()
             plt.scatter(xs_array[0:100], model_outputs[0:100])
             plt.plot(xs_array[0:100], model_outputs[0:100])
+            plt.title(r'$\mu_x = $' +
+                      str(round(np.mean(xs_array[0:100]), 2)) +
+                      r' $\sigma_x = $' +
+                      str(round(np.std(xs_array[0:100]), 2)))
             plt.show()
         if dim == "2D":
             print(np.shape(model_inputs), np.shape(model_outputs))
@@ -411,6 +414,7 @@ if __name__ == "__main__":
             plt.clf()
             plt.scatter(model_inputs[0:100, 0], model_outputs[0:100])
             plt.plot(model_inputs[0:100, 0], model_outputs[0:100])
+            plt.title('')
             plt.show()
     x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
         model_inputs, model_outputs, val_proportion=val_prop, random_state=rs
