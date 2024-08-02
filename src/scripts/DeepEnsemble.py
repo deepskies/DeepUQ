@@ -346,7 +346,7 @@ if __name__ == "__main__":
                     data.params,
                     noise,
                     prescription,
-                    x=np.linspace(0, 10, 101),
+                    x=np.linspace(0, 10, 100),
                     inject_type=injection,
                     vary_sigma=vary_sigma
                 )
@@ -355,7 +355,7 @@ if __name__ == "__main__":
                     data.params,
                     sigma,
                     prescription,
-                    x=np.linspace(0, 10, 101),
+                    x=np.linspace(0, 10, 100),
                     inject_type=injection,
                 )
             df_array = data.get_dict()
@@ -374,7 +374,7 @@ if __name__ == "__main__":
             data.sample_params_from_prior(
                 size_df,
                 low=[0, 1, -1.5],
-                high=[0.5, 10, 1.5],
+                high=[0.01, 10, 1.5],
                 n_params=3,
                 seed=42,
             )
@@ -437,6 +437,14 @@ if __name__ == "__main__":
         model_inputs, model_outputs, norm
     )
     if verbose:
+        plt.clf()
+        plt.hist(model_outputs)
+        plt.axvline(x=np.mean(model_outputs),
+                    color='yellow')
+        plt.annotate(str(np.mean(model_outputs)),
+                     xy=(0.02, 0.9),
+                     xycoords='axes fraction')
+        plt.show()
         if dim == "2D":
             plt.clf()
             plt.imshow(model_inputs[0])
