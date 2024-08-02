@@ -339,16 +339,25 @@ if __name__ == "__main__":
         if dim == "0D":
             data.sample_params_from_prior(size_df)
             print("injecting this noise", noise, sigma)
-            vary_sigma = True
-            print('are we varying sigma', vary_sigma)
-            data.simulate_data(
-                data.params,
-                noise,
-                prescription,
-                x=np.linspace(0, 10, 101),
-                inject_type=injection,
-                vary_sigma=vary_sigma
-            )
+            if injection == "feature":
+                vary_sigma = True
+                print('are we varying sigma', vary_sigma)
+                data.simulate_data(
+                    data.params,
+                    noise,
+                    prescription,
+                    x=np.linspace(0, 10, 101),
+                    inject_type=injection,
+                    vary_sigma=vary_sigma
+                )
+            elif injection == "predictive":
+                data.simulate_data(
+                    data.params,
+                    sigma,
+                    prescription,
+                    x=np.linspace(0, 10, 101),
+                    inject_type=injection,
+                )
             df_array = data.get_dict()
             # Convert non-tensor entries to tensors
             df = {}

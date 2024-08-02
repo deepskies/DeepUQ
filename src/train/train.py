@@ -133,6 +133,24 @@ def train_DER(
             # (x, y) = (x.to(device), y.to(device))
             # perform a forward pass and calculate the training loss
             pred = model(x)
+            """
+            print('pred', pred[:, 0].flatten().detach().numpy())
+
+            plt.clf()
+            plt.scatter(
+                x[:,0].detach().numpy(),
+                pred[:, 0].flatten().detach().numpy(),
+                label='pred')
+            plt.scatter(
+                x[:,0].detach().numpy(), y.detach().numpy(),
+                label='true')
+            plt.annotate('batch '+str(i),
+                         xy=(0.02, 0.9),
+                         xycoords='axes fraction')
+            plt.legend()
+            plt.show()
+            """
+
             loss = lossFn(pred, y, COEFF)
             if plot or savefig:
                 if (e % (EPOCHS - 1) == 0) and (e != 0):
@@ -171,8 +189,9 @@ def train_DER(
         y_pred = model(torch.Tensor(x_val))
         loss = lossFn(y_pred, torch.Tensor(y_val), COEFF)
         NIGloss_val = loss[0].item()
-        assert not math.isnan(NIGloss_val), \
-            f"loss is: {loss}, terminating training"
+        assert not math.isnan(
+            NIGloss_val
+        ), f"loss is: {loss}, terminating training"
         mean_u_al_val = np.mean(loss[1])
         mean_u_ep_val = np.mean(loss[2])
         std_u_al_val = np.std(loss[1])
@@ -241,9 +260,8 @@ def train_DER(
                 xy=(0.73, 0.1),
                 xycoords="axes fraction",
                 bbox=dict(
-                    boxstyle="round,pad=0.5",
-                    facecolor="lightgrey",
-                    alpha=0.5),
+                    boxstyle="round,pad=0.5", facecolor="lightgrey", alpha=0.5
+                ),
             )
             ax1.set_ylabel("Prediction")
             ax1.set_title("Epoch " + str(e))
@@ -528,8 +546,9 @@ def train_DE(
                 if loss_type == "no_var_loss":
                     loss = lossFn(pred.flatten(), y)
                 if loss_type == "var_loss":
-                    loss = lossFn(pred[:, 0].flatten(),
-                                  y, pred[:, 1].flatten())
+                    loss = lossFn(
+                        pred[:, 0].flatten(), y, pred[:, 1].flatten()
+                    )
                 if loss_type == "bnll_loss":
                     """
                     if e/EPOCHS < 0.2:
@@ -560,8 +579,10 @@ def train_DE(
                     except ValueError:
                         pass
                     loss = lossFn(
-                        pred[:, 0].flatten(), pred[:, 1].flatten(),
-                        y, beta=beta_epoch
+                        pred[:, 0].flatten(),
+                        pred[:, 1].flatten(),
+                        y,
+                        beta=beta_epoch,
                     )
                     mse = mse_loss(pred[:, 0], y)
                 if plot or savefig:
@@ -614,8 +635,9 @@ def train_DE(
             y_pred_val = model(torch.Tensor(x_val))
             # print(y_pred.flatten().size(), torch.Tensor(y_valid).size())
             if loss_type == "no_var_loss":
-                loss_val = lossFn(y_pred_val.flatten(),
-                                  torch.Tensor(y_val)).item()
+                loss_val = lossFn(
+                    y_pred_val.flatten(), torch.Tensor(y_val)
+                ).item()
             if loss_type == "var_loss":
                 loss_val = lossFn(
                     y_pred_val[:, 0].flatten(),
@@ -629,8 +651,9 @@ def train_DE(
                     torch.Tensor(y_val),
                     beta=beta_epoch,
                 ).item()
-            assert not math.isnan(loss_val), \
-                f"loss is: {loss_val}, terminating training"
+            assert not math.isnan(
+                loss_val
+            ), f"loss is: {loss_val}, terminating training"
             loss_validation.append(loss_val)
             mse = mse_loss(y_pred_val[:, 0], torch.Tensor(y_val)).item()
             if loss_val < best_loss:
@@ -639,8 +662,9 @@ def train_DE(
                     print("new best loss", loss_val, "in epoch", epoch)
                 # best_weights = copy.deepcopy(model.state_dict())
             if (plot or savefig) and (e % (EPOCHS - 1) == 0) and (e != 0):
-                ax1.plot(range(0, 1000), range(0, 1000),
-                         color="black", ls="--")
+                ax1.plot(
+                    range(0, 1000), range(0, 1000), color="black", ls="--"
+                )
                 if loss_type == "no_var_loss":
                     ax1.scatter(
                         y_val,
@@ -655,7 +679,8 @@ def train_DE(
                         y_val,
                         y_pred_val[:, 0].flatten().detach().numpy(),
                         yerr=np.sqrt(
-                            y_pred_val[:, 1].flatten().detach().numpy()),
+                            y_pred_val[:, 1].flatten().detach().numpy()
+                        ),
                         linestyle="None",
                         color="black",
                         capsize=2,
@@ -709,7 +734,7 @@ def train_DE(
                         bbox=dict(
                             boxstyle="round,pad=0.5",
                             facecolor="lightgrey",
-                            alpha=0.5
+                            alpha=0.5,
                         ),
                     )
 
@@ -726,7 +751,7 @@ def train_DE(
                         bbox=dict(
                             boxstyle="round,pad=0.5",
                             facecolor="lightgrey",
-                            alpha=0.5
+                            alpha=0.5,
                         ),
                     )
                 ax1.set_ylabel("Prediction")
@@ -844,7 +869,7 @@ def train_DE(
                     },
                     filename,
                 )
-                print('saved final checkpoint', filename)
+                print("saved final checkpoint", filename)
         model_ensemble.append(model)
         final_mse.append(mse)
 

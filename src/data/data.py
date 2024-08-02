@@ -197,6 +197,7 @@ class DataPreparation:
             if vary_sigma:
                 print("YES WERE VARYING SIGMA")
                 new_sig = self.get_sigma_m(sigma, m)
+                print('new sig', new_sig)
                 ε = rs.normal(
                     loc=0, scale=new_sig, size=(len(x), thetas.shape[0])
                 )
@@ -240,7 +241,9 @@ class DataPreparation:
         )
 
     def sample_params_from_prior(
-        self, n_samples, low=[0, -10], high=[10, 10], n_params=2, seed=42
+        self, n_samples,
+        low=[0, -10],
+        high=[10, 10], n_params=2, seed=42
     ):
         assert (
             len(low) == len(high) == n_params
