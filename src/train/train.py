@@ -133,6 +133,23 @@ def train_DER(
             # (x, y) = (x.to(device), y.to(device))
             # perform a forward pass and calculate the training loss
             pred = model(x)
+            print('pred', pred[:, 0].flatten().detach().numpy())
+
+            plt.clf()
+            plt.scatter(
+                x[:,0].detach().numpy(),
+                pred[:, 0].flatten().detach().numpy(),
+                label='pred')
+            plt.scatter(
+                x[:,0].detach().numpy(), y.detach().numpy(),
+                label='true')
+            plt.annotate('batch '+str(i),
+                         xy=(0.02, 0.9),
+                         xycoords='axes fraction')
+            plt.legend()
+            plt.show()
+            
+            
             loss = lossFn(pred, y, COEFF)
             if plot or savefig:
                 if (e % (EPOCHS - 1) == 0) and (e != 0):
