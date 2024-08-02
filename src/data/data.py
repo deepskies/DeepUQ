@@ -199,7 +199,6 @@ class DataPreparation:
             if vary_sigma:
                 print("YES WERE VARYING SIGMA")
                 new_sig = self.get_sigma_m(sigma, m)
-                print('new sig', new_sig)
                 ε = rs.normal(
                     loc=0, scale=new_sig, size=(len(x), thetas.shape[0])
                 )

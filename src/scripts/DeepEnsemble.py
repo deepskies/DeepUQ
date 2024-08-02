@@ -328,17 +328,13 @@ if __name__ == "__main__":
     prescription = config.get_item("data", "data_prescription", "DE")
     injection = config.get_item("data", "data_injection", "DE")
     dim = config.get_item("data", "data_dimension", "DE")
-    sigma = DataPreparation.get_sigma(
-        noise, inject_type=injection, data_dimension=dim
-    )
-    print(f"inject type is {injection}, dim is {dim}, sigma is {sigma}")
     if config.get_item("data", "generatedata", "DE", raise_exception=False):
         # generate the df
         print("generating the data")
         data = DataPreparation()
         if dim == "0D":
             data.sample_params_from_prior(size_df)
-            print("injecting this noise", noise, sigma)
+            print("injecting this noise", noise)
             if injection == "feature":
                 vary_sigma = True
                 print('are we varying sigma', vary_sigma)
@@ -351,6 +347,10 @@ if __name__ == "__main__":
                     vary_sigma=vary_sigma
                 )
             elif injection == "predictive":
+                sigma = DataPreparation.get_sigma(
+                    noise, inject_type=injection, data_dimension=dim
+                )
+                print(f"inject type is {injection}, dim is {dim}, sigma is {sigma}")
                 data.simulate_data(
                     data.params,
                     sigma,
@@ -371,6 +371,10 @@ if __name__ == "__main__":
                     df[key] = torch.tensor(value)
         elif dim == "2D":
             print("2D data")
+            sigma = DataPreparation.get_sigma(
+                noise, inject_type=injection, data_dimension=dim
+            )
+            print(f"inject type is {injection}, dim is {dim}, sigma is {sigma}")
             data.sample_params_from_prior(
                 size_df,
                 low=[0, 1, -1.5],
