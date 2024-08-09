@@ -297,7 +297,7 @@ if __name__ == "__main__":
     prescription = config.get_item("data", "data_prescription", "DER")
     injection = config.get_item("data", "data_injection", "DE")
     dim = config.get_item("data", "data_dimension", "DE")
-    
+
     print(f"inject type is {injection}, dim is {dim}, sigma is {sigma}")
     if config.get_item("data", "generatedata", "DER", raise_exception=False):
         # generate the df
@@ -308,7 +308,7 @@ if __name__ == "__main__":
             print("injecting this noise", noise, sigma)
             if injection == "feature":
                 vary_sigma = True
-                print('are we varying sigma', vary_sigma)
+                print("are we varying sigma", vary_sigma)
                 data.simulate_data(
                     data.params,
                     noise,
@@ -316,7 +316,7 @@ if __name__ == "__main__":
                     x=np.linspace(0, 10, 100),
                     inject_type=injection,
                     vary_sigma=vary_sigma,
-                    verbose=True
+                    verbose=True,
                 )
             elif injection == "predictive":
                 sigma = DataPreparation.get_sigma(
@@ -328,7 +328,7 @@ if __name__ == "__main__":
                     prescription,
                     x=np.linspace(0, 10, 100),
                     inject_type=injection,
-                    verbose=True
+                    verbose=True,
                 )
             df_array = data.get_dict()
             # Convert non-tensor entries to tensors
@@ -344,8 +344,8 @@ if __name__ == "__main__":
         elif dim == "2D":
             print("2D data")
             sigma = DataPreparation.get_sigma(
-                    noise, inject_type=injection, data_dimension=dim
-                )
+                noise, inject_type=injection, data_dimension=dim
+            )
             data.sample_params_from_prior(
                 size_df,
                 low=[0, 1, -1.5],
@@ -388,10 +388,12 @@ if __name__ == "__main__":
             plt.clf()
             plt.scatter(xs_array[0:100], model_outputs[0:100])
             plt.plot(xs_array[0:100], model_outputs[0:100])
-            plt.title(r'$\mu_x = $' +
-                      str(round(np.mean(xs_array[0:100]), 2)) +
-                      r' $\sigma_x = $' +
-                      str(round(np.std(xs_array[0:100]), 2)))
+            plt.title(
+                r"$\mu_x = $"
+                + str(round(np.mean(xs_array[0:100]), 2))
+                + r" $\sigma_x = $"
+                + str(round(np.std(xs_array[0:100]), 2))
+            )
             plt.show()
         if dim == "2D":
             print(np.shape(model_inputs), np.shape(model_outputs))
@@ -413,11 +415,12 @@ if __name__ == "__main__":
     if verbose:
         plt.clf()
         plt.hist(model_outputs)
-        plt.axvline(x=np.mean(model_outputs),
-                    color='yellow')
-        plt.annotate(str(np.mean(model_outputs)),
-                     xy=(0.02, 0.9),
-                     xycoords='axes fraction')
+        plt.axvline(x=np.mean(model_outputs), color="yellow")
+        plt.annotate(
+            str(np.mean(model_outputs)),
+            xy=(0.02, 0.9),
+            xycoords="axes fraction",
+        )
         plt.show()
         if dim == "2D":
             plt.clf()
@@ -435,13 +438,12 @@ if __name__ == "__main__":
             plt.clf()
             plt.scatter(model_inputs[0:100, 0], model_outputs[0:100])
             plt.plot(model_inputs[0:100, 0], model_outputs[0:100])
-            plt.title('')
+            plt.title("")
             plt.show()
     x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
         model_inputs, model_outputs, val_proportion=val_prop, random_state=rs
     )
-    trainData = TensorDataset(
-        torch.Tensor(x_train), torch.Tensor(y_train))
+    trainData = TensorDataset(torch.Tensor(x_train), torch.Tensor(y_train))
     trainDataLoader = DataLoader(
         trainData, batch_size=BATCH_SIZE, shuffle=True
     )

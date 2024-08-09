@@ -171,7 +171,7 @@ class DataPreparation:
         inject_type="predictive",
         seed=42,
         vary_sigma=False,
-        verbose=False
+        verbose=False,
     ):
         if simulation_name == "linear_homoskedastic":
             # convert to numpy array (if tensor):
@@ -212,10 +212,12 @@ class DataPreparation:
             if verbose:
                 plt.clf()
                 plt.hist(scale)
-                plt.annotate('mean = '+str(np.mean(scale)),
-                             xy=(0.02, 0.9),
-                             xycoords='axes fraction')
-                plt.title('scale param, injection '+str(inject_type))
+                plt.annotate(
+                    "mean = " + str(np.mean(scale)),
+                    xy=(0.02, 0.9),
+                    xycoords="axes fraction",
+                )
+                plt.title("scale param, injection " + str(inject_type))
                 plt.show()
             # Initialize an empty array to store the results
             # for each set of parameters
@@ -252,9 +254,7 @@ class DataPreparation:
         )
 
     def sample_params_from_prior(
-        self, n_samples,
-        low=[0, 0],
-        high=[0.4, 0], n_params=2, seed=42
+        self, n_samples, low=[0, 0], high=[0.4, 0], n_params=2, seed=42
     ):
         assert (
             len(low) == len(high) == n_params
@@ -326,7 +326,7 @@ class DataPreparation:
         """
         if inject_type == "predictive":
             if noise == "low":
-                sigma = .01
+                sigma = 0.01
             elif noise == "medium":
                 sigma = 0.05
             elif noise == "high":
@@ -335,7 +335,7 @@ class DataPreparation:
                 sigma = 1.00
             else:
                 print("cannot find a match for this noise", noise)
-        #elif inject_type == "feature" and data_dimension == "0D":
+        # elif inject_type == "feature" and data_dimension == "0D":
         #    if noise == "low":
         #        sigma = 1 / 5
         #    elif noise == "medium":
@@ -344,11 +344,11 @@ class DataPreparation:
         #        sigma = 10 / 5
         elif inject_type == "feature" and data_dimension == "2D":
             if noise == "low":
-                sigma = .01 / 32
+                sigma = 0.01 / 32
             elif noise == "medium":
-                sigma = .05 / 32
+                sigma = 0.05 / 32
             elif noise == "high":
-                sigma = .10 / 32
+                sigma = 0.10 / 32
         return sigma
 
     def normalize(inputs, ys_array, norm=False):
