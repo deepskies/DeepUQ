@@ -6,6 +6,7 @@ import pickle
 import torch
 import h5py
 from deepbench.astro_object import GalaxyObject
+import matplotlib.pyplot as plt
 
 
 class MyDataLoader:
@@ -166,10 +167,11 @@ class DataPreparation:
         thetas,
         sigma,
         simulation_name="linear_homoskedastic",
-        x=np.linspace(0, 10, 101),
+        x=np.linspace(0, 10, 100),
         inject_type="predictive",
         seed=42,
         vary_sigma=False,
+        verbose=False,
     ):
         if simulation_name == "linear_homoskedastic":
             # convert to numpy array (if tensor):
@@ -197,15 +199,26 @@ class DataPreparation:
             if vary_sigma:
                 print("YES WERE VARYING SIGMA")
                 new_sig = self.get_sigma_m(sigma, m)
-                print('new sig', new_sig)
                 ε = rs.normal(
                     loc=0, scale=new_sig, size=(len(x), thetas.shape[0])
                 )
+                scale = new_sig
             else:
                 print("NO WERE NOT VARYING SIGMA")
                 ε = rs.normal(
                     loc=0, scale=sigma, size=(len(x), thetas.shape[0])
                 )
+                scale = sigma
+            if verbose:
+                plt.clf()
+                plt.hist(scale)
+                plt.annotate(
+                    "mean = " + str(np.mean(scale)),
+                    xy=(0.02, 0.9),
+                    xycoords="axes fraction",
+                )
+                plt.title("scale param, injection " + str(inject_type))
+                plt.show()
             # Initialize an empty array to store the results
             # for each set of parameters
             x_noisy = np.zeros((len(x), thetas.shape[0]))
@@ -241,9 +254,7 @@ class DataPreparation:
         )
 
     def sample_params_from_prior(
-        self, n_samples,
-        low=[0, -10],
-        high=[10, 10], n_params=2, seed=42
+        self, n_samples, low=[0, 0], high=[0.4, 0], n_params=2, seed=42
     ):
         assert (
             len(low) == len(high) == n_params
@@ -292,11 +303,11 @@ class DataPreparation:
             is sigma_x, for the predictive injection, this is sigma_y
         """
         if noise == "low":
-            sigma = 1 / m
+            sigma = 0.01 / abs(m)
         elif noise == "medium":
-            sigma = 5 / m
+            sigma = 0.05 / abs(m)
         elif noise == "high":
-            sigma = 10 / m
+            sigma = 0.10 / abs(m)
         return sigma
 
     def get_sigma(noise, inject_type="predictive", data_dimension="0D"):
@@ -315,29 +326,29 @@ class DataPreparation:
         """
         if inject_type == "predictive":
             if noise == "low":
-                sigma = 1
+                sigma = 0.01
             elif noise == "medium":
-                sigma = 5
+                sigma = 0.05
             elif noise == "high":
-                sigma = 10
+                sigma = 0.10
             elif noise == "vhigh":
-                sigma = 100
+                sigma = 1.00
             else:
                 print("cannot find a match for this noise", noise)
-        elif inject_type == "feature" and data_dimension == "0D":
-            if noise == "low":
-                sigma = 1 / 5
-            elif noise == "medium":
-                sigma = 5 / 5
-            elif noise == "high":
-                sigma = 10 / 5
+        # elif inject_type == "feature" and data_dimension == "0D":
+        #    if noise == "low":
+        #        sigma = 1 / 5
+        #    elif noise == "medium":
+        #        sigma = 5 / 5
+        #    elif noise == "high":
+        #        sigma = 10 / 5
         elif inject_type == "feature" and data_dimension == "2D":
             if noise == "low":
-                sigma = 1 / 32
+                sigma = 0.01 / 32
             elif noise == "medium":
-                sigma = 5 / 32
+                sigma = 0.05 / 32
             elif noise == "high":
-                sigma = 10 / 32
+                sigma = 0.10 / 32
         return sigma
 
     def normalize(inputs, ys_array, norm=False):

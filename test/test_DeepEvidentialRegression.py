@@ -106,6 +106,7 @@ def create_test_config(
             "val_proportion": 0.1,
             "randomseed": 42,
             "batchsize": 100,
+            "generatedata": True
         },
         "analysis": {"run_analysis": False},
     }
@@ -175,7 +176,8 @@ class TestDER:
             ), f"File '{file_name}' does not contain the expected substring"
 
     def test_DER_from_config(
-        self, temp_directory, temp_data, noise_level="low", size_df=10
+        self, temp_directory, temp_data,
+        noise_level="low", size_df=10
     ):
         # create the test config dynamically
         # make the temporary config file

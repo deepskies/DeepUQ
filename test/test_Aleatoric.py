@@ -150,6 +150,7 @@ def create_test_config_DE(
             "val_proportion": 0.1,
             "randomseed": 42,
             "batchsize": 100,
+            "generatedata": True
         },
         "analysis": {"run_analysis": False},
     }
@@ -192,6 +193,7 @@ def create_test_config_DER(
             "val_proportion": 0.1,
             "randomseed": 42,
             "batchsize": 100,
+            "generatedata": True
         },
         "analysis": {"run_analysis": False},
     }
