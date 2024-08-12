@@ -446,6 +446,9 @@ if __name__ == "__main__":
     model_inputs, model_outputs, norm_params = DataPreparation.normalize(
         model_inputs, model_outputs, norm
     )
+    model_inputs, model_outputs = DataPreparation.select_uniform(
+        model_inputs, model_outputs, verbose=verbose, rs=40
+    )
     if verbose:
         plt.clf()
         plt.hist(model_outputs)

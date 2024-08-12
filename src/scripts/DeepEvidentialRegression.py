@@ -304,7 +304,11 @@ if __name__ == "__main__":
         print("generating the data")
         data = DataPreparation()
         if dim == "0D":
-            data.sample_params_from_prior(size_df)
+            uniform = False
+            if uniform:
+                data.sample_params_from_prior(2 * size_df)
+            else:
+                data.sample_params_from_prior(size_df)
             print("injecting this noise", noise, sigma)
             if injection == "feature":
                 vary_sigma = True
@@ -317,6 +321,7 @@ if __name__ == "__main__":
                     inject_type=injection,
                     vary_sigma=vary_sigma,
                     verbose=True,
+                    uniform=uniform,
                 )
             elif injection == "predictive":
                 sigma = DataPreparation.get_sigma(
@@ -329,6 +334,7 @@ if __name__ == "__main__":
                     x=np.linspace(0, 10, 100),
                     inject_type=injection,
                     verbose=True,
+                    uniform=uniform,
                 )
             df_array = data.get_dict()
             # Convert non-tensor entries to tensors
@@ -359,6 +365,7 @@ if __name__ == "__main__":
                 sigma,
                 image_size=32,
                 inject_type=injection,
+                uniform=True,
             )
     else:
         loader = MyDataLoader()
@@ -411,6 +418,9 @@ if __name__ == "__main__":
                 plt.show()
     model_inputs, model_outputs, norm_params = DataPreparation.normalize(
         model_inputs, model_outputs, norm
+    )
+    model_inputs, model_outputs = DataPreparation.select_uniform(
+        model_inputs, model_outputs, verbose=verbose, rs=40
     )
     if verbose:
         plt.clf()
