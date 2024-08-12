@@ -102,6 +102,58 @@ class DataPreparation:
     def __init__(self):
         self.data = None
 
+    def select_uniform(
+        model_inputs,
+        model_outputs,
+        verbose=False,
+        rs=40
+    ):
+        # number of bins (adjust based on desired granularity)
+        num_bins = 10
+        lower_bound = 0
+        upper_bound = 2
+
+        # Create bins and sample uniformly from each bin
+        bins = np.linspace(lower_bound, upper_bound, num_bins + 1)
+        n_bin_values = []
+
+        # First go through and calculate how many are in each bin
+        for i in range(num_bins):
+            # Select values in the current bin
+            bin_indices = np.where((model_outputs >= bins[i]) & (model_outputs < bins[i+1]))[0]
+            n_bin_values.append(len(bin_indices))
+
+        if verbose:
+            print('n_bin_values', n_bin_values)
+
+        # Setting a random seed
+        np.random.seed(rs)
+        selected_indices = []
+
+        for i in range(num_bins):
+            # Get indices in the current bin
+            bin_indices = np.where(
+                (model_outputs >= bins[i]) & (model_outputs < bins[i+1]))[0]
+            # Take and randomly sample from each bin
+            sample_size = min(n_bin_values)
+            if sample_size > 0:
+                selected_indices.extend(
+                    np.random.choice(bin_indices, sample_size, replace=False))
+
+        selected_indices = np.array(selected_indices)
+        input_subset = model_inputs[selected_indices]
+        output_subset = model_outputs[selected_indices]
+
+        if verbose:
+            plt.hist(output_subset)
+            plt.show()
+            print('shape before cut', np.shape(model_outputs))
+            print('shape once cut', np.shape(model_outputs[model_outputs < 2.0]))
+            print('shape x once cut', np.shape(model_inputs[model_outputs < 2.0]))
+            print('shape once uniform', np.shape(output_subset))
+
+        return input_subset, output_subset
+
     def image_gen(
         self,
         image_size=100,
@@ -132,6 +184,7 @@ class DataPreparation:
         sigma,
         image_size=32,
         inject_type="predictive",
+        uniform=False,
     ):
         image_size = 32
         image_array = np.zeros((size_df, image_size, image_size))
@@ -172,10 +225,14 @@ class DataPreparation:
         seed=42,
         vary_sigma=False,
         verbose=False,
+        uniform=False,
     ):
+        print('uniform is', uniform)
         if simulation_name == "linear_homoskedastic":
             # convert to numpy array (if tensor):
             thetas = np.atleast_2d(thetas)
+            n_sim = thetas.shape[0]
+            print('number of sims', n_sim)
             # Check if the input has the correct shape
             if thetas.shape[1] != 2:
                 raise ValueError(
@@ -200,13 +257,13 @@ class DataPreparation:
                 print("YES WERE VARYING SIGMA")
                 new_sig = self.get_sigma_m(sigma, m)
                 ε = rs.normal(
-                    loc=0, scale=new_sig, size=(len(x), thetas.shape[0])
+                    loc=0, scale=new_sig, size=(len(x), n_sim)
                 )
                 scale = new_sig
             else:
                 print("NO WERE NOT VARYING SIGMA")
                 ε = rs.normal(
-                    loc=0, scale=sigma, size=(len(x), thetas.shape[0])
+                    loc=0, scale=sigma, size=(len(x), n_sim)
                 )
                 scale = sigma
             if verbose:
@@ -228,6 +285,7 @@ class DataPreparation:
                 m, b = thetas[i, 0], thetas[i, 1]
                 if inject_type == "predictive":
                     y_noisy[:, i] = m * x + b + ε[:, i]
+                    y[:, i] = m * x + b
                 elif inject_type == "feature":
                     # y_prime[:, i] = m * (x + ε[:, i]) + b
                     y[:, i] = m * x + b
@@ -254,7 +312,8 @@ class DataPreparation:
         )
 
     def sample_params_from_prior(
-        self, n_samples, low=[0, 0], high=[0.4, 0], n_params=2, seed=42
+        self, n_samples, low=[0, 0], high=[0.4, 0],
+        n_params=2, seed=42,
     ):
         assert (
             len(low) == len(high) == n_params
