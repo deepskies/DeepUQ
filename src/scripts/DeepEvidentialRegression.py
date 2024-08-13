@@ -304,24 +304,17 @@ if __name__ == "__main__":
         print("generating the data")
         data = DataPreparation()
         if dim == "0D":
-            uniform = False
-            if uniform:
-                data.sample_params_from_prior(2 * size_df)
-            else:
-                data.sample_params_from_prior(size_df)
+            data.sample_params_from_prior(size_df)
             print("injecting this noise", noise, sigma)
             if injection == "feature":
-                vary_sigma = True
-                print("are we varying sigma", vary_sigma)
                 data.simulate_data(
                     data.params,
                     noise,
                     prescription,
                     x=np.linspace(0, 10, 100),
                     inject_type=injection,
-                    vary_sigma=vary_sigma,
-                    verbose=True,
-                    uniform=uniform,
+                    vary_sigma=True,
+                    verbose=True
                 )
             elif injection == "predictive":
                 sigma = DataPreparation.get_sigma(
@@ -334,7 +327,6 @@ if __name__ == "__main__":
                     x=np.linspace(0, 10, 100),
                     inject_type=injection,
                     verbose=True,
-                    uniform=uniform,
                 )
             df_array = data.get_dict()
             # Convert non-tensor entries to tensors
@@ -365,7 +357,6 @@ if __name__ == "__main__":
                 sigma,
                 image_size=32,
                 inject_type=injection,
-                uniform=True,
             )
     else:
         loader = MyDataLoader()
@@ -389,38 +380,11 @@ if __name__ == "__main__":
         xs_array = np.reshape(df["inputs"].numpy(), (len_df * len_x))
         model_outputs = np.reshape(df["output"].numpy(), (len_df * len_x))
         model_inputs = np.array([xs_array, ms_array, bs_array]).T
-    if verbose:
-        # briefly plot what some of the data looks like
-        if dim == "0D":
-            plt.clf()
-            plt.scatter(xs_array[0:100], model_outputs[0:100])
-            plt.plot(xs_array[0:100], model_outputs[0:100])
-            plt.title(
-                r"$\mu_x = $"
-                + str(round(np.mean(xs_array[0:100]), 2))
-                + r" $\sigma_x = $"
-                + str(round(np.std(xs_array[0:100]), 2))
-            )
-            plt.show()
-        if dim == "2D":
-            print(np.shape(model_inputs), np.shape(model_outputs))
-            for k in range(10):
-                plt.clf()
-                plt.imshow(model_inputs[k])
-                plt.annotate(
-                    "Pixel sum = " + str(round(model_outputs[k], 2)),
-                    xy=(0.02, 0.9),
-                    xycoords="axes fraction",
-                    color="white",
-                    size=10,
-                )
-                plt.colorbar()
-                plt.show()
     model_inputs, model_outputs, norm_params = DataPreparation.normalize(
         model_inputs, model_outputs, norm
     )
     model_inputs, model_outputs = DataPreparation.select_uniform(
-        model_inputs, model_outputs, verbose=verbose, rs=40
+        model_inputs, model_outputs, dim, verbose=verbose, rs=40
     )
     if verbose:
         plt.clf()
@@ -446,9 +410,13 @@ if __name__ == "__main__":
             plt.show()
         elif dim == "0D":
             plt.clf()
-            plt.scatter(model_inputs[0:100, 0], model_outputs[0:100])
-            plt.plot(model_inputs[0:100, 0], model_outputs[0:100])
-            plt.title("")
+            plt.scatter(model_inputs[0:1000, 0],
+                        model_outputs[0:1000],
+                        c=model_inputs[0:1000, 1],
+                        cmap='viridis')
+            plt.colorbar()
+            #plt.plot(model_inputs[0:100, 0], model_outputs[0:100])
+            plt.title("x and y, colorbar is m value")
             plt.show()
     x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
         model_inputs, model_outputs, val_proportion=val_prop, random_state=rs
