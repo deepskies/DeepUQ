@@ -105,6 +105,7 @@ class DataPreparation:
     def select_uniform(
         model_inputs,
         model_outputs,
+        dim,
         verbose=False,
         rs=40
     ):
@@ -120,7 +121,8 @@ class DataPreparation:
         # First go through and calculate how many are in each bin
         for i in range(num_bins):
             # Select values in the current bin
-            bin_indices = np.where((model_outputs >= bins[i]) & (model_outputs < bins[i+1]))[0]
+            bin_indices = np.where(
+                (model_outputs >= bins[i]) & (model_outputs < bins[i+1]))[0]
             n_bin_values.append(len(bin_indices))
 
         if verbose:
@@ -130,26 +132,27 @@ class DataPreparation:
         np.random.seed(rs)
         selected_indices = []
 
+        if dim == "2D":
+            sample_size = 500
+        elif dim == "0D":
+            sample_size = 10000
+
         for i in range(num_bins):
             # Get indices in the current bin
             bin_indices = np.where(
                 (model_outputs >= bins[i]) & (model_outputs < bins[i+1]))[0]
             # Take and randomly sample from each bin
-            sample_size = min(n_bin_values)
-            if sample_size > 0:
-                selected_indices.extend(
-                    np.random.choice(bin_indices, sample_size, replace=False))
-
+            sampled_indices = np.random.choice(
+                bin_indices, sample_size, replace=False)
+            selected_indices.extend(sampled_indices)
         selected_indices = np.array(selected_indices)
         input_subset = model_inputs[selected_indices]
-        output_subset = model_outputs[selected_indices]
+        output_subset = np.array(model_outputs)[selected_indices]
 
         if verbose:
             plt.hist(output_subset)
             plt.show()
             print('shape before cut', np.shape(model_outputs))
-            print('shape once cut', np.shape(model_outputs[model_outputs < 2.0]))
-            print('shape x once cut', np.shape(model_inputs[model_outputs < 2.0]))
             print('shape once uniform', np.shape(output_subset))
 
         return input_subset, output_subset
@@ -184,8 +187,10 @@ class DataPreparation:
         sigma,
         image_size=32,
         inject_type="predictive",
-        uniform=False,
+        rs=40,
     ):
+        # set the random seed
+        np.random.seed(rs)
         image_size = 32
         image_array = np.zeros((size_df, image_size, image_size))
         total_brightness = []
@@ -225,9 +230,7 @@ class DataPreparation:
         seed=42,
         vary_sigma=False,
         verbose=False,
-        uniform=False,
     ):
-        print('uniform is', uniform)
         if simulation_name == "linear_homoskedastic":
             # convert to numpy array (if tensor):
             thetas = np.atleast_2d(thetas)
@@ -312,7 +315,7 @@ class DataPreparation:
         )
 
     def sample_params_from_prior(
-        self, n_samples, low=[0, 0], high=[0.4, 0],
+        self, n_samples, low=[0.1, 0], high=[0.4, 0],
         n_params=2, seed=42,
     ):
         assert (
