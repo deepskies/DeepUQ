@@ -397,17 +397,24 @@ if __name__ == "__main__":
         )
         plt.show()
         if dim == "2D":
-            plt.clf()
-            plt.imshow(model_inputs[0])
-            plt.annotate(
-                "Pixel sum = " + str(round(model_outputs[0], 2)),
-                xy=(0.02, 0.9),
-                xycoords="axes fraction",
-                color="white",
-                size=10,
-            )
-            plt.colorbar()
-            plt.show()
+            print(model_outputs)
+            counter = 0
+            for p in range(len(model_outputs)):
+                if counter > 5:
+                    break
+                if model_outputs[p] > 0.75 and model_outputs[p] < 1.25:
+                    plt.clf()
+                    plt.imshow(model_inputs[p])
+                    plt.annotate(
+                        "Pixel sum = " + str(round(model_outputs[p], 2)),
+                        xy=(0.02, 0.9),
+                        xycoords="axes fraction",
+                        color="white",
+                        size=10,
+                    )
+                    plt.colorbar()
+                    plt.show()
+                    counter+=1
         elif dim == "0D":
             plt.clf()
             plt.scatter(model_inputs[0:1000, 0],
