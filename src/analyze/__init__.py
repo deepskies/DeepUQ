@@ -1,5 +1,3 @@
 from analyze.analyze import AggregateCheckpoints
 
-ModelModules = {
-    "AggregateCheckpoints": AggregateCheckpoints
-}
+ModelModules = {"AggregateCheckpoints": AggregateCheckpoints}

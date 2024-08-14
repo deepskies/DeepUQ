@@ -102,13 +102,7 @@ class DataPreparation:
     def __init__(self):
         self.data = None
 
-    def select_uniform(
-        model_inputs,
-        model_outputs,
-        dim,
-        verbose=False,
-        rs=40
-    ):
+    def select_uniform(model_inputs, model_outputs, dim, verbose=False, rs=40):
         # number of bins (adjust based on desired granularity)
         num_bins = 10
         lower_bound = 0
@@ -122,11 +116,12 @@ class DataPreparation:
         for i in range(num_bins):
             # Select values in the current bin
             bin_indices = np.where(
-                (model_outputs >= bins[i]) & (model_outputs < bins[i+1]))[0]
+                (model_outputs >= bins[i]) & (model_outputs < bins[i + 1])
+            )[0]
             n_bin_values.append(len(bin_indices))
 
         if verbose:
-            print('n_bin_values', n_bin_values)
+            print("n_bin_values", n_bin_values)
 
         # Setting a random seed
         np.random.seed(rs)
@@ -140,10 +135,12 @@ class DataPreparation:
         for i in range(num_bins):
             # Get indices in the current bin
             bin_indices = np.where(
-                (model_outputs >= bins[i]) & (model_outputs < bins[i+1]))[0]
+                (model_outputs >= bins[i]) & (model_outputs < bins[i + 1])
+            )[0]
             # Take and randomly sample from each bin
             sampled_indices = np.random.choice(
-                bin_indices, sample_size, replace=False)
+                bin_indices, sample_size, replace=False
+            )
             selected_indices.extend(sampled_indices)
         selected_indices = np.array(selected_indices)
         input_subset = model_inputs[selected_indices]
@@ -152,8 +149,8 @@ class DataPreparation:
         if verbose:
             plt.hist(output_subset)
             plt.show()
-            print('shape before cut', np.shape(model_outputs))
-            print('shape once uniform', np.shape(output_subset))
+            print("shape before cut", np.shape(model_outputs))
+            print("shape once uniform", np.shape(output_subset))
 
         return input_subset, output_subset
 
@@ -235,7 +232,7 @@ class DataPreparation:
             # convert to numpy array (if tensor):
             thetas = np.atleast_2d(thetas)
             n_sim = thetas.shape[0]
-            print('number of sims', n_sim)
+            print("number of sims", n_sim)
             # Check if the input has the correct shape
             if thetas.shape[1] != 2:
                 raise ValueError(
@@ -259,15 +256,11 @@ class DataPreparation:
             if vary_sigma:
                 print("YES WERE VARYING SIGMA")
                 new_sig = self.get_sigma_m(sigma, m)
-                ε = rs.normal(
-                    loc=0, scale=new_sig, size=(len(x), n_sim)
-                )
+                ε = rs.normal(loc=0, scale=new_sig, size=(len(x), n_sim))
                 scale = new_sig
             else:
                 print("NO WERE NOT VARYING SIGMA")
-                ε = rs.normal(
-                    loc=0, scale=sigma, size=(len(x), n_sim)
-                )
+                ε = rs.normal(loc=0, scale=sigma, size=(len(x), n_sim))
                 scale = sigma
             if verbose:
                 plt.clf()
@@ -315,8 +308,12 @@ class DataPreparation:
         )
 
     def sample_params_from_prior(
-        self, n_samples, low=[0.1, 0], high=[0.4, 0],
-        n_params=2, seed=42,
+        self,
+        n_samples,
+        low=[0.1, 0],
+        high=[0.4, 0],
+        n_params=2,
+        seed=42,
     ):
         assert (
             len(low) == len(high) == n_params

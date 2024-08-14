@@ -119,8 +119,7 @@ class ConvLayers(nn.Module):
         return x
 
 
-def model_setup_DER(
-        loss_type, DEVICE, n_hidden=64, data_type="0D"):
+def model_setup_DER(loss_type, DEVICE, n_hidden=64, data_type="0D"):
     # initialize the model from scratch
     if loss_type == "SDER":
         Layer = SDERLayer
@@ -146,8 +145,7 @@ def model_setup_DER(
         # from https://github.com/pasteurlabs/unreasonable_effective_der
         # /blob/main/x3_indepth.ipynb
         model = torch.nn.Sequential(
-            Model(n_hidden=n_hidden, n_input=3, n_output=4),
-            Layer()
+            Model(n_hidden=n_hidden, n_input=3, n_output=4), Layer()
         )
     model = model.to(DEVICE)
     return model, lossFn

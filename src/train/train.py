@@ -133,7 +133,7 @@ def train_DER(
             # (x, y) = (x.to(device), y.to(device))
             # perform a forward pass and calculate the training loss
             pred = model(x)
-            '''
+            """
             print('pred', pred[:, 0].flatten().detach().numpy())
 
             plt.clf()
@@ -149,7 +149,7 @@ def train_DER(
                          xycoords='axes fraction')
             plt.legend()
             plt.show()
-            '''
+            """
 
             loss = lossFn(pred, y, COEFF)
             if plot or savefig:

@@ -459,15 +459,17 @@ if __name__ == "__main__":
                     )
                     plt.colorbar()
                     plt.show()
-                    counter+=1
+                    counter += 1
         elif dim == "0D":
             plt.clf()
-            plt.scatter(model_inputs[0:1000, 0],
-                        model_outputs[0:1000],
-                        c=model_inputs[0:1000, 1],
-                        cmap='viridis')
+            plt.scatter(
+                model_inputs[0:1000, 0],
+                model_outputs[0:1000],
+                c=model_inputs[0:1000, 1],
+                cmap="viridis",
+            )
             plt.colorbar()
-            #plt.plot(model_inputs[0:100, 0], model_outputs[0:100])
+            # plt.plot(model_inputs[0:100, 0], model_outputs[0:100])
             plt.title("x and y, colorbar is m value")
             plt.show()
     x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
