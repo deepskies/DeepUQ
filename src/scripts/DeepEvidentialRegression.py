@@ -87,6 +87,13 @@ def parse_args():
         help="If true theres an option to normalize the dataset",
     )
     parser.add_argument(
+        "--uniform",
+        required=False,
+        action="store_true",
+        default=DefaultsDER["data"]["uniform"],
+        help="If true theres an option to uniformize the dataset",
+    )
+    parser.add_argument(
         "--val_proportion",
         type=float,
         required=False,
@@ -272,6 +279,7 @@ def parse_args():
                 "batchsize": args.batchsize,
                 "generatedata": args.generatedata,
                 "normalize": args.normalize,
+                "uniform": args.uniform,
             },
             # "plots": {key: {} for key in args.plots},
             # "metrics": {key: {} for key in args.metrics},
@@ -289,6 +297,7 @@ if __name__ == "__main__":
     size_df = int(config.get_item("data", "size_df", "DER"))
     noise = config.get_item("data", "noise_level", "DER")
     norm = config.get_item("data", "normalize", "DER", raise_exception=False)
+    uniform = config.get_item("data", "uniform", "DER", raise_exception=False)
     val_prop = config.get_item("data", "val_proportion", "DER")
     rs = config.get_item("data", "randomseed", "DER")
     BATCH_SIZE = config.get_item("data", "batchsize", "DER")
@@ -383,9 +392,10 @@ if __name__ == "__main__":
     model_inputs, model_outputs, norm_params = DataPreparation.normalize(
         model_inputs, model_outputs, norm
     )
-    model_inputs, model_outputs = DataPreparation.select_uniform(
-        model_inputs, model_outputs, dim, verbose=verbose, rs=40
-    )
+    if uniform:
+        model_inputs, model_outputs = DataPreparation.select_uniform(
+            model_inputs, model_outputs, dim, verbose=verbose, rs=40
+        )
     if verbose:
         plt.clf()
         plt.hist(model_outputs)
