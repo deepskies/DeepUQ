@@ -30,7 +30,10 @@ def temp_data():  # noise_level, size_df):
     if noise_level == "vhigh":
         sigma = 100
     data.simulate_data(
-        data.params, sigma, "linear_homoskedastic", inject_type="predictive"
+        data.params,
+        sigma,
+        "linear_homoskedastic",
+        inject_type="predictive",
     )
     dict = data.get_dict()
     saver = MyDataLoader()
@@ -106,11 +109,14 @@ def create_test_config(
             "val_proportion": 0.1,
             "randomseed": 42,
             "batchsize": 100,
-            "generatedata": True
+            "generatedata": True,
         },
         "analysis": {"run_analysis": False},
     }
-    print("theoretically dumping here", str(temp_directory) + "yamls/DER.yaml")
+    print(
+        "theoretically dumping here",
+        str(temp_directory) + "yamls/DER.yaml",
+    )
     print("this is the yaml", input_yaml)
     yaml.dump(input_yaml, open(str(temp_directory) + "yamls/DER.yaml", "w"))
 
@@ -176,8 +182,7 @@ class TestDER:
             ), f"File '{file_name}' does not contain the expected substring"
 
     def test_DER_from_config(
-        self, temp_directory, temp_data,
-        noise_level="low", size_df=10
+        self, temp_directory, temp_data, noise_level="low", size_df=10
     ):
         # create the test config dynamically
         # make the temporary config file

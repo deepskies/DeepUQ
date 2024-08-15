@@ -12,6 +12,7 @@ DefaultsDE = {
         "size_df": 1000,
         "noise_level": "low",
         "normalize": False,
+        "uniform": False,
         "val_proportion": 0.1,
         "randomseed": 42,
         "batchsize": 100,
@@ -62,6 +63,7 @@ DefaultsDER = {
         "size_df": 1000,
         "noise_level": "low",
         "normalize": False,
+        "uniform": False,
         "val_proportion": 0.1,
         "randomseed": 42,
         "batchsize": 100,
@@ -112,7 +114,7 @@ DefaultsAnalysis = {
         "n_epochs": 100,
         "BETA": 0.5,
         "COEFF": 0.01,
-        "loss_type": "DER"
+        "loss_type": "DER",
     },
     "analysis": {
         "noise_level_list": ["low", "medium", "high"],
@@ -126,8 +128,9 @@ DefaultsAnalysis = {
         "savefig": False,
         "verbose": False,
     },
-    "plots": {"color_list":
-              ["#DFA316", "#339989", "#292F36", "#04A777", "#DF928E"]},
+    "plots": {
+        "color_list": ["#DFA316", "#339989", "#292F36", "#04A777", "#DF928E"]
+    },
     # Pinks ["#EC4067", "#A01A7D", "#311847"]},
     # Blues: ["#8EA8C3", "#406E8E", "#23395B"]},
     "metrics_common": {

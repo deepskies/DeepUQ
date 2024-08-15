@@ -32,7 +32,10 @@ def temp_data():  # noise_level, size_df):
     if noise_level == "vhigh":
         sigma = 100
     data.simulate_data(
-        data.params, sigma, "linear_homoskedastic", inject_type="predictive"
+        data.params,
+        sigma,
+        "linear_homoskedastic",
+        inject_type="predictive",
     )
     dict = data.get_dict()
     saver = MyDataLoader()
@@ -112,7 +115,10 @@ def create_test_config(
         },
         "analysis": {"run_analysis": False},
     }
-    print("theoretically dumping here", str(temp_directory) + "yamls/DE.yaml")
+    print(
+        "theoretically dumping here",
+        str(temp_directory) + "yamls/DE.yaml",
+    )
     yaml.dump(input_yaml, open(str(temp_directory) + "yamls/DE.yaml", "w"))
 
 

@@ -28,8 +28,9 @@ class Config:
             try:
                 config_path = os.environ[self.ENV_VAR_PATH]
             except KeyError:
-                assert False, \
-                    "Cannot load config from enviroment. \
+                assert (
+                    False
+                ), "Cannot load config from enviroment. \
                      Hint: Have you set the config path \
                      by passing a str path to Config?"
         self.config = self._read_config(config_path)
@@ -42,7 +43,7 @@ class Config:
 
     def _read_config(self, path):
         assert os.path.exists(path), f"Config path at {path} does not exist."
-        with open(path, 'r') as f:
+        with open(path, "r") as f:
             config = yaml.safe_load(f)
         return config
 
@@ -58,7 +59,7 @@ class Config:
                 return {
                     "DER": DefaultsDER,
                     "DE": DefaultsDE,
-                    "Analysis": DefaultsAnalysis
+                    "Analysis": DefaultsAnalysis,
                 }[defaulttype][section][item]
 
     def get_section(self, section, defaulttype, raise_exception=True):
@@ -71,5 +72,5 @@ class Config:
                 return {
                     "DER": DefaultsDER,
                     "DE": DefaultsDE,
-                    "Analysis": DefaultsAnalysis
+                    "Analysis": DefaultsAnalysis,
                 }[defaulttype][section]

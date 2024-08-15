@@ -87,6 +87,13 @@ def parse_args():
         help="If true theres an option to normalize the dataset",
     )
     parser.add_argument(
+        "--uniform",
+        required=False,
+        action="store_true",
+        default=DefaultsDER["data"]["uniform"],
+        help="If true theres an option to uniformize the dataset",
+    )
+    parser.add_argument(
         "--val_proportion",
         type=float,
         required=False,
@@ -272,6 +279,7 @@ def parse_args():
                 "batchsize": args.batchsize,
                 "generatedata": args.generatedata,
                 "normalize": args.normalize,
+                "uniform": args.uniform,
             },
             # "plots": {key: {} for key in args.plots},
             # "metrics": {key: {} for key in args.metrics},
@@ -289,6 +297,7 @@ if __name__ == "__main__":
     size_df = int(config.get_item("data", "size_df", "DER"))
     noise = config.get_item("data", "noise_level", "DER")
     norm = config.get_item("data", "normalize", "DER", raise_exception=False)
+    uniform = config.get_item("data", "uniform", "DER", raise_exception=False)
     val_prop = config.get_item("data", "val_proportion", "DER")
     rs = config.get_item("data", "randomseed", "DER")
     BATCH_SIZE = config.get_item("data", "batchsize", "DER")
@@ -307,15 +316,13 @@ if __name__ == "__main__":
             data.sample_params_from_prior(size_df)
             print("injecting this noise", noise, sigma)
             if injection == "feature":
-                vary_sigma = True
-                print("are we varying sigma", vary_sigma)
                 data.simulate_data(
                     data.params,
                     noise,
                     prescription,
                     x=np.linspace(0, 10, 100),
                     inject_type=injection,
-                    vary_sigma=vary_sigma,
+                    vary_sigma=True,
                     verbose=True,
                 )
             elif injection == "predictive":
@@ -382,36 +389,13 @@ if __name__ == "__main__":
         xs_array = np.reshape(df["inputs"].numpy(), (len_df * len_x))
         model_outputs = np.reshape(df["output"].numpy(), (len_df * len_x))
         model_inputs = np.array([xs_array, ms_array, bs_array]).T
-    if verbose:
-        # briefly plot what some of the data looks like
-        if dim == "0D":
-            plt.clf()
-            plt.scatter(xs_array[0:100], model_outputs[0:100])
-            plt.plot(xs_array[0:100], model_outputs[0:100])
-            plt.title(
-                r"$\mu_x = $"
-                + str(round(np.mean(xs_array[0:100]), 2))
-                + r" $\sigma_x = $"
-                + str(round(np.std(xs_array[0:100]), 2))
-            )
-            plt.show()
-        if dim == "2D":
-            print(np.shape(model_inputs), np.shape(model_outputs))
-            for k in range(10):
-                plt.clf()
-                plt.imshow(model_inputs[k])
-                plt.annotate(
-                    "Pixel sum = " + str(round(model_outputs[k], 2)),
-                    xy=(0.02, 0.9),
-                    xycoords="axes fraction",
-                    color="white",
-                    size=10,
-                )
-                plt.colorbar()
-                plt.show()
     model_inputs, model_outputs, norm_params = DataPreparation.normalize(
         model_inputs, model_outputs, norm
     )
+    if uniform:
+        model_inputs, model_outputs = DataPreparation.select_uniform(
+            model_inputs, model_outputs, dim, verbose=verbose, rs=40
+        )
     if verbose:
         plt.clf()
         plt.hist(model_outputs)
@@ -423,22 +407,35 @@ if __name__ == "__main__":
         )
         plt.show()
         if dim == "2D":
-            plt.clf()
-            plt.imshow(model_inputs[0])
-            plt.annotate(
-                "Pixel sum = " + str(round(model_outputs[0], 2)),
-                xy=(0.02, 0.9),
-                xycoords="axes fraction",
-                color="white",
-                size=10,
-            )
-            plt.colorbar()
-            plt.show()
+            print(model_outputs)
+            counter = 0
+            for p in range(len(model_outputs)):
+                if counter > 5:
+                    break
+                if model_outputs[p] > 0.75 and model_outputs[p] < 1.25:
+                    plt.clf()
+                    plt.imshow(model_inputs[p])
+                    plt.annotate(
+                        "Pixel sum = " + str(round(model_outputs[p], 2)),
+                        xy=(0.02, 0.9),
+                        xycoords="axes fraction",
+                        color="white",
+                        size=10,
+                    )
+                    plt.colorbar()
+                    plt.show()
+                    counter += 1
         elif dim == "0D":
             plt.clf()
-            plt.scatter(model_inputs[0:100, 0], model_outputs[0:100])
-            plt.plot(model_inputs[0:100, 0], model_outputs[0:100])
-            plt.title("")
+            plt.scatter(
+                model_inputs[0:1000, 0],
+                model_outputs[0:1000],
+                c=model_inputs[0:1000, 1],
+                cmap="viridis",
+            )
+            plt.colorbar()
+            # plt.plot(model_inputs[0:100, 0], model_outputs[0:100])
+            plt.title("x and y, colorbar is m value")
             plt.show()
     x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
         model_inputs, model_outputs, val_proportion=val_prop, random_state=rs

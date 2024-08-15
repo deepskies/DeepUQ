@@ -110,7 +110,8 @@ def create_test_config_aleatoric(
         str(temp_directory) + "yamls/Aleatoric.yaml",
     )
     yaml.dump(
-        input_yaml, open(str(temp_directory) + "yamls/Aleatoric.yaml", "w")
+        input_yaml,
+        open(str(temp_directory) + "yamls/Aleatoric.yaml", "w"),
     )
 
 
@@ -150,11 +151,14 @@ def create_test_config_DE(
             "val_proportion": 0.1,
             "randomseed": 42,
             "batchsize": 100,
-            "generatedata": True
+            "generatedata": True,
         },
         "analysis": {"run_analysis": False},
     }
-    print("theoretically dumping here", str(temp_directory) + "yamls/DE.yaml")
+    print(
+        "theoretically dumping here",
+        str(temp_directory) + "yamls/DE.yaml",
+    )
     yaml.dump(input_yaml, open(str(temp_directory) + "yamls/DE.yaml", "w"))
 
 
@@ -193,11 +197,14 @@ def create_test_config_DER(
             "val_proportion": 0.1,
             "randomseed": 42,
             "batchsize": 100,
-            "generatedata": True
+            "generatedata": True,
         },
         "analysis": {"run_analysis": False},
     }
-    print("theoretically dumping here", str(temp_directory) + "yamls/DER.yaml")
+    print(
+        "theoretically dumping here",
+        str(temp_directory) + "yamls/DER.yaml",
+    )
     print("this is the yaml", input_yaml)
     yaml.dump(input_yaml, open(str(temp_directory) + "yamls/DER.yaml", "w"))
 
@@ -215,7 +222,10 @@ class TestAleatoric:
         noise_level_list = ["low", "medium", "high"]
         for noise in noise_level_list:
             create_test_config_DE(
-                temp_directory + "/", temp_data, n_epochs, noise_level=noise
+                temp_directory + "/",
+                temp_data,
+                n_epochs,
+                noise_level=noise,
             )
             subprocess_args = [
                 "python",
@@ -226,7 +236,10 @@ class TestAleatoric:
             # now run the subprocess
             subprocess.run(subprocess_args, check=True)
             create_test_config_DER(
-                temp_directory + "/", temp_data, n_epochs, noise_level=noise
+                temp_directory + "/",
+                temp_data,
+                n_epochs,
+                noise_level=noise,
             )
             subprocess_args = [
                 "python",
