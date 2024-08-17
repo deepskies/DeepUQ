@@ -472,6 +472,46 @@ if __name__ == "__main__":
             # plt.plot(model_inputs[0:100, 0], model_outputs[0:100])
             plt.title("x and y, colorbar is m value")
             plt.show()
+
+            # select an m value
+            print('m value', model_inputs[0, 1], model_inputs[500, 1])
+            # grab everything that corresponds to it
+            plt.clf()
+            plt.scatter(
+                model_inputs[:, 0][model_inputs[:, 1]==model_inputs[0,1]],
+                model_outputs[model_inputs[:, 1]==model_inputs[0,1]],
+                color="yellow",
+            )
+            plt.scatter(
+                model_inputs[:, 0][model_inputs[:, 1]==model_inputs[500,1]],
+                model_outputs[model_inputs[:, 1]==model_inputs[500,1]],
+                color="orange",
+            )
+            plt.scatter(
+                model_inputs[:, 0][model_inputs[:, 1]==model_inputs[550,1]],
+                model_outputs[model_inputs[:, 1]==model_inputs[550,1]],
+                color="green",
+            )
+            plt.scatter(
+                model_inputs[:, 0][model_inputs[:, 1]==model_inputs[350,1]],
+                model_outputs[model_inputs[:, 1]==model_inputs[350,1]],
+                color="blue",
+            )
+            plt.colorbar()
+            # plt.plot(model_inputs[0:100, 0], model_outputs[0:100])
+            plt.title("plotting just a couple of m values")
+            plt.show()
+
+            # look at how m is distributed
+            plt.hist(model_inputs[:, 1], bins=100)
+            plt.show()
+
+            # now look at how noise/m is distributed
+            plt.hist(0.01/model_inputs[:, 1], bins=100)
+            plt.xlabel('injected uncertainty in x')
+            plt.show()
+            
+            STOP
     x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
         model_inputs, model_outputs, val_proportion=val_prop, random_state=rs
     )
