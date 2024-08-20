@@ -474,27 +474,27 @@ if __name__ == "__main__":
             plt.show()
 
             # select an m value
-            print('m value', model_inputs[0, 1], model_inputs[500, 1])
+            print("m value", model_inputs[0, 1], model_inputs[500, 1])
             # grab everything that corresponds to it
             plt.clf()
             plt.scatter(
-                model_inputs[:, 0][model_inputs[:, 1]==model_inputs[0,1]],
-                model_outputs[model_inputs[:, 1]==model_inputs[0,1]],
+                model_inputs[:, 0][model_inputs[:, 1] == model_inputs[0, 1]],
+                model_outputs[model_inputs[:, 1] == model_inputs[0, 1]],
                 color="yellow",
             )
             plt.scatter(
-                model_inputs[:, 0][model_inputs[:, 1]==model_inputs[500,1]],
-                model_outputs[model_inputs[:, 1]==model_inputs[500,1]],
+                model_inputs[:, 0][model_inputs[:, 1] == model_inputs[500, 1]],
+                model_outputs[model_inputs[:, 1] == model_inputs[500, 1]],
                 color="orange",
             )
             plt.scatter(
-                model_inputs[:, 0][model_inputs[:, 1]==model_inputs[550,1]],
-                model_outputs[model_inputs[:, 1]==model_inputs[550,1]],
+                model_inputs[:, 0][model_inputs[:, 1] == model_inputs[550, 1]],
+                model_outputs[model_inputs[:, 1] == model_inputs[550, 1]],
                 color="green",
             )
             plt.scatter(
-                model_inputs[:, 0][model_inputs[:, 1]==model_inputs[350,1]],
-                model_outputs[model_inputs[:, 1]==model_inputs[350,1]],
+                model_inputs[:, 0][model_inputs[:, 1] == model_inputs[350, 1]],
+                model_outputs[model_inputs[:, 1] == model_inputs[350, 1]],
                 color="blue",
             )
             plt.colorbar()
@@ -507,10 +507,10 @@ if __name__ == "__main__":
             plt.show()
 
             # now look at how noise/m is distributed
-            plt.hist(0.01/model_inputs[:, 1], bins=100)
-            plt.xlabel('injected uncertainty in x')
+            plt.hist(0.01 / model_inputs[:, 1], bins=100)
+            plt.xlabel("injected uncertainty in x")
             plt.show()
-            
+
             STOP
     x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
         model_inputs, model_outputs, val_proportion=val_prop, random_state=rs
