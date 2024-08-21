@@ -360,7 +360,8 @@ if __name__ == "__main__":
                     noise, inject_type=injection, data_dimension=dim
                 )
                 print(
-                    f"inject type is {injection}, dim is {dim}, sigma is {sigma}"
+                    f"inject type is {injection},"
+                    f"dim is {dim}, sigma is {sigma}"
                 )
                 data.simulate_data(
                     data.params,
@@ -510,8 +511,6 @@ if __name__ == "__main__":
             plt.hist(0.01 / model_inputs[:, 1], bins=100)
             plt.xlabel("injected uncertainty in x")
             plt.show()
-
-            STOP
     x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
         model_inputs, model_outputs, val_proportion=val_prop, random_state=rs
     )
