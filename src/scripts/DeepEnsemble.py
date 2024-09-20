@@ -22,6 +22,34 @@ from data.data import DataPreparation, MyDataLoader
 
 
 def parse_args():
+    """Parses command-line (or config) arguments for the DeepEnsemble script.
+
+    This function creates an argument parser that supports:
+    1) Reading from a YAML configuration file (via --config).
+    2) Reading arguments from the command line and using default values 
+       if not provided, with the option to dump arguments to a temporary 
+       YAML configuration file.
+    3) Specifying data-related parameters such as the data path, dimension, 
+       and injection method, as well as model parameters like the number 
+       of models in the ensemble, learning rate, and loss type.
+
+    The parser supports the following argument categories:
+    - Data-related arguments:
+        --data_path, --data_dimension, --data_prescription, --data_injection,
+        --data_engine, --size_df, --noise_level, --val_proportion, --randomseed, 
+        --generatedata, --batchsize, --normalize, --uniform
+    - Model-related arguments:
+        --model_engine, --n_models, --init_lr, --loss_type, --BETA, --model_type,
+        --n_epochs, --save_all_checkpoints, --save_final_checkpoint,
+        --overwrite_final_checkpoint, --plot, --savefig, --save_chk_random_seed_init,
+        --rs_list, --n_hidden, --save_n_hidden, --save_data_size, --verbose
+    - General arguments:
+        --config, --out_dir
+
+    Returns:
+        Config: Configuration object that combines parsed arguments, 
+        either from the command line or a YAML configuration file.
+    """
     parser = argparse.ArgumentParser(description="data handling module")
     # there are three options with the parser:
     # 1) Read from a yaml
@@ -307,6 +335,23 @@ def parse_args():
 
 
 def beta_type(value):
+    """Validates and returns the BETA argument for the DeepEnsemble script.
+
+    The BETA argument can either be:
+    1) A float value.
+    2) One of the following strings: 'linear_decrease', 'step_decrease_to_0.5', 
+       or 'step_decrease_to_1.0'.
+
+    Args:
+        value (str or float): The BETA value passed as a command-line argument.
+
+    Returns:
+        float or str: The valid BETA value (either a float or one of the allowed strings).
+
+    Raises:
+        argparse.ArgumentTypeError: If the value is neither a float nor one of the 
+        allowed string values.
+    """
     if isinstance(value, float):
         return value
     elif value.lower() == "linear_decrease":
@@ -323,6 +368,22 @@ def beta_type(value):
 
 
 if __name__ == "__main__":
+    """Main execution script for the DeepEnsemble pipeline.
+
+    This script performs the following steps:
+    1. Parses command-line arguments and configuration settings using
+    `parse_args`.
+    2. Prepares and/or loads data based on the specified data dimensionality
+    (0D or 2D).
+    3. Processes and normalizes the data, applying optional noise injection.
+    4. Visualizes the data distribution if verbose mode is enabled.
+    5. Splits the data into training and validation sets.
+    6. Trains an ensemble of models using the DeepEnsemble framework and
+    specified configurations.
+    7. Optionally saves checkpoints and plots during the training process.
+
+    Execution starts if the script is run as a standalone module.
+    """
     config = parse_args()
     verbose = config.get_item("model", "verbose", "DE")
     size_df = int(config.get_item("data", "size_df", "DE"))
