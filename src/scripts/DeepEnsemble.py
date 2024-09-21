@@ -26,17 +26,17 @@ def parse_args():
 
     This function creates an argument parser that supports:
     1) Reading from a YAML configuration file (via --config).
-    2) Reading arguments from the command line and using default values 
-       if not provided, with the option to dump arguments to a temporary 
+    2) Reading arguments from the command line and using default values
+       if not provided, with the option to dump arguments to a temporary
        YAML configuration file.
-    3) Specifying data-related parameters such as the data path, dimension, 
-       and injection method, as well as model parameters like the number 
+    3) Specifying data-related parameters such as the data path, dimension,
+       and injection method, as well as model parameters like the number
        of models in the ensemble, learning rate, and loss type.
 
     The parser supports the following argument categories:
     - Data-related arguments:
         --data_path, --data_dimension, --data_prescription, --data_injection,
-        --data_engine, --size_df, --noise_level, --val_proportion, --randomseed, 
+        --data_engine, --size_df, --noise_level, --val_proportion, --randomseed,
         --generatedata, --batchsize, --normalize, --uniform
     - Model-related arguments:
         --model_engine, --n_models, --init_lr, --loss_type, --BETA, --model_type,
@@ -47,7 +47,7 @@ def parse_args():
         --config, --out_dir
 
     Returns:
-        Config: Configuration object that combines parsed arguments, 
+        Config: Configuration object that combines parsed arguments,
         either from the command line or a YAML configuration file.
     """
     parser = argparse.ArgumentParser(description="data handling module")
@@ -339,7 +339,7 @@ def beta_type(value):
 
     The BETA argument can either be:
     1) A float value.
-    2) One of the following strings: 'linear_decrease', 'step_decrease_to_0.5', 
+    2) One of the following strings: 'linear_decrease', 'step_decrease_to_0.5',
        or 'step_decrease_to_1.0'.
 
     Args:
@@ -349,7 +349,7 @@ def beta_type(value):
         float or str: The valid BETA value (either a float or one of the allowed strings).
 
     Raises:
-        argparse.ArgumentTypeError: If the value is neither a float nor one of the 
+        argparse.ArgumentTypeError: If the value is neither a float nor one of the
         allowed string values.
     """
     if isinstance(value, float):
@@ -420,10 +420,7 @@ if __name__ == "__main__":
                 sigma = DataPreparation.get_sigma(
                     noise, inject_type=injection, data_dimension=dim
                 )
-                print(
-                    f"inject type is {injection},"
-                    f"dim is {dim}, sigma is {sigma}"
-                )
+                print(f"inject type is {injection}," f"dim is {dim}, sigma is {sigma}")
                 data.simulate_data(
                     data.params,
                     sigma,
@@ -447,9 +444,7 @@ if __name__ == "__main__":
             sigma = DataPreparation.get_sigma(
                 noise, inject_type=injection, data_dimension=dim
             )
-            print(
-                f"inject type is {injection}, dim is {dim}, sigma is {sigma}"
-            )
+            print(f"inject type is {injection}, dim is {dim}, sigma is {sigma}")
             data.sample_params_from_prior(
                 size_df,
                 low=[0, 1, -1.5],
@@ -576,9 +571,7 @@ if __name__ == "__main__":
         model_inputs, model_outputs, val_proportion=val_prop, random_state=rs
     )
     trainData = TensorDataset(torch.Tensor(x_train), torch.Tensor(y_train))
-    trainDataLoader = DataLoader(
-        trainData, batch_size=BATCH_SIZE, shuffle=True
-    )
+    trainDataLoader = DataLoader(trainData, batch_size=BATCH_SIZE, shuffle=True)
     # set the device we will be using to train the model
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -613,20 +606,14 @@ if __name__ == "__main__":
         inject_type=injection,
         data_dim=dim,
         noise_level=noise,
-        save_all_checkpoints=config.get_item(
-            "model", "save_all_checkpoints", "DE"
-        ),
-        save_final_checkpoint=config.get_item(
-            "model", "save_final_checkpoint", "DE"
-        ),
+        save_all_checkpoints=config.get_item("model", "save_all_checkpoints", "DE"),
+        save_final_checkpoint=config.get_item("model", "save_final_checkpoint", "DE"),
         overwrite_final_checkpoint=config.get_item(
             "model", "overwrite_final_checkpoint", "DE"
         ),
         plot=config.get_item("model", "plot", "DE"),
         savefig=config.get_item("model", "savefig", "DE"),
-        set_and_save_rs=config.get_item(
-            "model", "save_chk_random_seed_init", "DE"
-        ),
+        set_and_save_rs=config.get_item("model", "save_chk_random_seed_init", "DE"),
         rs_list=config.get_item("model", "rs_list", "DE"),
         save_n_hidden=config.get_item("model", "save_n_hidden", "DE"),
         n_hidden=config.get_item("model", "n_hidden", "DE"),
