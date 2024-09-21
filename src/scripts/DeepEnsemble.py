@@ -405,7 +405,7 @@ if __name__ == "__main__":
         if dim == "0D":
             data.sample_params_from_prior(size_df)
             print("injecting this noise", noise)
-            if injection == "feature":
+            if injection == "input":
                 vary_sigma = True
                 print("are we varying sigma", vary_sigma)
                 data.simulate_data(
@@ -416,7 +416,7 @@ if __name__ == "__main__":
                     inject_type=injection,
                     vary_sigma=vary_sigma,
                 )
-            elif injection == "predictive":
+            elif injection == "output":
                 sigma = DataPreparation.get_sigma(
                     noise, inject_type=injection, data_dimension=dim
                 )

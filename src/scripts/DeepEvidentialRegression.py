@@ -359,7 +359,7 @@ if __name__ == "__main__":
         if dim == "0D":
             data.sample_params_from_prior(size_df)
             print("injecting this noise", noise, sigma)
-            if injection == "feature":
+            if injection == "input":
                 data.simulate_data(
                     data.params,
                     noise,
@@ -369,7 +369,7 @@ if __name__ == "__main__":
                     vary_sigma=True,
                     verbose=True,
                 )
-            elif injection == "predictive":
+            elif injection == "output":
                 sigma = DataPreparation.get_sigma(
                     noise, inject_type=injection, data_dimension=dim
                 )
