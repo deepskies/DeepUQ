@@ -12,8 +12,8 @@ import matplotlib.pyplot as plt
 class MyDataLoader:
     """A class for loading and saving data in HDF5 format.
 
-    This class provides methods to save data as HDF5 files and load data from 
-    HDF5 files. It simplifies the process of managing datasets, allowing for 
+    This class provides methods to save data as HDF5 files and load data from
+    HDF5 files. It simplifies the process of managing datasets, allowing for
     efficient storage and retrieval.
 
     Attributes:
@@ -21,29 +21,30 @@ class MyDataLoader:
 
     Methods:
         save_data_h5(data_name, data, path="../data/"):
-            Saves the provided data as an HDF5 file with the specified name 
+            Saves the provided data as an HDF5 file with the specified name
             at the given path.
 
         load_data_h5(data_name, path="../data/"):
             Loads data from an HDF5 file with the specified name from the given path.
-            Returns the loaded data as a dictionary, where each key corresponds 
+            Returns the loaded data as a dictionary, where each key corresponds
             to a dataset in the HDF5 file.
     """
+
     def __init__(self):
         self.data = None
 
     def save_data_h5(self, data_name, data, path="../data/"):
         """Save the provided data as an HDF5 file.
 
-        This method converts the input data dictionary into NumPy arrays and 
-        stores each array as a dataset in an HDF5 file. The file is saved 
+        This method converts the input data dictionary into NumPy arrays and
+        stores each array as a dataset in an HDF5 file. The file is saved
         with the specified name at the given path.
 
         Parameters:
             data_name (str): The name of the HDF5 file (without extension) to save the data.
-            data (dict): A dictionary containing the data to be saved, where keys are 
+            data (dict): A dictionary containing the data to be saved, where keys are
                         the dataset names and values are the corresponding data arrays.
-            path (str, optional): The directory path where the HDF5 file will be saved. 
+            path (str, optional): The directory path where the HDF5 file will be saved.
                                 Defaults to "../data/".
         """
         data_arrays = {key: np.asarray(value) for key, value in data.items()}
@@ -57,17 +58,17 @@ class MyDataLoader:
     def load_data_h5(self, data_name, path="../data/"):
         """Load data from an HDF5 file.
 
-        This method reads the specified HDF5 file and loads its contents into a 
-        dictionary, where each key corresponds to a dataset in the file and the 
+        This method reads the specified HDF5 file and loads its contents into a
+        dictionary, where each key corresponds to a dataset in the file and the
         values are stored as PyTorch tensors.
 
         Parameters:
             data_name (str): The name of the HDF5 file (without extension) from which to load the data.
-            path (str, optional): The directory path where the HDF5 file is located. 
+            path (str, optional): The directory path where the HDF5 file is located.
                                 Defaults to "../data/".
 
         Returns:
-            dict: A dictionary containing the loaded data, with keys representing 
+            dict: A dictionary containing the loaded data, with keys representing
                 the dataset names and values as PyTorch tensors.
         """
         file_name = path + data_name + ".h5"
@@ -82,8 +83,8 @@ class DataPreparation:
     """A class for preparing and simulating data for modeling purposes.
 
     This class provides methods to normalize data, sample parameters from priors,
-    simulate data with added noise, and select uniform samples from datasets. 
-    It supports both one-dimensional and two-dimensional data simulations, 
+    simulate data with added noise, and select uniform samples from datasets.
+    It supports both one-dimensional and two-dimensional data simulations,
     allowing for the generation of synthetic datasets for testing and training models.
 
     Attributes:
@@ -120,6 +121,7 @@ class DataPreparation:
         get_data():
             Returns the raw data stored in the instance.
     """
+
     def __init__(self):
         self.data = None
 
@@ -285,7 +287,7 @@ class DataPreparation:
 
         Args:
             size_df (int): Number of images to simulate.
-            params (np.ndarray): Array of shape (n_samples, 3) containing 
+            params (np.ndarray): Array of shape (n_samples, 3) containing
                 parameters for image generation:
                 - Amplitude (param[:, 0])
                 - Radius (param[:, 1])
@@ -303,7 +305,7 @@ class DataPreparation:
             tuple:
             - image_array (np.ndarray): Array of shape (size_df, image_size, image_size)
                 containing the generated images (with or without noise).
-            - total_brightness (list): List of total brightness values for each image, 
+            - total_brightness (list): List of total brightness values for each image,
                 either with noise added ("output" mode) or without ("input" mode).
 
         Example:
@@ -314,7 +316,7 @@ class DataPreparation:
             ```
 
         Notes:
-            - The `image_gen` method is used to generate individual images based on 
+            - The `image_gen` method is used to generate individual images based on
             the amplitude, radius, and theta values.
             - Noise is added to the total brightness when `inject_type="output"`.
             - Noise is added directly to the image pixels when `inject_type="input"`.
@@ -362,36 +364,36 @@ class DataPreparation:
     ):
         """Simulates linear data based on provided parameters and noise levels.
 
-        This function generates synthetic data by simulating linear relationships 
-        with noise injected into either the inputs or outputs. The parameters 
-        are sampled from a prior distribution, and random Gaussian noise is added 
-        to simulate uncertainty. The simulated data is stored in the `input`, 
+        This function generates synthetic data by simulating linear relationships
+        with noise injected into either the inputs or outputs. The parameters
+        are sampled from a prior distribution, and random Gaussian noise is added
+        to simulate uncertainty. The simulated data is stored in the `input`,
         `output`, and `output_err` attributes.
 
         Args:
-            thetas (np.ndarray): Array of shape (n_samples, 2) containing the 
+            thetas (np.ndarray): Array of shape (n_samples, 2) containing the
                 slope (m) and intercept (b) parameters for each simulation.
-            sigma (float): Standard deviation of the noise to be injected. 
+            sigma (float): Standard deviation of the noise to be injected.
                 Can be varied per simulation if `vary_sigma` is set to True.
-            x (np.ndarray): Array of x-values for generating the data. Default 
+            x (np.ndarray): Array of x-values for generating the data. Default
                 is 100 values between 0 and 10.
-            inject_type (str): Indicates whether noise is injected into 
+            inject_type (str): Indicates whether noise is injected into
                 the "input" or "output". Default is "output".
             seed (int): Random seed for reproducibility. Default is 42.
-            vary_sigma (bool): If True, varies the noise level based on the 
+            vary_sigma (bool): If True, varies the noise level based on the
                 slope (m) of each simulation. Default is False.
-            verbose (bool): If True, displays a histogram of the noise scale 
+            verbose (bool): If True, displays a histogram of the noise scale
                 and other visualizations for debugging. Default is False.
 
         Raises:
             ValueError: If `thetas` does not have shape (n, 2).
 
         Returns:
-            None: Simulated data is stored in the `input`, `output`, and 
+            None: Simulated data is stored in the `input`, `output`, and
             `output_err` attributes of the object.
 
         Example:
-            After calling this function, the simulated input and output data 
+            After calling this function, the simulated input and output data
             can be accessed via the `input`, `output`, and `output_err` attributes:
             ```
             self.input   -> Tensor of simulated input values
@@ -481,8 +483,8 @@ class DataPreparation:
     ):
         """Sample parameters from a uniform prior distribution within specified bounds.
 
-        This method generates a set of random parameter values for a model by sampling 
-        uniformly from a prior distribution defined by `low` and `high` bounds for each 
+        This method generates a set of random parameter values for a model by sampling
+        uniformly from a prior distribution defined by `low` and `high` bounds for each
         parameter. The resulting samples are stored in the `params` attribute.
 
         Args:
@@ -496,7 +498,7 @@ class DataPreparation:
             AssertionError: If the size of `low` and `high` does not match `n_params`.
 
         Returns:
-            None: The sampled parameters are stored in the `params` attribute as a 
+            None: The sampled parameters are stored in the `params` attribute as a
             NumPy array of shape `(n_samples, n_params)`.
         """
         assert (
@@ -513,7 +515,7 @@ class DataPreparation:
     def get_dict(self):
         """Retrieve a dictionary containing key data attributes.
 
-        This method returns a dictionary that includes parameters, input data, output data, 
+        This method returns a dictionary that includes parameters, input data, output data,
         and output errors from the object. The keys in the dictionary are:
         - 'params': Model parameters or other relevant settings.
         - 'inputs': Input data used for the model or simulation.
@@ -532,10 +534,10 @@ class DataPreparation:
         return data_dict
 
     def get_data(self):
-         """Retrieve the main data object.
+        """Retrieve the main data object.
 
-        This method returns the data stored in the 'data' attribute of the object. 
-        The data could represent various forms, such as raw input data, processed 
+        This method returns the data stored in the 'data' attribute of the object.
+        The data could represent various forms, such as raw input data, processed
         datasets, or simulation outputs.
 
         Returns:
@@ -546,8 +548,8 @@ class DataPreparation:
     def get_sigma_m(self, noise, m):
         """Get the sigma value based on the noise level and slope `m`.
 
-        This function computes the sigma value for uncertainty quantification, where sigma 
-        is scaled by the absolute value of `m`. The noise level can be specified as 'low', 
+        This function computes the sigma value for uncertainty quantification, where sigma
+        is scaled by the absolute value of `m`. The noise level can be specified as 'low',
         'medium', or 'high', and determines the output value of sigma before scaling.
 
         Args:
@@ -576,19 +578,19 @@ class DataPreparation:
         """Get the value of sigma (standard deviation) based on noise level and injection type.
 
         This function returns a sigma value that represents the standard deviation of noise
-        based on the specified noise level (`low`, `medium`, `high`, or `vhigh`), injection 
-        type, and data dimension. The sigma is used to quantify the level of uncertainty or 
+        based on the specified noise level (`low`, `medium`, `high`, or `vhigh`), injection
+        type, and data dimension. The sigma is used to quantify the level of uncertainty or
         variability injected into the data.
 
         Args:
-            noise (str): The noise level, expected to be one of the following: 'low', 
+            noise (str): The noise level, expected to be one of the following: 'low',
                         'medium', 'high', or 'vhigh'.
-            inject_type (str, optional): Specifies where the noise is injected. 
+            inject_type (str, optional): Specifies where the noise is injected.
                                         Defaults to 'output'. Valid options are:
                                         - 'output': Noise is applied to the output.
                                         - 'input': Noise is applied to the input.
             data_dimension (str, optional): The dimensionality of the data. Defaults to "0D".
-                                            Only relevant when `inject_type` is 'input'. 
+                                            Only relevant when `inject_type` is 'input'.
                                             Expected to be either '0D' or '2D'.
 
         Returns:
@@ -620,23 +622,23 @@ class DataPreparation:
     def normalize(inputs, ys_array, norm=False):
         """Normalize input and output arrays, with optional normalization based on min-max scaling.
 
-        This function optionally normalizes the input (`inputs`) and output (`ys_array`) data 
-        using min-max scaling, which rescales the data to the range [0, 1]. If normalization 
-        is applied (`norm=True`), the function also returns the normalization parameters 
+        This function optionally normalizes the input (`inputs`) and output (`ys_array`) data
+        using min-max scaling, which rescales the data to the range [0, 1]. If normalization
+        is applied (`norm=True`), the function also returns the normalization parameters
         (min and max values for both inputs and outputs).
 
         Args:
             inputs (array-like): The input data to be normalized, typically features.
             ys_array (array-like): The output data to be normalized, typically labels.
-            norm (bool, optional): If True, normalization is applied. If False, the data is 
+            norm (bool, optional): If True, normalization is applied. If False, the data is
                                 returned unchanged. Default is False.
 
         Returns:
             tuple: A tuple containing three elements:
                 - model_inputs (array-like): The (normalized) input data.
                 - model_outputs (array-like): The (normalized) output data.
-                - normalization_params (dict or None): A dictionary with the min and max values 
-                                                    used for normalization if `norm=True`, 
+                - normalization_params (dict or None): A dictionary with the min and max values
+                                                    used for normalization if `norm=True`,
                                                     otherwise None.
         """
         if norm:
@@ -665,18 +667,18 @@ class DataPreparation:
     ):
         """Split model inputs and outputs into training and validation sets.
 
-        This function takes input data (`model_inputs`) and corresponding output data 
-        (`model_outputs`) and splits them into training and validation sets based on 
-        the specified validation proportion. It uses the `train_test_split` method 
-        from scikit-learn to perform the split and ensures reproducibility through 
+        This function takes input data (`model_inputs`) and corresponding output data
+        (`model_outputs`) and splits them into training and validation sets based on
+        the specified validation proportion. It uses the `train_test_split` method
+        from scikit-learn to perform the split and ensures reproducibility through
         a random state.
 
         Args:
             model_inputs (array-like): The input data for the model, typically features.
             model_outputs (array-like): The corresponding output data for the model, typically labels.
-            val_proportion (float, optional): The proportion of data to be used for validation. 
+            val_proportion (float, optional): The proportion of data to be used for validation.
                                             Default is 0.1 (10%).
-            random_state (int, optional): Seed used by the random number generator for reproducibility. 
+            random_state (int, optional): Seed used by the random number generator for reproducibility.
                                         Default is 42.
 
         Returns:
