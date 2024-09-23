@@ -10,13 +10,6 @@ license = "MIT"
 [tool.poetry.scripts]
 UQensemble = "src.scripts.DeepEnsemble:main"
 UQder = "src.scripts.DeepEvidentialRegression:main"
-inoutaleatoric = "src.scripts.ParitySigma:main"
-aleatoric = "src.scripts.Aleatoric:main"
-aleatoricinits = "src.scripts.Aleatoric_and_inits:main"
-alep = "src.scripts.AleatoricandEpistemic:main"
-loss = "src.scripts.LossFunctions:main"
-parity = "src.scripts.ParityPlotTest:main"
-
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.11"
@@ -38,3 +31,6 @@ black = "^24.3.0"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 60
