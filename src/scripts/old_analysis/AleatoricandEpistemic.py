@@ -223,9 +223,12 @@ if __name__ == "__main__":
                     )
                     # path=path_to_chk)
                     # things to grab: 'valid_mse' and 'valid_bnll'
-                    epistemic_m, aleatoric_m, e_std, a_std = (
-                        chk_module.ep_al_checkpoint_DER(chk)
-                    )
+                    (
+                        epistemic_m,
+                        aleatoric_m,
+                        e_std,
+                        a_std,
+                    ) = chk_module.ep_al_checkpoint_DER(chk)
                     ep_dict[model][noise].append(epistemic_m)
                     al_dict[model][noise].append(aleatoric_m)
                     ep_std_dict[model][noise].append(e_std)
@@ -296,7 +299,11 @@ if __name__ == "__main__":
                 color=color_list[i],
                 label=r"$\sigma = $" + str(sigma_list[i]),
             )
-            ax.axhline(y=sigma_list[i], color=color_list[i], ls="--")
+            ax.axhline(
+                y=sigma_list[i],
+                color=color_list[i],
+                ls="--",
+            )
         ax.set_ylabel("Total Uncertainty")
         ax.set_xlabel("Epoch")
         if model[0:3] == "DER":
@@ -363,7 +370,11 @@ if __name__ == "__main__":
                 color=color_list[i],
                 label=r"Total, $\sigma = $" + str(sigma_list[i]),
             )
-            ax.axhline(y=sigma_list[i], color=color_list[i], ls="--")
+            ax.axhline(
+                y=sigma_list[i],
+                color=color_list[i],
+                ls="--",
+            )
         ax.set_ylabel("Total Uncertainty")
         ax.set_xlabel("Epoch")
         if model[0:3] == "DER":

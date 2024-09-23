@@ -310,7 +310,9 @@ def model_setup_DER(loss_type, DEVICE, n_hidden=64, data_type="0D"):
         model = torch.nn.Sequential(
             conv_layers,
             Model(
-                n_hidden=n_hidden, n_input=360, n_output=4  # 405
+                n_hidden=n_hidden,
+                n_input=360,
+                n_output=4,  # 405
             ),  # Adjust input size according to the flattened output size
             Layer(),
         )
@@ -318,7 +320,8 @@ def model_setup_DER(loss_type, DEVICE, n_hidden=64, data_type="0D"):
         # from https://github.com/pasteurlabs/unreasonable_effective_der
         # /blob/main/x3_indepth.ipynb
         model = torch.nn.Sequential(
-            Model(n_hidden=n_hidden, n_input=3, n_output=4), Layer()
+            Model(n_hidden=n_hidden, n_input=3, n_output=4),
+            Layer(),
         )
     model = model.to(DEVICE)
     return model, lossFn
@@ -364,7 +367,8 @@ def model_setup_DE(loss_type, DEVICE, n_hidden=64, data_type="0D"):
         # from https://github.com/pasteurlabs/unreasonable_effective_der
         # /blob/main/x3_indepth.ipynb
         model = torch.nn.Sequential(
-            Model(n_input=3, n_hidden=n_hidden, n_output=2), Layer()
+            Model(n_input=3, n_hidden=n_hidden, n_output=2),
+            Layer(),
         )
     model = model.to(DEVICE)
     return model, lossFn
@@ -395,7 +399,12 @@ def loss_der(y, y_pred, coeff):
             - numpy.ndarray: The aleatoric uncertainty derived from the input parameters.
             - numpy.ndarray: The epistemic uncertainty derived from the input parameters.
     """
-    gamma, nu, alpha, beta = y[:, 0], y[:, 1], y[:, 2], y[:, 3]
+    gamma, nu, alpha, beta = (
+        y[:, 0],
+        y[:, 1],
+        y[:, 2],
+        y[:, 3],
+    )
     error = gamma - y_pred
     omega = 2.0 * beta * (1.0 + nu)
     w_st = torch.sqrt(beta * (1 + nu) / (alpha * nu))
@@ -441,7 +450,12 @@ def loss_sder(y, y_pred, coeff):
                 - u_al (np.ndarray): The computed aleatoric uncertainty based on the inputs.
                 - u_ep (np.ndarray): The computed epistemic uncertainty based on the inputs.
     """
-    gamma, nu, alpha, beta = y[:, 0], y[:, 1], y[:, 2], y[:, 3]
+    gamma, nu, alpha, beta = (
+        y[:, 0],
+        y[:, 1],
+        y[:, 2],
+        y[:, 3],
+    )
     error = gamma - y_pred
     var = beta / nu
 

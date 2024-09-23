@@ -667,7 +667,10 @@ def train_DER(
 
     best_loss = np.inf  # init to infinity
     model, lossFn = models.model_setup_DER(
-        loss_type, DEVICE, n_hidden=n_hidden, data_type=data_dim
+        loss_type,
+        DEVICE,
+        n_hidden=n_hidden,
+        data_type=data_dim,
     )
     if verbose:
         print("model is", model, "lossfn", lossFn)
@@ -679,7 +682,10 @@ def train_DER(
         if plot or savefig:
             plt.clf()
             fig, (ax1, ax2) = plt.subplots(
-                2, 1, figsize=(8, 6), gridspec_kw={"height_ratios": [3, 1]}
+                2,
+                1,
+                figsize=(8, 6),
+                gridspec_kw={"height_ratios": [3, 1]},
             )
 
         epoch = int(start_epoch + e)
@@ -746,7 +752,12 @@ def train_DER(
         if NIGloss_val < best_loss:
             best_loss = NIGloss_val
             if verbose:
-                print("new best loss", NIGloss_val, "in epoch", epoch)
+                print(
+                    "new best loss",
+                    NIGloss_val,
+                    "in epoch",
+                    epoch,
+                )
                 print("meanwhile mse is", mse)
             # best_weights = copy.deepcopy(model.state_dict())
         if (plot or savefig) and (e != 0) and (e % (EPOCHS - 1) == 0):
@@ -779,8 +790,19 @@ def train_DER(
                 color="black",
                 capsize=2,
             )
-            ax2.scatter(y_val, residuals, color="#9B287B", s=5, zorder=100)
-            ax2.axhline(0, color="black", linestyle="--", linewidth=1)
+            ax2.scatter(
+                y_val,
+                residuals,
+                color="#9B287B",
+                s=5,
+                zorder=100,
+            )
+            ax2.axhline(
+                0,
+                color="black",
+                linestyle="--",
+                linewidth=1,
+            )
             ax2.set_ylabel("Residuals")
             ax2.set_xlabel("True Value")
             # add annotion for loss value
@@ -794,7 +816,9 @@ def train_DER(
                 xy=(0.73, 0.1),
                 xycoords="axes fraction",
                 bbox=dict(
-                    boxstyle="round,pad=0.5", facecolor="lightgrey", alpha=0.5
+                    boxstyle="round,pad=0.5",
+                    facecolor="lightgrey",
+                    alpha=0.5,
                 ),
             )
             ax1.set_ylabel("Prediction")
@@ -1099,7 +1123,10 @@ def train_DE(
             set_random_seeds(seed_value=rs)
         # initialize the model again each time from scratch
         model, lossFn = models.model_setup_DE(
-            loss_type, DEVICE, n_hidden=n_hidden, data_type=data_dim
+            loss_type,
+            DEVICE,
+            n_hidden=n_hidden,
+            data_type=data_dim,
         )
         if verbose:
             print("model is", model, "lossfn", lossFn)
@@ -1123,7 +1150,10 @@ def train_DE(
             if plot or savefig:
                 plt.clf()
                 fig, (ax1, ax2) = plt.subplots(
-                    2, 1, figsize=(8, 6), gridspec_kw={"height_ratios": [3, 1]}
+                    2,
+                    1,
+                    figsize=(8, 6),
+                    gridspec_kw={"height_ratios": [3, 1]},
                 )
 
             # randomly shuffles the training data (if shuffle = True)
@@ -1217,11 +1247,19 @@ def train_DE(
             if loss_val < best_loss:
                 best_loss = loss_val
                 if verbose:
-                    print("new best loss", loss_val, "in epoch", epoch)
+                    print(
+                        "new best loss",
+                        loss_val,
+                        "in epoch",
+                        epoch,
+                    )
                 # best_weights = copy.deepcopy(model.state_dict())
             if (plot or savefig) and (e % (EPOCHS - 1) == 0) and (e != 0):
                 ax1.plot(
-                    range(0, 1000), range(0, 1000), color="black", ls="--"
+                    range(0, 1000),
+                    range(0, 1000),
+                    color="black",
+                    ls="--",
                 )
 
                 ax1.errorbar(
@@ -1260,8 +1298,19 @@ def train_DE(
                     color="black",
                     capsize=2,
                 )
-                ax2.scatter(y_val, residuals, color="#9B287B", s=5, zorder=100)
-                ax2.axhline(0, color="black", linestyle="--", linewidth=1)
+                ax2.scatter(
+                    y_val,
+                    residuals,
+                    color="#9B287B",
+                    s=5,
+                    zorder=100,
+                )
+                ax2.axhline(
+                    0,
+                    color="black",
+                    linestyle="--",
+                    linewidth=1,
+                )
                 ax2.set_ylabel("Residuals")
                 ax2.set_xlabel("True Value")
                 # add annotion for loss value

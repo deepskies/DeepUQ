@@ -245,9 +245,12 @@ if __name__ == "__main__":
                     )
                     # path=path_to_chk)
                     # things to grab: 'valid_mse' and 'valid_bnll'
-                    epistemic_m, aleatoric_m, e_std, a_std = (
-                        chk_module.ep_al_checkpoint_DER(chk)
-                    )
+                    (
+                        epistemic_m,
+                        aleatoric_m,
+                        e_std,
+                        a_std,
+                    ) = chk_module.ep_al_checkpoint_DER(chk)
                     al_dict[typei][noise].append(aleatoric_m)
                     al_std_dict[typei][noise].append(a_std)
 

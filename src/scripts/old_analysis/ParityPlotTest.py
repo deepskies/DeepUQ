@@ -216,7 +216,10 @@ if __name__ == "__main__":
         inputs, ys_array, False
     )
     _, x_test, _, y_test = DataPreparation.train_val_split(
-        model_inputs, model_outputs, val_proportion=0.1, random_state=41
+        model_inputs,
+        model_outputs,
+        val_proportion=0.1,
+        random_state=41,
     )
 
     # load up the checkpoints for DER
@@ -253,7 +256,12 @@ if __name__ == "__main__":
         )
         # ax.set_xlabel('True y')
         ax.set_ylabel(r"Predicted $y$")
-        ax.plot(range(-100, 1100), range(-100, 1100), ls="--", color="grey")
+        ax.plot(
+            range(-100, 1100),
+            range(-100, 1100),
+            ls="--",
+            color="grey",
+        )
 
         axr.scatter(
             y_test,

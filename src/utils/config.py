@@ -1,7 +1,11 @@
 from typing import Optional
 import os
 import yaml
-from utils.defaults import DefaultsDE, DefaultsDER, DefaultsAnalysis
+from utils.defaults import (
+    DefaultsDE,
+    DefaultsDER,
+    DefaultsAnalysis,
+)
 
 
 def get_item(section, item, raise_exception=True):
@@ -124,7 +128,13 @@ class Config:
 
     # if raise_exception is True, then throws an error if we're missing
     # otherwise, pull value from the defaults.py
-    def get_item(self, section, item, defaulttype, raise_exception=True):
+    def get_item(
+        self,
+        section,
+        item,
+        defaulttype,
+        raise_exception=True,
+    ):
         """Retrieve a specific item from the configuration. If the item is missing, it can either raise an exception or
         retrieve the value from the default configuration.
 

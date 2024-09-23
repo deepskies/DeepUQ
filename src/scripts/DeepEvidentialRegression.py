@@ -59,7 +59,9 @@ def parse_args():
 
     # data info
     parser.add_argument(
-        "--data_path", "-d", default=DefaultsDER["data"]["data_path"]
+        "--data_path",
+        "-d",
+        default=DefaultsDER["data"]["data_path"],
     )
     parser.add_argument(
         "--data_dimension",
@@ -84,7 +86,10 @@ def parse_args():
     )
 
     # model
-    parser.add_argument("--out_dir", default=DefaultsDER["common"]["out_dir"])
+    parser.add_argument(
+        "--out_dir",
+        default=DefaultsDER["common"]["out_dir"],
+    )
     parser.add_argument(
         "--model_engine",
         "-e",
@@ -371,7 +376,9 @@ if __name__ == "__main__":
                 )
             elif injection == "output":
                 sigma = DataPreparation.get_sigma(
-                    noise, inject_type=injection, data_dimension=dim
+                    noise,
+                    inject_type=injection,
+                    data_dimension=dim,
                 )
                 data.simulate_data(
                     data.params,
@@ -395,7 +402,9 @@ if __name__ == "__main__":
         elif dim == "2D":
             print("2D data")
             sigma = DataPreparation.get_sigma(
-                noise, inject_type=injection, data_dimension=dim
+                noise,
+                inject_type=injection,
+                data_dimension=dim,
             )
             data.sample_params_from_prior(
                 size_df,
@@ -438,7 +447,11 @@ if __name__ == "__main__":
     )
     if uniform:
         model_inputs, model_outputs = DataPreparation.select_uniform(
-            model_inputs, model_outputs, dim, verbose=verbose, rs=40
+            model_inputs,
+            model_outputs,
+            dim,
+            verbose=verbose,
+            rs=40,
         )
     if verbose:
         plt.clf()
@@ -482,7 +495,10 @@ if __name__ == "__main__":
             plt.title("x and y, colorbar is m value")
             plt.show()
     x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
-        model_inputs, model_outputs, val_proportion=val_prop, random_state=rs
+        model_inputs,
+        model_outputs,
+        val_proportion=val_prop,
+        random_state=rs,
     )
     trainData = TensorDataset(torch.Tensor(x_train), torch.Tensor(y_train))
     trainDataLoader = DataLoader(

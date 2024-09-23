@@ -125,7 +125,13 @@ class DataPreparation:
     def __init__(self):
         self.data = None
 
-    def select_uniform(model_inputs, model_outputs, dim, verbose=False, rs=40):
+    def select_uniform(
+        model_inputs,
+        model_outputs,
+        dim,
+        verbose=False,
+        rs=40,
+    ):
         """Selects a uniform subset of data for the output variable by sampling from the output distribution across defined bins.
 
         This function divides the `model_outputs` into uniform bins and randomly samples
@@ -206,7 +212,10 @@ class DataPreparation:
             plt.hist(output_subset)
             plt.show()
             print("shape before cut", np.shape(model_outputs))
-            print("shape once uniform", np.shape(output_subset))
+            print(
+                "shape once uniform",
+                np.shape(output_subset),
+            )
 
         return input_subset, output_subset
 
@@ -343,7 +352,9 @@ class DataPreparation:
                 )
             elif inject_type == "input":
                 noisy_image = image + np.random.normal(
-                    loc=0, scale=sigma, size=(image_size, image_size)
+                    loc=0,
+                    scale=sigma,
+                    size=(image_size, image_size),
                 )
                 image_array[i, :, :] = noisy_image
                 total_brightness.append(np.sum(image))
@@ -508,7 +519,9 @@ class DataPreparation:
         high_bounds = torch.tensor(high, dtype=torch.float32)
         rs = np.random.RandomState(seed)  # 2147483648)#
         prior = rs.uniform(
-            low=low_bounds, high=high_bounds, size=(n_samples, n_params)
+            low=low_bounds,
+            high=high_bounds,
+            size=(n_samples, n_params),
         )
         self.params = prior
 
@@ -609,7 +622,10 @@ class DataPreparation:
             elif noise == "vhigh":
                 sigma = 1.00
             else:
-                print("cannot find a match for this noise", noise)
+                print(
+                    "cannot find a match for this noise",
+                    noise,
+                )
         elif inject_type == "input" and data_dimension == "2D":
             if noise == "low":
                 sigma = 0.01 / 32
@@ -660,10 +676,17 @@ class DataPreparation:
             normalization_params = None
             model_inputs = inputs
             model_outputs = ys_array
-        return model_inputs, model_outputs, normalization_params
+        return (
+            model_inputs,
+            model_outputs,
+            normalization_params,
+        )
 
     def train_val_split(
-        model_inputs, model_outputs, val_proportion=0.1, random_state=42
+        model_inputs,
+        model_outputs,
+        val_proportion=0.1,
+        random_state=42,
     ):
         """Split model inputs and outputs into training and validation sets.
 

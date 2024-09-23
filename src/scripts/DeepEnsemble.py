@@ -66,7 +66,9 @@ def parse_args():
         default=DefaultsDE["data"]["data_path"],
     )
     parser.add_argument(
-        "--data_dimension", "-dd", default=DefaultsDE["data"]["data_dimension"]
+        "--data_dimension",
+        "-dd",
+        default=DefaultsDE["data"]["data_dimension"],
     )
     parser.add_argument(
         "--data_prescription",
@@ -74,7 +76,9 @@ def parse_args():
         default=DefaultsDE["data"]["data_prescription"],
     )
     parser.add_argument(
-        "--data_injection", "-di", default=DefaultsDE["data"]["data_injection"]
+        "--data_injection",
+        "-di",
+        default=DefaultsDE["data"]["data_injection"],
     )
     parser.add_argument(
         "--data_engine",
@@ -418,9 +422,14 @@ if __name__ == "__main__":
                 )
             elif injection == "output":
                 sigma = DataPreparation.get_sigma(
-                    noise, inject_type=injection, data_dimension=dim
+                    noise,
+                    inject_type=injection,
+                    data_dimension=dim,
                 )
-                print(f"inject type is {injection}," f"dim is {dim}, sigma is {sigma}")
+                print(
+                    f"inject type is {injection},"
+                    f"dim is {dim}, sigma is {sigma}"
+                )
                 data.simulate_data(
                     data.params,
                     sigma,
@@ -442,9 +451,13 @@ if __name__ == "__main__":
         elif dim == "2D":
             print("2D data")
             sigma = DataPreparation.get_sigma(
-                noise, inject_type=injection, data_dimension=dim
+                noise,
+                inject_type=injection,
+                data_dimension=dim,
             )
-            print(f"inject type is {injection}, dim is {dim}, sigma is {sigma}")
+            print(
+                f"inject type is {injection}, dim is {dim}, sigma is {sigma}"
+            )
             data.sample_params_from_prior(
                 size_df,
                 low=[0, 1, -1.5],
@@ -486,7 +499,11 @@ if __name__ == "__main__":
     )
     if uniform:
         model_inputs, model_outputs = DataPreparation.select_uniform(
-            model_inputs, model_outputs, dim=dim, verbose=verbose, rs=40
+            model_inputs,
+            model_outputs,
+            dim=dim,
+            verbose=verbose,
+            rs=40,
         )
     if verbose:
         plt.clf()
@@ -531,7 +548,11 @@ if __name__ == "__main__":
             plt.show()
 
             # select an m value
-            print("m value", model_inputs[0, 1], model_inputs[500, 1])
+            print(
+                "m value",
+                model_inputs[0, 1],
+                model_inputs[500, 1],
+            )
             # grab everything that corresponds to it
             plt.clf()
             plt.scatter(
@@ -568,10 +589,15 @@ if __name__ == "__main__":
             plt.xlabel("injected uncertainty in x")
             plt.show()
     x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
-        model_inputs, model_outputs, val_proportion=val_prop, random_state=rs
+        model_inputs,
+        model_outputs,
+        val_proportion=val_prop,
+        random_state=rs,
     )
     trainData = TensorDataset(torch.Tensor(x_train), torch.Tensor(y_train))
-    trainDataLoader = DataLoader(trainData, batch_size=BATCH_SIZE, shuffle=True)
+    trainDataLoader = DataLoader(
+        trainData, batch_size=BATCH_SIZE, shuffle=True
+    )
     # set the device we will be using to train the model
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -606,14 +632,20 @@ if __name__ == "__main__":
         inject_type=injection,
         data_dim=dim,
         noise_level=noise,
-        save_all_checkpoints=config.get_item("model", "save_all_checkpoints", "DE"),
-        save_final_checkpoint=config.get_item("model", "save_final_checkpoint", "DE"),
+        save_all_checkpoints=config.get_item(
+            "model", "save_all_checkpoints", "DE"
+        ),
+        save_final_checkpoint=config.get_item(
+            "model", "save_final_checkpoint", "DE"
+        ),
         overwrite_final_checkpoint=config.get_item(
             "model", "overwrite_final_checkpoint", "DE"
         ),
         plot=config.get_item("model", "plot", "DE"),
         savefig=config.get_item("model", "savefig", "DE"),
-        set_and_save_rs=config.get_item("model", "save_chk_random_seed_init", "DE"),
+        set_and_save_rs=config.get_item(
+            "model", "save_chk_random_seed_init", "DE"
+        ),
         rs_list=config.get_item("model", "rs_list", "DE"),
         save_n_hidden=config.get_item("model", "save_n_hidden", "DE"),
         n_hidden=config.get_item("model", "n_hidden", "DE"),
