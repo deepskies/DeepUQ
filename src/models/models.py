@@ -332,9 +332,9 @@ def model_setup_DE(loss_type, DEVICE, n_hidden=64, data_type="0D"):
 
     Parameters:
         loss_type (str): The type of loss to be used. Options include:
-                         - "no_var_loss": Mean Squared Error loss without variance.
-                         - "var_loss": Variance-aware loss using Gaussian Negative Log-Likelihood.
                          - "bnll_loss": Beta Negative Log-Likelihood loss.
+                         - it is possible to retrieve other loss functions, namely NLL and MSE
+                         by setting beta = 0 and 1, respectively
         DEVICE (torch.device): The device on which the model will be allocated (CPU or GPU).
         n_hidden (int, optional): The number of hidden units in the model. Defaults to 64.
         data_type (str, optional): The type of data being processed. Options include:
@@ -346,18 +346,7 @@ def model_setup_DE(loss_type, DEVICE, n_hidden=64, data_type="0D"):
             - torch.nn.Module: The initialized model.
             - callable: The loss function to be used during training.
     """
-    # initialize the model from scratch
-    if loss_type == "no_var_loss":
-        # model = de_no_var().to(DEVICE)
-        lossFn = torch.nn.MSELoss(reduction="mean")
-    if loss_type == "var_loss":
-        # model = de_var().to(DEVICE)
-        Layer = MuVarLayer
-        lossFn = torch.nn.GaussianNLLLoss(
-            full=False, eps=1e-06, reduction="mean"
-        )
     if loss_type == "bnll_loss":
-        # model = de_var().to(DEVICE)
         Layer = MuVarLayer
         lossFn = loss_bnll
     if data_type == "2D":
