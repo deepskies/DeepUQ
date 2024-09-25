@@ -36,13 +36,14 @@ def parse_args():
     The parser supports the following argument categories:
     - Data-related arguments:
         --data_path, --data_dimension, --data_prescription, --data_injection,
-        --data_engine, --size_df, --noise_level, --val_proportion, --randomseed,
-        --generatedata, --batchsize, --normalize, --uniform
+        --data_engine, --size_df, --noise_level, --val_proportion,
+        --randomseed, --generatedata, --batchsize, --normalize, --uniform
     - Model-related arguments:
-        --model_engine, --n_models, --init_lr, --loss_type, --BETA, --model_type,
-        --n_epochs, --save_all_checkpoints, --save_final_checkpoint,
-        --overwrite_final_checkpoint, --plot, --savefig, --save_chk_random_seed_init,
-        --rs_list, --n_hidden, --save_n_hidden, --save_data_size, --verbose
+        --model_engine, --n_models, --init_lr, --loss_type, --BETA,
+        --model_type, --n_epochs, --save_all_checkpoints,
+        --save_final_checkpoint, --overwrite_final_checkpoint, --plot,
+        --savefig, --save_chk_random_seed_init, --rs_list, --n_hidden,
+        --save_n_hidden, --save_data_size, --verbose
     - General arguments:
         --config, --out_dir
 
@@ -350,11 +351,12 @@ def beta_type(value):
         value (str or float): The BETA value passed as a command-line argument.
 
     Returns:
-        float or str: The valid BETA value (either a float or one of the allowed strings).
+        float or str: The valid BETA value (either a float or one of the
+        allowed strings).
 
     Raises:
-        argparse.ArgumentTypeError: If the value is neither a float nor one of the
-        allowed string values.
+        argparse.ArgumentTypeError: If the value is neither a float nor one of
+        the allowed string values.
     """
     if isinstance(value, float):
         return value

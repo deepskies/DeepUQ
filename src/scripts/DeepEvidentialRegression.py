@@ -20,7 +20,8 @@ from data.data import DataPreparation, MyDataLoader
 
 
 def parse_args():
-    """Parses command-line (or config) arguments for the DeepEvidentialRegression script.
+    """Parses command-line (or config) arguments for the
+    DeepEvidentialRegression script.
 
     This function creates an argument parser that supports:
     1) Reading from a YAML configuration file (via --config).
@@ -34,13 +35,14 @@ def parse_args():
     The parser supports the following argument categories:
     - Data-related arguments:
         --data_path, --data_dimension, --data_prescription, --data_injection,
-        --data_engine, --size_df, --noise_level, --val_proportion, --randomseed,
-        --generatedata, --batchsize, --normalize, --uniform
+        --data_engine, --size_df, --noise_level, --val_proportion,
+        --randomseed, --generatedata, --batchsize, --normalize, --uniform
     - Model-related arguments:
         --model_engine, --init_lr, --loss_type, --COEFF, --model_type,
         --n_epochs, --save_all_checkpoints, --save_final_checkpoint,
-        --overwrite_final_checkpoint, --plot, --savefig, --save_chk_random_seed_init,
-        --rs_list, --n_hidden, --save_n_hidden, --save_data_size, --verbose
+        --overwrite_final_checkpoint, --plot, --savefig,
+        --save_chk_random_seed_init, --rs_list, --n_hidden, --save_n_hidden,
+        --save_data_size, --verbose
     - General arguments:
         --config, --out_dir
 
