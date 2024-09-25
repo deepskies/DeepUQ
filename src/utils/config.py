@@ -9,7 +9,8 @@ from utils.defaults import (
 
 
 def get_item(section, item, raise_exception=True):
-    """Retrieve an item from the configuration using the provided section and key.
+    """Retrieve an item from the configuration using the provided section and
+    key.
 
     Parameters:
     ----------
@@ -36,7 +37,8 @@ def get_section(section, raise_exception=True):
     section : str
         The section in the configuration file to retrieve.
     raise_exception : bool, optional
-        Whether to raise an exception if the section is missing (default is True).
+        Whether to raise an exception if the section is missing
+        (default is True).
 
     Returns:
     -------
@@ -66,13 +68,15 @@ class Config:
 
     def __init__(self, config_path: Optional[str] = None) -> None:
         """
-        Initialize the Config object, reading the configuration from a specified path
-        or from an environment variable if the path is not provided.
+        Initialize the Config object, reading the configuration from a
+        specified path or from an environment variable if the path is not
+        provided.
 
         Parameters:
         ----------
         config_path : Optional[str]
-            Path to the configuration file. If not provided, it is retrieved from the environment variable.
+            Path to the configuration file. If not provided, it is retrieved
+            from the environment variable.
         """
         # okay what Maggie is doing here is a little trick or "cheat"
         # where the config_path is saved to the ENV_VAR_PATH
@@ -96,7 +100,8 @@ class Config:
 
     def _validate_config(self):
         """
-        Validate the contents of the loaded configuration. This method is a placeholder for future implementation.
+        Validate the contents of the loaded configuration. This method is a
+        placeholder for future implementation.
         """
         # Validate common
         # TODO
@@ -135,8 +140,9 @@ class Config:
         defaulttype,
         raise_exception=True,
     ):
-        """Retrieve a specific item from the configuration. If the item is missing, it can either raise an exception or
-        retrieve the value from the default configuration.
+        """Retrieve a specific item from the configuration. If the item is
+        missing, it can either raise an exception or retrieve the value from
+        the default configuration.
 
         Parameters:
         ----------
@@ -145,14 +151,17 @@ class Config:
         item : str
             The key within the section to retrieve.
         defaulttype : str
-            The type of defaults to use if the item is missing ('DER', 'DE', 'Analysis').
+            The type of defaults to use if the item is missing
+            ('DER', 'DE', 'Analysis').
         raise_exception : bool, optional
-            Whether to raise an exception if the item is missing (default is True).
+            Whether to raise an exception if the item is missing
+            (default is True).
 
         Returns:
         -------
         Any
-            The value of the item from the configuration or default configuration.
+            The value of the item from the configuration or default
+            configuration.
 
         Raises:
         -------
@@ -172,17 +181,20 @@ class Config:
                 }[defaulttype][section][item]
 
     def get_section(self, section, defaulttype, raise_exception=True):
-        """Retrieve an entire section from the configuration. If the section is missing, it can either raise an exception
-        or retrieve the section from the default configuration.
+        """Retrieve an entire section from the configuration. If the section
+        is missing, it can either raise an exception or retrieve the section
+        from the default configuration.
 
         Parameters:
         ----------
         section : str
             The section in the configuration file to retrieve.
         defaulttype : str
-            The type of defaults to use if the section is missing ('DER', 'DE', 'Analysis').
+            The type of defaults to use if the section is missing
+            ('DER', 'DE', 'Analysis').
         raise_exception : bool, optional
-            Whether to raise an exception if the section is missing (default is True).
+            Whether to raise an exception if the section is missing
+            (default is True).
 
         Returns:
         -------
