@@ -9,13 +9,14 @@ from data.data import MyDataLoader, DataPreparation
 
 @pytest.fixture()
 def temp_data():
-    """Fixture to generate and save simulated test data in a temporary directory.
+    """Fixture to generate and save simulated test data in a temporary
+    directory.
 
-    This fixture creates a temporary directory with a subdirectory for storing data, simulates
-    data based on the 'linear_homoskedastic' model, and saves it in HDF5 format. The data
-    is generated with a specified noise level and dataset size. The fixture yields the
-    directory path containing the saved data, and after the test completes, the temporary
-    directory is deleted.
+    This fixture creates a temporary directory with a subdirectory for storing
+    data, simulates data based on the 'linear_homoskedastic' model, and saves
+    it in HDF5 format. The data is generated with a specified noise level and
+    dataset size. The fixture yields the directory path containing the saved
+    data, and after the test completes, the temporary directory is deleted.
 
     Yields:
         str: Path to the temporary directory containing the simulated data.
@@ -77,16 +78,17 @@ def temp_data():
 def temp_directory():
     """Fixture to create a temporary directory structure for testing.
 
-    This fixture creates a root temporary directory and several subdirectories used
-    for saving configuration files, model checkpoints, and images. The directory structure
-    includes:
+    This fixture creates a root temporary directory and several subdirectories
+    used for saving configuration files, model checkpoints, and images.
+    The directory structure includes:
 
     - 'yamls': Directory for saving configuration files in YAML format.
     - 'checkpoints': Directory for saving model checkpoints.
-    - 'images/animations': Directory for saving generated images and animations.
+    - 'images/animations': Directory for saving generated images and
+      animations.
 
-    The fixture yields the root directory path for use in tests. After the test completes,
-    the entire directory and its contents are deleted.
+    The fixture yields the root directory path for use in tests. After the
+    test completes, the entire directory and its contents are deleted.
 
     Yields:
         str: Path to the root of the temporary directory structure.
@@ -119,28 +121,36 @@ def create_test_config(
 ):
     """Generates and saves a YAML configuration file for testing a model.
 
-    This function creates a YAML configuration file tailored for testing the Deep Evidential
-    Regression (DER) model. The configuration includes settings for the model, data, and
-    analysis components, and it is saved to a temporary directory under the 'yamls' folder.
+    This function creates a YAML configuration file tailored for testing the
+    Deep Evidential Regression (DER) model. The configuration includes
+    settings for the model, data, and analysis components, and it is saved to
+    a temporary directory under the 'yamls' folder.
 
     Args:
-        temp_directory (str): Path to the root temporary directory where the YAML file is saved.
-        temp_data (str): Path to the temporary data directory containing the dataset.
+        temp_directory (str): Path to the root temporary directory where the
+                              YAML file is saved.
+        temp_data (str): Path to the temporary data directory containing the
+                         dataset.
         n_epochs (int): Number of epochs for model training.
-        noise_level (str, optional): Noise level for the dataset. Default is 'low'.
+        noise_level (str, optional): Noise level for the dataset.
+                                     Default is 'low'.
         size_df (int, optional): Size of the dataset. Default is 10.
 
     Configuration Structure:
         - **common**: Directory paths and other general settings.
-        - **model**: Configuration for the DER model including engine, type, loss, learning rate, and other training options.
-        - **data**: Settings for data loading and injection, including the data path, dimensionality, noise level, and batch size.
-        - **analysis**: Flags to control whether analysis is performed after training.
+        - **model**: Configuration for the DER model including engine, type,
+                     loss, learning rate, and other training options.
+        - **data**: Settings for data loading and injection, including the
+                    data path, dimensionality, noise level, and batch size.
+        - **analysis**: Flags to control whether analysis is performed after
+                        training.
 
     The configuration file is saved to:
     `{temp_directory}/yamls/DER.yaml`.
 
     Output:
-        - YAML configuration file dumped into the 'yamls' directory of the provided `temp_directory`.
+        - YAML configuration file dumped into the 'yamls' directory of the
+          provided `temp_directory`.
     """
     input_yaml = {
         "common": {"out_dir": str(temp_directory)},  # +"results/"},
@@ -187,11 +197,11 @@ def create_test_config(
 
 
 class TestDER:
-    """
-    A class containing unit tests for the Deep Evidential Regression (DER) model.
+    """A class containing unit tests for the Deep Evidential Regression (DER)
+    model.
 
-    This class includes tests to verify that checkpoints and images are saved correctly
-    during training and when using a YAML configuration file.
+    This class includes tests to verify that checkpoints and images are saved
+    correctly during training and when using a YAML configuration file.
     """
 
     def test_DER_chkpt_saved(
@@ -199,15 +209,17 @@ class TestDER:
     ):
         """Test that checkpoints and images are saved after training with DER.
 
-        This test runs the DER model using subprocess and checks if the correct number
-        of checkpoint files and image files are saved in the respective directories. It
-        verifies that these files contain the expected naming convention based on the number
-        of epochs.
+        This test runs the DER model using subprocess and checks if the
+        correct number of checkpoint files and image files are saved in the
+        respective directories. It verifies that these files contain the
+        expected naming convention based on the number of epochs.
 
         Args:
-            temp_directory (str): Path to the temporary directory where output files are saved.
+            temp_directory (str): Path to the temporary directory where output
+                                  files are saved.
             temp_data (str): Path to the temporary dataset used for training.
-            noise_level (str, optional): Noise level for the dataset. Default is 'low'.
+            noise_level (str, optional): Noise level for the dataset.
+                                         Default is 'low'.
             size_df (int, optional): Size of the dataset. Default is 10.
 
         Asserts:
@@ -271,15 +283,18 @@ class TestDER:
     ):
         """Test training of DER using a YAML configuration file.
 
-        This test dynamically creates a YAML configuration file, runs the DER model using
-        the configuration, and checks if the correct number of checkpoint and image files
-        are saved in their respective directories. It verifies that the files are named
-        correctly based on the number of epochs.
+        This test dynamically creates a YAML configuration file, runs the DER
+        model using the configuration, and checks if the correct number of
+        checkpoint and image files are saved in their respective directories.
+        It verifies that the files are named correctly based on the number of
+        epochs.
 
         Args:
-            temp_directory (str): Path to the temporary directory where output files are saved.
+            temp_directory (str): Path to the temporary directory where output
+                                  files are saved.
             temp_data (str): Path to the temporary dataset used for training.
-            noise_level (str, optional): Noise level for the dataset. Default is 'low'.
+            noise_level (str, optional): Noise level for the dataset.
+                                         Default is 'low'.
             size_df (int, optional): Size of the dataset. Default is 10.
 
         Asserts:
