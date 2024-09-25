@@ -52,16 +52,18 @@ class ModelLoader:
 
 
 class DERLayer(nn.Module):
-    """A layer that processes inputs to produce parameters for the DER loss function.
+    """A layer that processes inputs to produce parameters for the DER loss
+    function.
 
-    This layer takes input features and transforms them into parameters required
-    for the DER (Deep Ensemble Regression) model. The output includes gamma, nu,
-    alpha, and beta parameters, with nu, alpha, and beta enforced to be positive
-    using the softplus function.
+    This layer takes input features and transforms them into parameters
+    required for the DER (Deep Ensemble Regression) model. The output includes
+    gamma, nu, alpha, and beta parameters, with nu, alpha, and beta enforced
+    to be positive using the softplus function.
 
     Methods:
         forward(x):
-            Defines the forward pass through the layer, producing the DER parameters.
+            Defines the forward pass through the layer, producing the DER
+            parameters.
 
     Attributes:
         None
@@ -74,11 +76,12 @@ class DERLayer(nn.Module):
         """Forward pass to compute DER parameters.
 
         Parameters:
-            x (torch.Tensor): Input tensor of shape (batch_size, n_features), where
-                              n_features must be at least 4.
+            x (torch.Tensor): Input tensor of shape (batch_size, n_features),
+                              where n_features must be at least 4.
 
         Returns:
-            torch.Tensor: A tensor of shape (batch_size, 4) containing the parameters:
+            torch.Tensor: A tensor of shape (batch_size, 4) containing the
+                          parameters:
                           - gamma
                           - nu (softplus applied)
                           - alpha (softplus applied + 1)
@@ -92,16 +95,18 @@ class DERLayer(nn.Module):
 
 
 class SDERLayer(nn.Module):
-    """A layer that processes inputs to produce parameters for the SDER loss function.
+    """A layer that processes inputs to produce parameters for the SDER loss
+    function.
 
-    This layer takes input features and transforms them into parameters required
-    for the SDER (Simplified Deep Ensemble Regression) model. The output includes
-    the gamma, nu, alpha, and beta parameters, where nu and beta are enforced to be
-    positive using the softplus function.
+    This layer takes input features and transforms them into parameters
+    required for the SDER (Simplified Deep Ensemble Regression) model. The
+    output includes the gamma, nu, alpha, and beta parameters, where nu and
+    beta are enforced to be positive using the softplus function.
 
     Methods:
         forward(x):
-            Defines the forward pass through the layer, producing the SDER parameters.
+            Defines the forward pass through the layer, producing the SDER
+            parameters.
 
     Attributes:
         None
@@ -114,11 +119,12 @@ class SDERLayer(nn.Module):
         """Forward pass to compute SDER parameters.
 
         Parameters:
-            x (torch.Tensor): Input tensor of shape (batch_size, n_features), where
-                              n_features must be at least 4.
+            x (torch.Tensor): Input tensor of shape (batch_size, n_features),
+                              where n_features must be at least 4.
 
         Returns:
-            torch.Tensor: A tensor of shape (batch_size, 4) containing the parameters:
+            torch.Tensor: A tensor of shape (batch_size, 4) containing the
+                          parameters:
                           - gamma
                           - nu (softplus applied)
                           - alpha (nu + 1)
@@ -132,12 +138,13 @@ class SDERLayer(nn.Module):
 
 
 class ConvLayers(nn.Module):
-    """A series of convolutional layers followed by average pooling and flattening.
+    """A series of convolutional layers followed by average pooling and
+    flattening.
 
-    This class implements a convolutional neural network architecture designed for
-    processing 2D input data, such as images. It consists of multiple convolutional
-    layers with ReLU activation functions and average pooling layers to reduce spatial
-    dimensions.
+    This class implements a convolutional neural network architecture designed
+    for processing 2D input data, such as images. It consists of multiple
+    convolutional layers with ReLU activation functions and average pooling
+    layers to reduce spatial dimensions.
 
     Methods:
         forward(x):
@@ -152,7 +159,8 @@ class ConvLayers(nn.Module):
         pool2 (nn.AvgPool2d): Second average pooling layer.
         conv4 (nn.Conv2d): Fourth convolutional layer.
         conv5 (nn.Conv2d): Fifth convolutional layer.
-        flatten (nn.Flatten): Layer to flatten the output from the convolutions.
+        flatten (nn.Flatten): Layer to flatten the output from the
+            convolutions.
     """
 
     def __init__(self):
@@ -170,8 +178,9 @@ class ConvLayers(nn.Module):
         """Forward pass through the convolutional layers.
 
         Parameters:
-            x (torch.Tensor): Input tensor of shape (batch_size, channels, height, width).
-                              If the input is 3D (batch_size, height, width), a channel
+            x (torch.Tensor): Input tensor of shape (batch_size, channels,
+                              height, width). If the input is 3D
+                              (batch_size, height, width), a channel
                               dimension will be added.
 
         Returns:
@@ -206,15 +215,18 @@ class ConvLayers(nn.Module):
 
 
 class MuVarLayer(nn.Module):
-    """A layer that extracts and transforms mean and variance from input tensors.
+    """A layer that extracts and transforms mean and variance from input
+    tensors.
 
-    This layer takes an input tensor, where the first column represents the mean (mu)
-    and the second column represents the variance (var). The variance is passed through
-    a softplus activation function to ensure it remains positive.
+    This layer takes an input tensor, where the first column represents the
+    mean (mu) and the second column represents the variance (var). The
+    variance is passed through a softplus activation function to ensure it
+    remains positive.
 
     Methods:
         forward(x):
-            Defines the forward pass of the layer, returning the mean and positive variance.
+            Defines the forward pass of the layer, returning the mean and
+            positive variance.
 
     Attributes:
         None
@@ -232,8 +244,8 @@ class MuVarLayer(nn.Module):
                 - x[:, 1] corresponds to the variance (var).
 
         Returns:
-            torch.Tensor: A tensor of shape (batch_size, 2) containing the mean and
-                          positive variance.
+            torch.Tensor: A tensor of shape (batch_size, 2) containing the
+                          mean and positive variance.
         """
         mu = x[:, 0]
         # softplus enforces positivity
@@ -249,13 +261,16 @@ class MuVarLayer(nn.Module):
 class Model(nn.Module):
     """A simple feedforward neural network model.
 
-    This class defines a neural network with two hidden layers, each followed by a ReLU activation function.
-    The network takes input features, processes them through the hidden layers, and produces output predictions.
+    This class defines a neural network with two hidden layers, each followed
+    by a ReLU activation function. The network takes input features, processes
+    them through the hidden layers, and produces output predictions.
 
     Parameters:
         n_input (int, optional): The number of input features. Defaults to 3.
-        n_hidden (int, optional): The number of hidden units in each hidden layer. Defaults to 64.
-        n_output (int, optional): The number of output features or predictions. Defaults to 4.
+        n_hidden (int, optional): The number of hidden units in each hidden
+            layer. Defaults to 64.
+        n_output (int, optional): The number of output features or predictions.
+            Defaults to 4.
     """
 
     def __init__(self, n_input=3, n_hidden=64, n_output=4):
@@ -273,18 +288,23 @@ class Model(nn.Module):
 
 
 def model_setup_DER(loss_type, DEVICE, n_hidden=64, data_type="0D"):
-    """Set up the Deep Evidential Regression (DER) model based on the specified loss type and data type.
+    """Set up the Deep Evidential Regression (DER) model based on the
+    specified loss type and data type.
 
-    This function initializes a model and a loss function for DER. Depending on the specified loss type,
-    it configures different layers and loss functions to handle both 0D and 2D data.
+    This function initializes a model and a loss function for DER. Depending
+    on the specified loss type, it configures different layers and loss
+    functions to handle both 0D and 2D data.
 
     Parameters:
         loss_type (str): The type of loss to be used. Options include:
                          - "SDER": Simplified Deep Evidential Regression loss.
                          - "DER": Deep Evidential Regression loss.
-        DEVICE (torch.device): The device on which the model will be allocated (CPU or GPU).
-        n_hidden (int, optional): The number of hidden units in the model. Defaults to 64.
-        data_type (str, optional): The type of data being processed. Options include:
+        DEVICE (torch.device): The device on which the model will be allocated
+                               (CPU or GPU).
+        n_hidden (int, optional): The number of hidden units in the model.
+                                  Defaults to 64.
+        data_type (str, optional): The type of data being processed.
+                                   Options include:
                                     - "0D": for 0D data.
                                     - "2D": for 2D data. Defaults to "0D".
 
@@ -328,19 +348,25 @@ def model_setup_DER(loss_type, DEVICE, n_hidden=64, data_type="0D"):
 
 
 def model_setup_DE(loss_type, DEVICE, n_hidden=64, data_type="0D"):
-    """Set up the Deep Evidential Regression model based on the specified loss type and data type.
+    """Set up the Deep Evidential Regression model based on the specified loss
+    type and data type.
 
-    This function initializes a model and a loss function for Deep Evidential Regression (DER).
-    Depending on the specified loss type, it configures different layers and loss functions.
+    This function initializes a model and a loss function for Deep Evidential
+    Regression (DER). Depending on the specified loss type, it configures
+    different layers and loss functions.
 
     Parameters:
         loss_type (str): The type of loss to be used. Options include:
                          - "bnll_loss": Beta Negative Log-Likelihood loss.
-                         - it is possible to retrieve other loss functions, namely NLL and MSE
-                         by setting beta = 0 and 1, respectively
-        DEVICE (torch.device): The device on which the model will be allocated (CPU or GPU).
-        n_hidden (int, optional): The number of hidden units in the model. Defaults to 64.
-        data_type (str, optional): The type of data being processed. Options include:
+                         - it is possible to retrieve other loss functions,
+                         namely NLL and MSE by setting beta = 0 and 1,
+                         respectively
+        DEVICE (torch.device): The device on which the model will be allocated
+                               (CPU or GPU).
+        n_hidden (int, optional): The number of hidden units in the model.
+                                  Defaults to 64.
+        data_type (str, optional): The type of data being processed.
+                                   Options include:
                                     - "0D": for 0D data.
                                     - "2D": for 2D data. Defaults to "0D".
 
@@ -377,27 +403,29 @@ def model_setup_DE(loss_type, DEVICE, n_hidden=64, data_type="0D"):
 def loss_der(y, y_pred, coeff):
     """Compute the Deep Evidential Regression (DER) loss.
 
-    This function calculates the DER loss using predicted values and target values,
-    accounting for aleatoric and epistemic uncertainties. The loss is formulated
-    based on the parameters provided in the input tensor `y`.
+    This function calculates the DER loss using predicted values and target
+    values, accounting for aleatoric and epistemic uncertainties. The loss is
+    formulated based on the parameters provided in the input tensor `y`.
 
     Parameters:
-        y (torch.Tensor): A tensor containing the target values, with the following
-                          structure: [gamma, nu, alpha, beta].
+        y (torch.Tensor): A tensor containing the target values, with the
+                          following structure: [gamma, nu, alpha, beta].
                           - gamma: target value
                           - nu: scaling factor for the variance
                           - alpha: shape parameter for the distribution
                           - beta: scale parameter for the distribution
-        y_pred (torch.Tensor): A tensor containing the predicted values corresponding
-                               to the target values.
-        coeff (float): A coefficient that modifies the impact of the uncertainty
-                       term in the loss calculation.
+        y_pred (torch.Tensor): A tensor containing the predicted values
+                               corresponding to the target values.
+        coeff (float): A coefficient that modifies the impact of the
+                       uncertainty term in the loss calculation.
 
     Returns:
         tuple: A tuple containing:
             - torch.Tensor: The computed DER loss averaged over the samples.
-            - numpy.ndarray: The aleatoric uncertainty derived from the input parameters.
-            - numpy.ndarray: The epistemic uncertainty derived from the input parameters.
+            - numpy.ndarray: The aleatoric uncertainty derived from the input
+              parameters.
+            - numpy.ndarray: The epistemic uncertainty derived from the input
+              parameters.
     """
     gamma, nu, alpha, beta = (
         y[:, 0],
@@ -430,25 +458,33 @@ def loss_der(y, y_pred, coeff):
 
 
 def loss_sder(y, y_pred, coeff):
-    """Compute the simplified Deep Evidential Regression (DER) loss, from Meinert+2023 "The Unreasonable Effectiveness of Deep Evidential Regression
-    ".
+    """Compute the simplified Deep Evidential Regression (DER) loss,
+    from Meinert+2023 "The Unreasonable Effectiveness of Deep Evidential
+    Regression".
 
-        This function calculates the loss based on the predictions and true values,
-        incorporating both aleatoric and epistemic uncertainties. It uses the parameters
-        derived from the true values to evaluate the error and the variance of the predictions.
+        This function calculates the loss based on the predictions and true
+        values, incorporating both aleatoric and epistemic uncertainties.
+        It uses the parameters derived from the true values to evaluate the
+        error and the variance of the predictions.
 
         Parameters:
-            y (torch.Tensor): A tensor containing the true values, where each row corresponds
-                              to a sample and the columns represent the parameters
+            y (torch.Tensor): A tensor containing the true values, where each
+                              row corresponds to a sample and the columns
+                              represent the parameters
                               (gamma, nu, alpha, beta).
-            y_pred (torch.Tensor): A tensor of predicted values corresponding to the true values.
-            coeff (float): A coefficient used to weigh the contribution of the epistemic uncertainty.
+            y_pred (torch.Tensor): A tensor of predicted values corresponding
+                                   to the true values.
+            coeff (float): A coefficient used to weigh the contribution of the
+                           epistemic uncertainty.
 
         Returns:
             tuple: A tuple containing:
-                - loss (torch.Tensor): The computed loss value, incorporating the variances and errors.
-                - u_al (np.ndarray): The computed aleatoric uncertainty based on the inputs.
-                - u_ep (np.ndarray): The computed epistemic uncertainty based on the inputs.
+                - loss (torch.Tensor): The computed loss value, incorporating
+                                       the variances and errors.
+                - u_al (np.ndarray): The computed aleatoric uncertainty based
+                                     on the inputs.
+                - u_ep (np.ndarray): The computed epistemic uncertainty based
+                                     on the inputs.
     """
     gamma, nu, alpha, beta = (
         y[:, 0],
@@ -476,19 +512,26 @@ def loss_sder(y, y_pred, coeff):
 def loss_bnll(mean, variance, target, beta):
     """Compute the Beta Negative Log-Likelihood (BNLL) loss.
 
-    From Martius lab (https://github.com/martius-lab/beta-nll) and Seitzer+2020.
+    From Martius lab (https://github.com/martius-lab/beta-nll) and
+    Seitzer+2020.
 
-    This function calculates the loss based on the mean and variance predictions
-    relative to the target values, incorporating a weighting factor for the variance.
+    This function calculates the loss based on the mean and variance
+    predictions relative to the target values, incorporating a weighting
+    factor for the variance.
 
     Parameters:
-        mean (torch.Tensor): A tensor containing the predicted means for each sample.
-        variance (torch.Tensor): A tensor containing the predicted variances for each sample.
-        target (torch.Tensor): A tensor containing the true target values corresponding to the predictions.
-        beta (float): A weighting parameter that modifies the influence of the variance on the loss.
+        mean (torch.Tensor): A tensor containing the predicted means for each
+                             sample.
+        variance (torch.Tensor): A tensor containing the predicted variances
+                                 for each sample.
+        target (torch.Tensor): A tensor containing the true target values
+                               corresponding to the predictions.
+        beta (float): A weighting parameter that modifies the influence of the
+                      variance on the loss.
 
     Returns:
-        torch.Tensor: The computed BNLL loss averaged over the number of samples.
+        torch.Tensor: The computed BNLL loss averaged over the number of
+        samples.
     """
     loss = 0.5 * ((target - mean) ** 2 / variance + variance.log())
     if beta > 0:
