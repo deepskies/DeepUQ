@@ -8,7 +8,8 @@ from models import models
 
 
 def set_random_seeds(seed_value=42):
-    """Set random seeds for reproducibility across various libraries and frameworks.
+    """Set random seeds for reproducibility across various libraries and
+    frameworks.
 
     This function sets the seed for PyTorch (both CPU and GPU), NumPy, and
     configures PyTorch's CUDA backend to ensure deterministic behavior.
@@ -493,7 +494,6 @@ class Trainer:
             rs_list = rs_list if set_and_save_rs else [42, 42]
             if verbose:
                 print(f"Training DE model with BETA={BETA}")
-        
         elif model_name == "DER":
             # Handle DER specific logic here
             if set_and_save_rs:
@@ -510,7 +510,6 @@ class Trainer:
                     print(f"Training DER model with COEFF={COEFF}")
             else:
                 raise ValueError("COEFF must be provided for DER model")
-        
         # Common training logic
         if verbose:
             print(f"Training {model_name} model for {EPOCHS} epochs.")
@@ -571,11 +570,13 @@ def train_DER(
     EPOCHS : int, optional
         Number of epochs to train the model (default is 100).
     path_to_model : str, optional
-        Directory path where the model checkpoints will be saved (default is 'models/').
+        Directory path where the model checkpoints will be saved
+        (default is 'models/').
     inject_type : str, optional
         Type of noise injection used during training (default is 'output').
     data_dim : str, optional
-        Dimensionality of the input data, such as '0D' for tabular or '2D' for images (default is '0D').
+        Dimensionality of the input data, such as '0D' for tabular or '2D' for
+        images (default is '0D').
     noise_level : str, optional
         The level of noise applied to the data (default is 'low').
     save_all_checkpoints : bool, optional
@@ -583,9 +584,11 @@ def train_DER(
     save_final_checkpoint : bool, optional
         Whether to save the final model checkpoint (default is False).
     overwrite_final_checkpoint : bool, optional
-        Whether to overwrite the final checkpoint if it already exists (default is False).
+        Whether to overwrite the final checkpoint if it already exists
+        (default is False).
     plot : bool, optional
-        Whether to generate plots of the training and validation performance (default is True).
+        Whether to generate plots of the training and validation performance
+        (default is True).
     savefig : bool, optional
         Whether to save the generated figures to disk (default is True).
     set_and_save_rs : bool, optional
@@ -593,7 +596,8 @@ def train_DER(
     rs : int, optional
         Random seed value to use for training (default is 42).
     save_n_hidden : bool, optional
-        Whether to save the number of hidden units used in the model (default is False).
+        Whether to save the number of hidden units used in the model
+        (default is False).
     n_hidden : float, optional
         Number of hidden units in the model (default is 64).
     save_size_df : bool, optional
@@ -606,13 +610,17 @@ def train_DER(
     Returns:
     -------
     None
-        This function trains the model and optionally saves model checkpoints and training logs.
+        This function trains the model and optionally saves model checkpoints
+        and training logs.
 
     Notes:
     ------
-    - The function is designed to handle noise injection and regularization techniques specific to the DER model.
-    - Validation performance is evaluated periodically using `x_val` and `y_val`.
-    - Model checkpoints can be saved during or after training, based on input flags.
+    - The function is designed to handle noise injection and regularization
+      techniques specific to the DER model.
+    - Validation performance is evaluated periodically using `x_val` and
+      `y_val`.
+    - Model checkpoints can be saved during or after training, based on input
+      flags.
     """
     # first determine if you even need to run anything
     if not save_all_checkpoints and save_final_checkpoint:
@@ -1000,11 +1008,13 @@ def train_DE(
     EPOCHS : int, optional
         Number of epochs to train the model (default is 100).
     path_to_model : str, optional
-        Directory path where the model checkpoints will be saved (default is 'models/').
+        Directory path where the model checkpoints will be saved
+        (default is 'models/').
     inject_type : str, optional
         Type of noise injection used during training (default is 'output').
     data_dim : str, optional
-        Dimensionality of the input data, such as '0D' for tabular or '2D' for images (default is '0D').
+        Dimensionality of the input data, such as '0D' for tabular or '2D' for
+        images (default is '0D').
     noise_level : str, optional
         The level of noise applied to the data (default is 'low').
     save_all_checkpoints : bool, optional
@@ -1012,9 +1022,11 @@ def train_DE(
     save_final_checkpoint : bool, optional
         Whether to save the final model checkpoint (default is False).
     overwrite_final_checkpoint : bool, optional
-        Whether to overwrite the final checkpoint if it already exists (default is False).
+        Whether to overwrite the final checkpoint if it already exists
+        (default is False).
     plot : bool, optional
-        Whether to generate plots of the training and validation performance (default is True).
+        Whether to generate plots of the training and validation performance
+        (default is True).
     savefig : bool, optional
         Whether to save the generated figures to disk (default is True).
     set_and_save_rs : bool, optional
@@ -1022,7 +1034,8 @@ def train_DE(
     rs_list : list[int], optional
         List of random seed values to use for training (default is [42, 42]).
     save_n_hidden : bool, optional
-        Whether to save the number of hidden units used in the model (default is False).
+        Whether to save the number of hidden units used in the model
+        (default is False).
     n_hidden : float, optional
         Number of hidden units in the model (default is 64).
     save_size_df : bool, optional
@@ -1035,13 +1048,17 @@ def train_DE(
     Returns:
     -------
     None
-        This function trains the model and optionally saves model checkpoints and training logs.
+        This function trains the model and optionally saves model checkpoints
+        and training logs.
 
     Notes:
     ------
-    - The function is tailored for training Deep Ensemble models with optional noise injection on output.
-    - It evaluates validation performance periodically using `x_val` and `y_val`.
-    - Checkpoints and training logs can be saved based on the provided input flags.
+    - The function is tailored for training Deep Ensemble models with optional
+      noise injection on output.
+    - It evaluates validation performance periodically using `x_val` and
+      `y_val`.
+    - Checkpoints and training logs can be saved based on the provided input
+      flags.
     """
 
     startTime = time.time()
