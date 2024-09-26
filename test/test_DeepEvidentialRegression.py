@@ -24,8 +24,7 @@ def temp_data():
     Data Generation:
         - Noise level: Default is "low" (sigma = 1).
         - Data size: Default is 10.
-        - Data model: "linear_homoskedastic".
-        - Injection type: "predictive".
+        - Injection type: "output".
         - Data saved in HDF5 format.
 
     Teardown:
@@ -54,14 +53,13 @@ def temp_data():
     data.simulate_data(
         data.params,
         sigma,
-        "linear_homoskedastic",
-        inject_type="predictive",
+        inject_type="output",
     )
     dict = data.get_dict()
     saver = MyDataLoader()
     # save the dataframe
     filename = (
-        "linear_homoskedastic_predictive_sigma_"
+        "output_sigma_"
         + str(sigma)
         + "_size_"
         + str(size_df)
@@ -177,8 +175,7 @@ def create_test_config(
             "data_path": temp_data,
             "data_engine": "DataLoader",
             "data_dimension": "0D",
-            "data_prescription": "linear_homoskedastic",
-            "data_injection": "predictive",
+            "data_injection": "output",
             "size_df": size_df,
             "noise_level": noise_level,
             "val_proportion": 0.1,

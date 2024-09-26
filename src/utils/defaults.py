@@ -7,8 +7,7 @@ DefaultsDE = {
         "data_path": "./data/",
         "data_engine": "DataLoader",
         "data_dimension": "2D",
-        "data_prescription": "linear_homoskedastic",
-        "data_injection": "feature",
+        "data_injection": "input",
         "size_df": 1000,
         "noise_level": "low",
         "normalize": False,
@@ -58,8 +57,7 @@ DefaultsDER = {
         "data_path": "./data/",
         "data_engine": "DataLoader",
         "data_dimension": "2D",
-        "data_prescription": "linear_homoskedastic",
-        "data_injection": "predictive",
+        "data_injection": "output",
         "size_df": 1000,
         "noise_level": "low",
         "normalize": False,
@@ -108,7 +106,6 @@ DefaultsAnalysis = {
     "model": {
         "model_engine": "DE",
         "model_type": "DE",
-        "data_prescription": "linear_homoskedastic",
         "data_dimension": "2D",
         "n_models": 1,
         "n_epochs": 100,
@@ -119,7 +116,7 @@ DefaultsAnalysis = {
     "analysis": {
         "noise_level_list": ["low", "medium", "high"],
         "model_names_list": ["DER"],
-        "inject_type_list": ["feature", "predictive"],
+        "inject_type_list": ["input", "output"],
         # ["DER_wst", "DE_desiderata_2"],
         # for architecture: ["DER"], #, "DE_desiderata_2"],
         # for the inits changed to "DER_wst"
