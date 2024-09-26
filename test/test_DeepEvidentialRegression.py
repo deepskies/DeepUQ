@@ -8,7 +8,28 @@ from data.data import MyDataLoader, DataPreparation
 
 
 @pytest.fixture()
-def temp_data():  # noise_level, size_df):
+def temp_data():
+    """Fixture to generate and save simulated test data in a temporary
+    directory.
+
+    This fixture creates a temporary directory with a subdirectory for storing
+    data, simulates data based on the 'linear_homoskedastic' model, and saves
+    it in HDF5 format. The data is generated with a specified noise level and
+    dataset size. The fixture yields the directory path containing the saved
+    data, and after the test completes, the temporary directory is deleted.
+
+    Yields:
+        str: Path to the temporary directory containing the simulated data.
+
+    Data Generation:
+        - Noise level: Default is "low" (sigma = 1).
+        - Data size: Default is 10.
+        - Injection type: "output".
+        - Data saved in HDF5 format.
+
+    Teardown:
+        Removes the temporary directory and its contents after the test.
+    """
     # setup: Create a temporary directory with one folder level
     temp_dir = tempfile.mkdtemp()
 
@@ -32,14 +53,13 @@ def temp_data():  # noise_level, size_df):
     data.simulate_data(
         data.params,
         sigma,
-        "linear_homoskedastic",
-        inject_type="predictive",
+        inject_type="output",
     )
     dict = data.get_dict()
     saver = MyDataLoader()
     # save the dataframe
     filename = (
-        "linear_homoskedastic_predictive_sigma_"
+        "output_sigma_"
         + str(sigma)
         + "_size_"
         + str(size_df)
@@ -54,6 +74,26 @@ def temp_data():  # noise_level, size_df):
 
 @pytest.fixture
 def temp_directory():
+    """Fixture to create a temporary directory structure for testing.
+
+    This fixture creates a root temporary directory and several subdirectories
+    used for saving configuration files, model checkpoints, and images.
+    The directory structure includes:
+
+    - 'yamls': Directory for saving configuration files in YAML format.
+    - 'checkpoints': Directory for saving model checkpoints.
+    - 'images/animations': Directory for saving generated images and
+      animations.
+
+    The fixture yields the root directory path for use in tests. After the
+    test completes, the entire directory and its contents are deleted.
+
+    Yields:
+        str: Path to the root of the temporary directory structure.
+
+    Teardown:
+        Removes the temporary directory and its subdirectories after the test.
+    """
     # setup: Create a temporary directory with one folder level
     temp_dir_root = tempfile.mkdtemp()
 
@@ -77,6 +117,39 @@ def temp_directory():
 def create_test_config(
     temp_directory, temp_data, n_epochs, noise_level="low", size_df=10
 ):
+    """Generates and saves a YAML configuration file for testing a model.
+
+    This function creates a YAML configuration file tailored for testing the
+    Deep Evidential Regression (DER) model. The configuration includes
+    settings for the model, data, and analysis components, and it is saved to
+    a temporary directory under the 'yamls' folder.
+
+    Args:
+        temp_directory (str): Path to the root temporary directory where the
+                              YAML file is saved.
+        temp_data (str): Path to the temporary data directory containing the
+                         dataset.
+        n_epochs (int): Number of epochs for model training.
+        noise_level (str, optional): Noise level for the dataset.
+                                     Default is 'low'.
+        size_df (int, optional): Size of the dataset. Default is 10.
+
+    Configuration Structure:
+        - **common**: Directory paths and other general settings.
+        - **model**: Configuration for the DER model including engine, type,
+                     loss, learning rate, and other training options.
+        - **data**: Settings for data loading and injection, including the
+                    data path, dimensionality, noise level, and batch size.
+        - **analysis**: Flags to control whether analysis is performed after
+                        training.
+
+    The configuration file is saved to:
+    `{temp_directory}/yamls/DER.yaml`.
+
+    Output:
+        - YAML configuration file dumped into the 'yamls' directory of the
+          provided `temp_directory`.
+    """
     input_yaml = {
         "common": {"out_dir": str(temp_directory)},  # +"results/"},
         "model": {
@@ -102,8 +175,7 @@ def create_test_config(
             "data_path": temp_data,
             "data_engine": "DataLoader",
             "data_dimension": "0D",
-            "data_prescription": "linear_homoskedastic",
-            "data_injection": "predictive",
+            "data_injection": "output",
             "size_df": size_df,
             "noise_level": noise_level,
             "val_proportion": 0.1,
@@ -122,14 +194,36 @@ def create_test_config(
 
 
 class TestDER:
-    # @pytest.mark.parametrize("noise_level, size_df",
-    #                        [(noise_level, size_df)])
-    # @pytest.mark.parametrize("size_df", [size_df])
-    # Add more values as needed
+    """A class containing unit tests for the Deep Evidential Regression (DER)
+    model.
+
+    This class includes tests to verify that checkpoints and images are saved
+    correctly during training and when using a YAML configuration file.
+    """
 
     def test_DER_chkpt_saved(
         self, temp_directory, temp_data, noise_level="low", size_df=10
     ):
+        """Test that checkpoints and images are saved after training with DER.
+
+        This test runs the DER model using subprocess and checks if the
+        correct number of checkpoint files and image files are saved in the
+        respective directories. It verifies that these files contain the
+        expected naming convention based on the number of epochs.
+
+        Args:
+            temp_directory (str): Path to the temporary directory where output
+                                  files are saved.
+            temp_data (str): Path to the temporary dataset used for training.
+            noise_level (str, optional): Noise level for the dataset.
+                                         Default is 'low'.
+            size_df (int, optional): Size of the dataset. Default is 10.
+
+        Asserts:
+            - One checkpoint file is saved in the 'checkpoints' folder.
+            - One image file is saved in the 'images/animations' folder.
+            - All saved files contain the substring 'epoch_{n_epochs-1}'.
+        """
         noise_level = "low"
         n_epochs = 2
         subprocess_args = [
@@ -184,6 +278,27 @@ class TestDER:
     def test_DER_from_config(
         self, temp_directory, temp_data, noise_level="low", size_df=10
     ):
+        """Test training of DER using a YAML configuration file.
+
+        This test dynamically creates a YAML configuration file, runs the DER
+        model using the configuration, and checks if the correct number of
+        checkpoint and image files are saved in their respective directories.
+        It verifies that the files are named correctly based on the number of
+        epochs.
+
+        Args:
+            temp_directory (str): Path to the temporary directory where output
+                                  files are saved.
+            temp_data (str): Path to the temporary dataset used for training.
+            noise_level (str, optional): Noise level for the dataset.
+                                         Default is 'low'.
+            size_df (int, optional): Size of the dataset. Default is 10.
+
+        Asserts:
+            - One checkpoint file is saved in the 'checkpoints' folder.
+            - One image file is saved in the 'images/animations' folder.
+            - All saved files contain the substring 'epoch_{n_epochs-1}'.
+        """
         # create the test config dynamically
         # make the temporary config file
         n_epochs = 2

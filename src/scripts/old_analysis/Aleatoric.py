@@ -28,6 +28,16 @@ def parse_args():
     parser.add_argument("--dir", default=DefaultsAnalysis["common"]["dir"])
     # now args for model
     parser.add_argument(
+        "--data_prescription",
+        "-dp",
+        default=DefaultsAnalysis["model"]["data_prescription"],
+    )
+    parser.add_argument(
+        "--data_dimension",
+        "-dd",
+        default=DefaultsAnalysis["model"]["data_dimension"],
+    )
+    parser.add_argument(
         "--n_models",
         type=int,
         default=DefaultsAnalysis["model"]["n_models"],
@@ -54,7 +64,7 @@ def parse_args():
         type=str,
         required=False,
         default=DefaultsAnalysis["model"]["loss_type"],
-        help="loss_type for DER",
+        help="loss_type for DER, either SDER or DER",
     )
     parser.add_argument(
         "--noise_level_list",
@@ -69,6 +79,13 @@ def parse_args():
         required=False,
         default=DefaultsAnalysis["analysis"]["model_names_list"],
         help="Beginning of name for saved checkpoints and figures",
+    )
+    parser.add_argument(
+        "--inject_type_list",
+        type=list,
+        required=False,
+        default=DefaultsAnalysis["analysis"]["inject_type_list"],
+        help="Feature and predictive",
     )
     parser.add_argument(
         "--n_epochs",
@@ -122,6 +139,8 @@ def parse_args():
             "model": {
                 "n_models": args.n_models,
                 "n_epochs": args.n_epochs,
+                "data_prescription": args.data_prescription,
+                "data_dimension": args.data_dimension,
                 "BETA": args.BETA,
                 "COEFF": args.COEFF,
                 "loss_type": args.loss_type,
@@ -129,6 +148,7 @@ def parse_args():
             "analysis": {
                 "noise_level_list": args.noise_level_list,
                 "model_names_list": args.model_names_list,
+                "inject_type_list": args.inject_type_list,
                 "plot": args.plot,
                 "savefig": args.savefig,
                 "verbose": args.verbose,
@@ -167,10 +187,13 @@ if __name__ == "__main__":
     color_list = config.get_item("plots", "color_list", "Analysis")
     BETA = config.get_item("model", "BETA", "Analysis")
     COEFF = config.get_item("model", "COEFF", "Analysis")
+    n_models = config.get_item("model", "n_models", "Analysis")
     loss_type = config.get_item("model", "loss_type", "Analysis")
-    sigma_list = []
-    for noise in noise_list:
-        sigma_list.append(DataPreparation.get_sigma(noise))
+    prescription = config.get_item("model", "data_prescription", "Analysis")
+    inject_type_list = config.get_item(
+        "analysis", "inject_type_list", "Analysis"
+    )
+    dim = config.get_item("model", "data_dimension", "Analysis")
     root_dir = config.get_item("common", "dir", "Analysis")
     path_to_chk = root_dir + "checkpoints/"
     path_to_out = root_dir + "analysis/"
@@ -184,29 +207,25 @@ if __name__ == "__main__":
         "analysis", "model_names_list", "Analysis"
     )
     print("model list", model_name_list)
+    if len(model_name_list) > 1:
+        assert "model_name_list should only be one item"
+    print("inject type list", inject_type_list)
     print("noise list", noise_list)
     chk_module = AggregateCheckpoints()
     # make an empty nested dictionary with keys for
     # model names followed by noise levels
-    ep_dict = {
-        model_name: {noise: [] for noise in noise_list}
-        for model_name in model_name_list
-    }
     al_dict = {
-        model_name: {noise: [] for noise in noise_list}
-        for model_name in model_name_list
-    }
-
-    ep_std_dict = {
-        model_name: {noise: [] for noise in noise_list}
-        for model_name in model_name_list
+        typei: {noise: [] for noise in noise_list}
+        for typei in inject_type_list
     }
     al_std_dict = {
-        model_name: {noise: [] for noise in noise_list}
-        for model_name in model_name_list
+        typei: {noise: [] for noise in noise_list}
+        for typei in inject_type_list
     }
     n_epochs = config.get_item("model", "n_epochs", "Analysis")
-    for model in model_name_list:
+    # for model in model_name_list:
+    model = model_name_list[0]
+    for typei in inject_type_list:
         for noise in noise_list:
             # append a noise key
             # now run the analysis on the resulting checkpoints
@@ -214,6 +233,9 @@ if __name__ == "__main__":
                 for epoch in range(n_epochs):
                     chk = chk_module.load_checkpoint(
                         model,
+                        prescription,
+                        typei,
+                        dim,
                         noise,
                         epoch,
                         DEVICE,
@@ -223,15 +245,16 @@ if __name__ == "__main__":
                     )
                     # path=path_to_chk)
                     # things to grab: 'valid_mse' and 'valid_bnll'
-                    epistemic_m, aleatoric_m, e_std, a_std = (
-                        chk_module.ep_al_checkpoint_DER(chk)
-                    )
-                    ep_dict[model][noise].append(epistemic_m)
-                    al_dict[model][noise].append(aleatoric_m)
-                    ep_std_dict[model][noise].append(e_std)
-                    al_std_dict[model][noise].append(a_std)
+                    (
+                        epistemic_m,
+                        aleatoric_m,
+                        e_std,
+                        a_std,
+                    ) = chk_module.ep_al_checkpoint_DER(chk)
+                    al_dict[typei][noise].append(aleatoric_m)
+                    al_std_dict[typei][noise].append(a_std)
 
-            elif model[0:2] == "DE":
+            else:
                 n_models = config.get_item("model", "n_models", "DE")
                 for epoch in range(n_epochs):
                     list_mus = []
@@ -239,6 +262,9 @@ if __name__ == "__main__":
                     for nmodels in range(n_models):
                         chk = chk_module.load_checkpoint(
                             model,
+                            prescription,
+                            typei,
+                            dim,
                             noise,
                             epoch,
                             DEVICE,
@@ -249,16 +275,13 @@ if __name__ == "__main__":
                         mu_vals, var_vals = chk_module.ep_al_checkpoint_DE(chk)
                         list_mus.append(mu_vals)
                         list_vars.append(var_vals)
-                    ep_dict[model][noise].append(
-                        np.mean(np.std(list_mus, axis=0))
-                    )
-                    ep_std_dict[model][noise].append(
-                        np.std(np.std(list_mus, axis=0))
-                    )
-                    al_dict[model][noise].append(
+                    # first taking the mean across the validation data
+                    # then looking at the mean and standard deviation
+                    # across all of the nmodels
+                    al_dict[typei][noise].append(
                         np.mean(np.mean(list_vars, axis=0))
                     )
-                    al_std_dict[model][noise].append(
+                    al_std_dict[typei][noise].append(
                         np.std(np.mean(list_vars, axis=0))
                     )
     # make a two-paneled plot for the different noise levels
@@ -267,115 +290,50 @@ if __name__ == "__main__":
     plt.clf()
     fig = plt.figure(figsize=(10, 4))
     # try this instead with a fill_between method
-    for i, model in enumerate(model_name_list):
-        ax = fig.add_subplot(1, len(model_name_list), i + 1)
+    for i, typei in enumerate(inject_type_list):
+        ax = fig.add_subplot(1, len(inject_type_list), i + 1)
         # Your plotting code for each model here
-        ax.set_title(model)  # Set title for each subplot
+        ax.set_title(typei)  # Set title for each subplot
         for i, noise in enumerate(noise_list):
             if model[0:3] == "DER":
-                al = np.array(al_dict[model][noise])
-                al_std = np.array(al_std_dict[model][noise])
+                al = np.array(al_dict[typei][noise])
+                al_std = np.array(al_std_dict[typei][noise])
             elif model[0:2] == "DE":
-                al = np.array(np.sqrt(al_dict[model][noise]))
-                al_std = np.array(np.sqrt(al_std_dict[model][noise]))
-            ep = np.array(ep_dict[model][noise])
-            ep_std = np.array(ep_std_dict[model][noise])
-            total = np.sqrt(al**2 + ep**2)
-            total_std = np.sqrt(al_std**2 + ep_std**2)
+                # only take the sqrt for the case of DE,
+                # which is the variance
+                al = np.array(np.sqrt(al_dict[typei][noise]))
+                al_std = np.array(np.sqrt(al_std_dict[typei][noise]))
             ax.fill_between(
                 range(n_epochs),
-                total - total_std,
-                total + total_std,
+                al - al_std,
+                al + al_std,
                 color=color_list[i],
                 alpha=0.25,
                 edgecolor=None,
             )
-            ax.plot(
-                range(n_epochs),
-                total,
-                color=color_list[i],
-                label=r"$\sigma = $" + str(sigma_list[i]),
-            )
-            ax.axhline(y=sigma_list[i], color=color_list[i], ls="--")
-        ax.set_ylabel("Total Uncertainty")
-        ax.set_xlabel("Epoch")
-        if model[0:3] == "DER":
-            ax.set_title("Deep Evidential Regression")
-        elif model[0:2] == "DE":
-            ax.set_title("Deep Ensemble (100 models)")
-        ax.set_ylim([0, 15])
-    plt.legend()
-    if config.get_item("analysis", "savefig", "Analysis"):
-        plt.savefig(
-            str(path_to_out)
-            + "aleatoric_and_epistemic_uncertainty_n_epochs_"
-            + str(n_epochs)
-            + "_n_models_DE_"
-            + str(n_models)
-            + ".png"
-        )
-    if config.get_item("analysis", "plot", "Analysis"):
-        plt.show()
-
-    plt.clf()
-    fig = plt.figure(figsize=(10, 4))
-    # try this instead with a fill_between method
-    for i, model in enumerate(model_name_list):
-        ax = fig.add_subplot(1, len(model_name_list), i + 1)
-        # Your plotting code for each model here
-        ax.set_title(model)  # Set title for each subplot
-        for i, noise in enumerate(noise_list):
-            if model[0:3] == "DER":
-                al = np.array(al_dict[model][noise])
-                al_std = np.array(al_std_dict[model][noise])
-            elif model[0:2] == "DE":
-                al = np.array(np.sqrt(al_dict[model][noise]))
-                al_std = np.array(np.sqrt(al_std_dict[model][noise]))
-            ep = np.array(ep_dict[model][noise])
-            ep_std = np.array(ep_std_dict[model][noise])
-            total = np.sqrt(al**2 + ep**2)
-            total_std = np.sqrt(al_std**2 + ep_std**2)
-            ax.fill_between(
-                range(n_epochs),
-                total - total_std,
-                total + total_std,
-                color=color_list[i],
-                alpha=0.25,
-                edgecolor=None,
+            sigma = DataPreparation.get_sigma(
+                noise, inject_type=typei, data_dimension=dim
             )
             ax.plot(
                 range(n_epochs),
                 al,
                 color=color_list[i],
-                ls="dashed",
-                label=r"Aleatoric, $\sigma = $" + str(sigma_list[i]),
+                label=r"$\sigma = $" + str(sigma),
             )
-            ax.plot(
-                range(n_epochs),
-                ep,
-                color=color_list[i],
-                ls="dotted",
-                label=r"Epistemic, $\sigma = $" + str(sigma_list[i]),
-            )
-            ax.plot(
-                range(n_epochs),
-                total,
-                color=color_list[i],
-                label=r"Total, $\sigma = $" + str(sigma_list[i]),
-            )
-            ax.axhline(y=sigma_list[i], color=color_list[i], ls="--")
-        ax.set_ylabel("Total Uncertainty")
+            ax.axhline(y=sigma, color=color_list[i], ls="--")
+        ax.set_ylabel("Aleatoric Uncertainty")
         ax.set_xlabel("Epoch")
-        if model[0:3] == "DER":
-            ax.set_title("Deep Evidential Regression")
-        elif model[0:2] == "DE":
-            ax.set_title("Deep Ensemble (100 models)")
+        # if model[0:3] == "DER":
+        #    ax.set_title("Deep Evidential Regression")
+        # elif model[0:2] == "DE":
+        #    ax.set_title("Deep Ensemble (100 models)")
+        ax.set_title(typei)
         ax.set_ylim([0, 15])
     plt.legend()
     if config.get_item("analysis", "savefig", "Analysis"):
         plt.savefig(
             str(path_to_out)
-            + "aleatoric_and_epistemic_and_total_uncertainty_n_epochs_"
+            + "aleatoric_uncertainty_n_epochs_"
             + str(n_epochs)
             + "_n_models_DE_"
             + str(n_models)

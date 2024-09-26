@@ -251,9 +251,12 @@ if __name__ == "__main__":
                         )
                         # path=path_to_chk)
                         # things to grab: 'valid_mse' and 'valid_bnll'
-                        epistemic_m, aleatoric_m, e_std, a_std = (
-                            chk_module.ep_al_checkpoint_DER(chk)
-                        )
+                        (
+                            epistemic_m,
+                            aleatoric_m,
+                            e_std,
+                            a_std,
+                        ) = chk_module.ep_al_checkpoint_DER(chk)
                         al_dict[inject_type][model][noise].append(aleatoric_m)
                         al_std_dict[inject_type][model][noise].append(a_std)
 
@@ -426,8 +429,16 @@ if __name__ == "__main__":
                         color=color_list[n],
                     )
                 else:
-                    ax.plot(range(n_epochs), al, color=color_list[n])
-            ax.axhline(y=sigma_list[n], color=color_list[n], ls="--")
+                    ax.plot(
+                        range(n_epochs),
+                        al,
+                        color=color_list[n],
+                    )
+            ax.axhline(
+                y=sigma_list[n],
+                color=color_list[n],
+                ls="--",
+            )
         ax.set_ylabel("Aleatoric Uncertainty")
         ax.set_xlabel("Epoch")
         if model[0:3] == "DER":

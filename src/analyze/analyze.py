@@ -4,9 +4,30 @@ import torch
 
 
 class AggregateCheckpoints:
-    # def load_final_checkpoints():
-    # def load_all_checkpoints():
-    # functions for loading model checkpoints
+    """A class for loading and processing model checkpoints for deep ensemble
+    (DE) and deep evidential regression (DER) models.
+
+    This class provides methods for loading model checkpoints and extracting
+    validation metrics, including uncertainty metrics for DER models.
+
+    Methods:
+        load_checkpoint(model_name, prescription, inject_type, data_dim, noise,
+                        epoch, device, path="models/", BETA=0.5, nmodel=1,
+                        COEFF=0.5, loss="SDER", load_rs_chk=False, rs=42,
+                        load_nh_chk=False, nh=64):
+            Loads a PyTorch model checkpoint based on the specified model type
+            (DE or DER) and configuration parameters. Supports customizations
+            for random seeds, hidden layers, and loss type.
+
+        ep_al_checkpoint_DE(checkpoint):
+            Extracts mean and variance validation metrics from a loaded DE
+            model checkpoint.
+
+        ep_al_checkpoint_DER(checkpoint):
+            Extracts epistemic and aleatoric uncertainty metrics (mean and
+            standard deviation) from a loaded DER model checkpoint.
+    """
+
     def load_checkpoint(
         self,
         model_name,
@@ -26,15 +47,35 @@ class AggregateCheckpoints:
         load_nh_chk=False,
         nh=64,
     ):
-        """
-        Load PyTorch model checkpoint from a .pt file.
+        """Loads a PyTorch model checkpoint from a .pt file, constructing the
+        file name based on model type (DE or DER) and other configuration
+        parameters.
 
-        :param path: Location to load the model from
-        :param DER_type: Type of your model
-        :param epoch: Epoch to load
-        :param device: Device to load the model onto ('cuda' or 'cpu')
-        :param model: PyTorch model to load the checkpoint into
-        :return: Loaded model
+        Parameters:
+            model_name (str): Name of the model to load (e.g., 'DER', 'DE').
+            prescription (str): Prescription identifier for the model.
+            inject_type (str): Type of data injection used in the model.
+            data_dim (str): Dimensionality of the data (e.g., '0D', '2D').
+            noise (float): Level of noise applied to the model.
+            epoch (int): The epoch number to load the checkpoint for.
+            device (str): The device ('cuda' or 'cpu') to load the model onto.
+            path (str): Directory path to the model checkpoints
+            (default: "models/").
+            BETA (float): Beta value for DE models (default: 0.5).
+            nmodel (int): Number of models in the ensemble (default: 1).
+            COEFF (float): Coefficient for the DER model (default: 0.5).
+            loss (str): Type of loss used for DER models (e.g., 'SDER', 'DER').
+            load_rs_chk (bool): Flag to indicate if random seed checkpoint is
+            used (default: False).
+            rs (int): Random seed value if load_rs_chk is True (default: 42).
+            load_nh_chk (bool): Flag to indicate if a specific hidden layer
+            configuration is used (default: False).
+            nh (int): Number of hidden units if load_nh_chk is True
+            (default: 64).
+
+        Returns:
+            dict: The loaded checkpoint containing model weights and
+            additional data.
         """
         print(model_name)
         if model_name[0:3] == "DER":
@@ -62,6 +103,16 @@ class AggregateCheckpoints:
         return checkpoint
 
     def ep_al_checkpoint_DE(self, checkpoint):
+        """Extracts mean and variance validation metrics from a loaded DE model
+        checkpoint.
+
+        Parameters:
+            checkpoint (dict): The loaded DE model checkpoint.
+
+        Returns:
+            tuple: A tuple containing mean validation and variance validation
+            metrics.
+        """
         # Extract additional information
         # loaded_epoch = checkpoint.get("epoch", None)
         mean_validation = checkpoint.get("valid_mean", None).detach().numpy()
@@ -69,15 +120,16 @@ class AggregateCheckpoints:
         return mean_validation, var_validation
 
     def ep_al_checkpoint_DER(self, checkpoint):
-        """
-        # Handle the case where extra information is present in the state_dict
-        if 'model_state_dict' in checkpoint:
-            model.load_state_dict(checkpoint['model_state_dict'])
-        else:
-            model.load_state_dict(checkpoint)
-        """
+        """Extracts mean and variance validation metrics from a loaded DER
+        model checkpoint.
 
-        # Extract additional information
+        Parameters:
+            checkpoint (dict): The loaded DER model checkpoint.
+
+        Returns:
+            tuple: A tuple containing mean validation and variance validation
+            metrics.
+        """
         mean_u_ep = checkpoint.get("mean_u_ep_validation", None)
         mean_u_al = checkpoint.get("mean_u_al_validation", None)
         std_u_ep = checkpoint.get("std_u_ep_validation", None)

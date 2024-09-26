@@ -20,6 +20,36 @@ from data.data import DataPreparation, MyDataLoader
 
 
 def parse_args():
+    """Parses command-line (or config) arguments for the
+    DeepEvidentialRegression script.
+
+    This function creates an argument parser that supports:
+    1) Reading from a YAML configuration file (via --config).
+    2) Reading arguments from the command line and using default values
+       if not provided, with the option to dump arguments to a temporary
+       YAML configuration file.
+    3) Specifying data-related parameters such as the data path, dimension,
+       and injection method, as well as model parameters like the DER
+       coefficient, learning rate, and loss type.
+
+    The parser supports the following argument categories:
+    - Data-related arguments:
+        --data_path, --data_dimension, --data_injection,
+        --data_engine, --size_df, --noise_level, --val_proportion,
+        --randomseed, --generatedata, --batchsize, --normalize, --uniform
+    - Model-related arguments:
+        --model_engine, --init_lr, --loss_type, --COEFF, --model_type,
+        --n_epochs, --save_all_checkpoints, --save_final_checkpoint,
+        --overwrite_final_checkpoint, --plot, --savefig,
+        --save_chk_random_seed_init, --rs_list, --n_hidden, --save_n_hidden,
+        --save_data_size, --verbose
+    - General arguments:
+        --config, --out_dir
+
+    Returns:
+        Config: Configuration object that combines parsed arguments,
+        either from the command line or a YAML configuration file.
+    """
     parser = argparse.ArgumentParser(description="Runs DER")
     # there are three options with the parser:
     # 1) Read from a yaml
@@ -31,17 +61,14 @@ def parse_args():
 
     # data info
     parser.add_argument(
-        "--data_path", "-d", default=DefaultsDER["data"]["data_path"]
+        "--data_path",
+        "-d",
+        default=DefaultsDER["data"]["data_path"],
     )
     parser.add_argument(
         "--data_dimension",
         "-dd",
         default=DefaultsDER["data"]["data_dimension"],
-    )
-    parser.add_argument(
-        "--data_prescription",
-        "-dp",
-        default=DefaultsDER["data"]["data_prescription"],
     )
     parser.add_argument(
         "--data_injection",
@@ -56,7 +83,10 @@ def parse_args():
     )
 
     # model
-    parser.add_argument("--out_dir", default=DefaultsDER["common"]["out_dir"])
+    parser.add_argument(
+        "--out_dir",
+        default=DefaultsDER["common"]["out_dir"],
+    )
     parser.add_argument(
         "--model_engine",
         "-e",
@@ -270,7 +300,6 @@ def parse_args():
                 "data_path": args.data_path,
                 "data_engine": args.data_engine,
                 "data_dimension": args.data_dimension,
-                "data_prescription": args.data_prescription,
                 "data_injection": args.data_injection,
                 "size_df": args.size_df,
                 "noise_level": args.noise_level,
@@ -292,6 +321,22 @@ def parse_args():
 
 
 if __name__ == "__main__":
+    """Main execution script for the DeepEvidentialRegression pipeline.
+
+    This script performs the following steps:
+    1. Parses command-line arguments and configuration settings using
+    `parse_args`.
+    2. Prepares and/or loads data based on the specified data dimensionality
+    (0D or 2D).
+    3. Processes and normalizes the data, applying optional noise injection.
+    4. Visualizes the data distribution if verbose mode is enabled.
+    5. Splits the data into training and validation sets.
+    6. Trains a model using the Deep Evidential Regression framework and
+    specified configurations.
+    7. Optionally saves checkpoints and plots during the training process.
+
+    Execution starts if the script is run as a standalone module.
+    """
     config = parse_args()
     verbose = config.get_item("model", "verbose", "DER")
     size_df = int(config.get_item("data", "size_df", "DER"))
@@ -303,7 +348,6 @@ if __name__ == "__main__":
     BATCH_SIZE = config.get_item("data", "batchsize", "DER")
     sigma = DataPreparation.get_sigma(noise)
     path_to_data = config.get_item("data", "data_path", "DER")
-    prescription = config.get_item("data", "data_prescription", "DER")
     injection = config.get_item("data", "data_injection", "DE")
     dim = config.get_item("data", "data_dimension", "DE")
 
@@ -315,24 +359,24 @@ if __name__ == "__main__":
         if dim == "0D":
             data.sample_params_from_prior(size_df)
             print("injecting this noise", noise, sigma)
-            if injection == "feature":
+            if injection == "input":
                 data.simulate_data(
                     data.params,
                     noise,
-                    prescription,
                     x=np.linspace(0, 10, 100),
                     inject_type=injection,
                     vary_sigma=True,
                     verbose=True,
                 )
-            elif injection == "predictive":
+            elif injection == "output":
                 sigma = DataPreparation.get_sigma(
-                    noise, inject_type=injection, data_dimension=dim
+                    noise,
+                    inject_type=injection,
+                    data_dimension=dim,
                 )
                 data.simulate_data(
                     data.params,
                     sigma,
-                    prescription,
                     x=np.linspace(0, 10, 100),
                     inject_type=injection,
                     verbose=True,
@@ -351,7 +395,9 @@ if __name__ == "__main__":
         elif dim == "2D":
             print("2D data")
             sigma = DataPreparation.get_sigma(
-                noise, inject_type=injection, data_dimension=dim
+                noise,
+                inject_type=injection,
+                data_dimension=dim,
             )
             data.sample_params_from_prior(
                 size_df,
@@ -371,8 +417,6 @@ if __name__ == "__main__":
         loader = MyDataLoader()
         if dim == "0D":
             filename = (
-                str(prescription)
-                + "_"
                 + str(injection)
                 + "_sigma_"
                 + str(sigma)
@@ -394,7 +438,11 @@ if __name__ == "__main__":
     )
     if uniform:
         model_inputs, model_outputs = DataPreparation.select_uniform(
-            model_inputs, model_outputs, dim, verbose=verbose, rs=40
+            model_inputs,
+            model_outputs,
+            dim,
+            verbose=verbose,
+            rs=40,
         )
     if verbose:
         plt.clf()
@@ -438,7 +486,10 @@ if __name__ == "__main__":
             plt.title("x and y, colorbar is m value")
             plt.show()
     x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
-        model_inputs, model_outputs, val_proportion=val_prop, random_state=rs
+        model_inputs,
+        model_outputs,
+        val_proportion=val_prop,
+        random_state=rs,
     )
     trainData = TensorDataset(torch.Tensor(x_train), torch.Tensor(y_train))
     trainDataLoader = DataLoader(
@@ -467,7 +518,6 @@ if __name__ == "__main__":
         model_name=model_name,
         EPOCHS=config.get_item("model", "n_epochs", "DER"),
         path_to_model=config.get_item("common", "out_dir", "DER"),
-        data_prescription=prescription,
         inject_type=injection,
         data_dim=dim,
         noise_level=noise,
