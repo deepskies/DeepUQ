@@ -35,7 +35,7 @@ def parse_args():
 
     The parser supports the following argument categories:
     - Data-related arguments:
-        --data_path, --data_dimension, --data_prescription, --data_injection,
+        --data_path, --data_dimension, --data_injection,
         --data_engine, --size_df, --noise_level, --val_proportion,
         --randomseed, --generatedata, --batchsize, --normalize, --uniform
     - Model-related arguments:
@@ -70,11 +70,6 @@ def parse_args():
         "--data_dimension",
         "-dd",
         default=DefaultsDE["data"]["data_dimension"],
-    )
-    parser.add_argument(
-        "--data_prescription",
-        "-dp",
-        default=DefaultsDE["data"]["data_prescription"],
     )
     parser.add_argument(
         "--data_injection",
@@ -317,7 +312,6 @@ def parse_args():
                 "data_path": args.data_path,
                 "data_engine": args.data_engine,
                 "data_dimension": args.data_dimension,
-                "data_prescription": args.data_prescription,
                 "data_injection": args.data_injection,
                 "size_df": args.size_df,
                 "noise_level": args.noise_level,
@@ -401,7 +395,6 @@ if __name__ == "__main__":
     rs = config.get_item("data", "randomseed", "DE")
     BATCH_SIZE = config.get_item("data", "batchsize", "DE")
     path_to_data = config.get_item("data", "data_path", "DE")
-    prescription = config.get_item("data", "data_prescription", "DE")
     injection = config.get_item("data", "data_injection", "DE")
     dim = config.get_item("data", "data_dimension", "DE")
     if config.get_item("data", "generatedata", "DE", raise_exception=False):
@@ -417,7 +410,6 @@ if __name__ == "__main__":
                 data.simulate_data(
                     data.params,
                     noise,
-                    prescription,
                     x=np.linspace(0, 10, 100),
                     inject_type=injection,
                     vary_sigma=vary_sigma,
@@ -435,7 +427,6 @@ if __name__ == "__main__":
                 data.simulate_data(
                     data.params,
                     sigma,
-                    prescription,
                     x=np.linspace(0, 10, 100),
                     inject_type=injection,
                 )
@@ -478,9 +469,7 @@ if __name__ == "__main__":
         loader = MyDataLoader()
         if dim == "0D":
             filename = (
-                str(prescription)
-                + "_"
-                + str(injection)
+                str(injection)
                 + "_sigma_"
                 + str(sigma)
                 + "_size_"
@@ -630,7 +619,6 @@ if __name__ == "__main__":
         BETA=config.get_item("model", "BETA", "DE"),
         EPOCHS=config.get_item("model", "n_epochs", "DE"),
         path_to_model=config.get_item("common", "out_dir", "DE"),
-        data_prescription=prescription,
         inject_type=injection,
         data_dim=dim,
         noise_level=noise,
