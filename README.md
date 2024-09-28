@@ -1,8 +1,6 @@
 # DeepUQ
 DeepUQ is a package for injecting and measuring different types of uncertainty in ML models.
 
-![status](https://img.shields.io/badge/arXiv-000.000-red)(arxiv link if applicable)
-
 ![status](https://img.shields.io/badge/PyPi-0.0.0.0-blue)(pypi link if applicable)
 
 ![status](https://img.shields.io/badge/License-MIT-lightgrey)(MIT or Apache 2.0 or another requires link changed)
@@ -73,30 +71,5 @@ For more information on the arguments:
 The other available script is the `DeepEvidentialRegression.py` script:
 > python src/scripts/DeepEvidentialRegression.py --help
 
-## How to reproduce the results of the paper
 
-The config settings for the models used in the paper can be found in `src/utils/defaults.py`.
-
-The user should run the following commands from the cli:
-> python src/scripts/DeepEnsemble.py --save_all_checkpoints --noise_level "low"
-
-The noise level argument should be modified to run the medium and high settings as well.
-
-Repeat for the DER:
-> python src/scripts/DeepEvidentialRegression.py --save_all_checkpoints --noise_level "low"
-
-Next run the analysis scripts:
-> python src/scripts/AleatoricandEpistemic.py
-
-> python src/scripts/LossFunctions.py
-
-> python src/scripts/ParitySigma.py
-
-To reproduce the random initialization runs for the DER (these already exist for the DE):
-> python src/scripts/DeepEvidentialRegression.py --save_all_checkpoints --noise_level "low" --save_chk_random_seed_init --rs 10
-
-Change the value of the random seed to match those given in the `src/scripts/Aleatoric_and_inits.py` script.
-
-Finally:
-> python src/scripts/Aleatoric_and_inits.py
 
