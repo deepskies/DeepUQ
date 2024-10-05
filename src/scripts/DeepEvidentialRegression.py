@@ -349,9 +349,11 @@ if __name__ == "__main__":
     sigma = DataPreparation.get_sigma(noise)
     path_to_data = config.get_item("data", "data_path", "DER")
     injection = config.get_item("data", "data_injection", "DE")
+    assert injection == "input" or injection == "output", \
+        "data injection type must be 'input' or 'output'"
     dim = config.get_item("data", "data_dimension", "DE")
-
-    print(f"inject type is {injection}, dim is {dim}, sigma is {sigma}")
+    assert dim == "0D" or injection == "2D", \
+        "data dimension must be '0D' or '2D'"
     if config.get_item("data", "generatedata", "DER", raise_exception=False):
         # generate the df
         print("generating the data")
