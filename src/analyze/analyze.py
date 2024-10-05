@@ -11,7 +11,7 @@ class AggregateCheckpoints:
     validation metrics, including uncertainty metrics for DER models.
 
     Methods:
-        load_checkpoint(model_name, prescription, inject_type, data_dim, noise,
+        load_checkpoint(model_name, inject_type, data_dim, noise,
                         epoch, device, path="models/", BETA=0.5, nmodel=1,
                         COEFF=0.5, loss="SDER", load_rs_chk=False, rs=42,
                         load_nh_chk=False, nh=64):
@@ -31,7 +31,6 @@ class AggregateCheckpoints:
     def load_checkpoint(
         self,
         model_name,
-        prescription,
         inject_type,
         data_dim,
         noise,
@@ -53,7 +52,6 @@ class AggregateCheckpoints:
 
         Parameters:
             model_name (str): Name of the model to load (e.g., 'DER', 'DE').
-            prescription (str): Prescription identifier for the model.
             inject_type (str): Type of data injection used in the model.
             data_dim (str): Dimensionality of the data (e.g., '0D', '2D').
             noise (float): Level of noise applied to the model.
@@ -81,7 +79,7 @@ class AggregateCheckpoints:
         if model_name[0:3] == "DER":
             file_name = (
                 str(path)
-                + f"{model_name}_{prescription}_{inject_type}_{data_dim}"
+                + f"{model_name}_{inject_type}_{data_dim}"
                 + f"_noise_{noise}_loss_{loss}_COEFF_{COEFF}_epoch_{epoch}"
             )
             if load_rs_chk:
@@ -92,12 +90,9 @@ class AggregateCheckpoints:
         elif model_name[0:2] == "DE":
             file_name = (
                 str(path)
-                + f"{model_name}_{prescription}_{inject_type}_{data_dim}"
+                + f"{model_name}_{inject_type}_{data_dim}"
                 f"_noise_{noise}_beta_{BETA}_nmodel_{nmodel}_epoch_{epoch}.pt"
             )
-        # import os
-        # print('cwd', os.getcwd())
-        # print(os.listdir(path))
         print("loading this chk", file_name)
         checkpoint = torch.load(file_name, map_location=device)
         return checkpoint
