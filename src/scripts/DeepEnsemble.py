@@ -85,7 +85,10 @@ def parse_args():
 
     # model
     # path to save the model results
-    parser.add_argument("--out_dir", default=DefaultsDE["common"]["out_dir"])
+    parser.add_argument(
+        "--out_dir",
+        default=DefaultsDE["common"]["out_dir"],
+    )
     parser.add_argument(
         "--model_engine",
         "-e",
@@ -196,7 +199,7 @@ def parse_args():
     )
     parser.add_argument(
         "--save_all_checkpoints",
-        action="store_true",
+        action="store_true",  # Set to True if argument is present
         default=DefaultsDE["model"]["save_all_checkpoints"],
         help="option to save all checkpoints",
     )
@@ -397,10 +400,10 @@ if __name__ == "__main__":
     path_to_data = config.get_item("data", "data_path", "DE")
     injection = config.get_item("data", "data_injection", "DE")
     assert injection == "input" or injection == "output", \
-        "data injection type must be 'input' or 'output'"
+        f"data injection type must be 'input' or 'output' and is {injection}"
     dim = config.get_item("data", "data_dimension", "DE")
-    assert dim == "0D" or injection == "2D", \
-        "data dimension must be '0D' or '2D'"
+    assert dim == "0D" or dim == "2D", \
+        f"data dimension must be '0D' or '2D' and is {dim}"
     if config.get_item("data", "generatedata", "DE", raise_exception=False):
         # generate the df
         print("generating the data")
