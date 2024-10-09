@@ -476,6 +476,8 @@ if __name__ == "__main__":
         loader = MyDataLoader()
         if dim == "0D":
             filename = (
+                str(dim)
+                + "_"
                 str(injection)
                 + "_sigma_"
                 + str(sigma)
