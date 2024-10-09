@@ -478,7 +478,7 @@ if __name__ == "__main__":
             filename = (
                 str(dim)
                 + "_"
-                str(injection)
+                + str(injection)
                 + "_sigma_"
                 + str(sigma)
                 + "_size_"
