@@ -402,6 +402,12 @@ class DataPreparation:
             # we'll need the noisy image summed if we want to
             # do a comparison of y - y':
             # total_brightness_prop_noisy.append(np.sum(noisy_image))
+        self.input = image_array
+        self.output = total_brightness
+        print(
+            f"2D data generated, \
+                with noise injected type: {inject_type}."
+        )
         return image_array, total_brightness
 
     def simulate_data(
@@ -516,15 +522,16 @@ class DataPreparation:
             # self.input = x
             self.input = torch.Tensor(np.tile(x, thetas.shape[0]).T)
             self.output = torch.Tensor(y_noisy.T)
-            self.output_err = ε[:, i].T
+            #self.output_err = ε[:, i].T
         elif inject_type == "input":
             self.input = torch.Tensor(x_noisy.T)
             self.output = torch.Tensor(y.T)
-            self.output_err = ε[:, i].T
+            #self.output_err = ε[:, i].T
         print(
-            f"Data generated, \
+            f"0D data generated, \
                 with noise injected type: {inject_type}."
         )
+        return 
 
     def sample_params_from_prior(
         self,
@@ -592,7 +599,7 @@ class DataPreparation:
             "params": self.params,
             "inputs": self.input,
             "output": self.output,
-            "output_err": self.output_err,
+            #"output_err": self.output_err,
         }
         return data_dict
 

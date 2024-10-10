@@ -15,7 +15,7 @@ DefaultsDE = {
         "val_proportion": 0.1,
         "randomseed": 42,
         "batchsize": 100,
-        "generatedata": True,
+        "generatedata": False,
     },
     "model": {
         "model_engine": "DE",

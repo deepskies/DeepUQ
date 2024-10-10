@@ -473,27 +473,41 @@ if __name__ == "__main__":
                 inject_type=injection,
             )
     else:
+        sigma = DataPreparation.get_sigma(
+                    noise,
+                    inject_type=injection,
+                    data_dimension=dim,
+                )
         loader = MyDataLoader()
-        if dim == "0D":
-            filename = (
-                str(dim)
-                + "_"
-                + str(injection)
-                + "_sigma_"
-                + str(sigma)
-                + "_size_"
-                + str(size_df)
-            )
-            df = loader.load_data_h5(filename, path=path_to_data)
-            print("loaded this file: ", filename)
+        filename = (
+            str(dim)
+            + "_"
+            + str(injection)
+            + "_sigma_"
+            + str(sigma)
+            + "_size_"
+            + str(size_df)
+        )
+        df = loader.load_data_h5(filename, path=path_to_data)
+        print("loaded this file: ", filename)
+        print("df", df)
+        if dim == "2D":
+            model_inputs = df["inputs"]
+            model_outputs = df["output"]
     if dim == "0D":
         len_df = len(df["params"][:, 0].numpy())
         len_x = np.shape(df["output"])[1]
         ms_array = np.repeat(df["params"][:, 0].numpy(), len_x)
         bs_array = np.repeat(df["params"][:, 1].numpy(), len_x)
         xs_array = np.reshape(df["inputs"].numpy(), (len_df * len_x))
-        model_outputs = np.reshape(df["output"].numpy(), (len_df * len_x))
         model_inputs = np.array([xs_array, ms_array, bs_array]).T
+        model_outputs = np.reshape(df["output"].numpy(), (len_df * len_x))
+    print(np.shape(model_inputs), np.shape(model_outputs))
+    '''
+    elif dim == "2D":
+        model_inputs = df["inputs"].numpy()
+        model_outputs = df["output"].numpy()
+    '''
     model_inputs, model_outputs, norm_params = DataPreparation.normalize(
         model_inputs, model_outputs, norm
     )
