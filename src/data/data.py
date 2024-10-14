@@ -157,7 +157,7 @@ class DataPreparation:
             if verbose:
                 print("injecting this noise", noise)
                 print(
-                    f"inject type is {injection}, dim is {dim}, sigma is {sigma}"
+                    f"inject type is {injection}, dim is {dim}, noise is {noise}"
                 )
             if injection == "input":
                 vary_sigma = True

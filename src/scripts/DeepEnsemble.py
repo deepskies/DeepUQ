@@ -423,8 +423,8 @@ if __name__ == "__main__":
         )
         df = loader.load_data_h5(filename, path=path_to_data)
         if dim == "2D":
-            model_inputs = df["input"]
-            model_outputs = df["output"]
+            model_inputs = df["input"].numpy()
+            model_outputs = df["output"].numpy()
         if dim == "0D":
             len_df = len(df["params"][:, 0].numpy())
             len_x = np.shape(df["output"])[1]
@@ -433,8 +433,9 @@ if __name__ == "__main__":
             xs_array = np.reshape(df["input"].numpy(), (len_df * len_x))
             model_inputs = np.array([xs_array, ms_array, bs_array]).T
             model_outputs = np.reshape(df["output"].numpy(), (len_df * len_x))
-    print('shape of input', np.shape(model_inputs), \
-          'shape of output', np.shape(model_outputs))
+    print('shape of input', np.shape(model_inputs),
+          'shape of output', np.shape(model_outputs),
+          'type of input', type(model_inputs))
     model_inputs, model_outputs, norm_params = data.normalize(
         model_inputs, model_outputs, norm
     )
@@ -444,7 +445,7 @@ if __name__ == "__main__":
         plt.axvline(x=np.mean(model_outputs), color="yellow")
         plt.xlabel('output variable')
         plt.annotate(
-            'mean output variable (should be ~1)= '+str(np.mean(model_outputs)),
+            'mean output variable (should be ~1) = '+str(np.mean(model_outputs)),
             xy=(0.02, 0.9),
             xycoords="axes fraction",
         )
