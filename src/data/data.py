@@ -6,6 +6,7 @@ import torch
 import h5py
 from deepbench.astro_object import GalaxyObject
 import matplotlib.pyplot as plt
+from torch.utils.data import TensorDataset
 
 
 class MyDataLoader:
@@ -140,10 +141,104 @@ class DataPreparation:
     def __init__(self):
         self.data = None
 
+    def generate_df(
+            self, size_df, noise, dim, injection, uniform, verbose):
+        if verbose:
+            print('generating dataframe')
+        if uniform:
+            if verbose:
+                print('inflating starting size because sub-selecting \
+                      uniform')
+            size_df_gen = 5 * size_df
+        else:
+            size_df_gen = size_df
+        if dim == "0D":
+            self.sample_params_from_prior(size_df_gen)
+            if verbose:
+                print("injecting this noise", noise)
+                print(
+                    f"inject type is {injection}, dim is {dim}, sigma is {sigma}"
+                )
+            if injection == "input":
+                vary_sigma = True
+                if verbose:
+                    print("are we varying sigma", vary_sigma)
+                self.simulate_data(
+                    self.params,
+                    noise,
+                    x=np.linspace(0, 10, 100),
+                    inject_type=injection,
+                    vary_sigma=vary_sigma,
+                )
+            elif injection == "output":
+                sigma = self.get_sigma(
+                    noise,
+                    inject_type=injection,
+                    data_dimension=dim,
+                )
+                self.simulate_data(
+                    self.params,
+                    sigma,
+                    x=np.linspace(0, 10, 100),
+                    inject_type=injection,
+                )
+            df_array = self.get_dict()
+            # Convert non-tensor entries to tensors
+            df = {}
+            for key, value in df_array.items():
+
+                if isinstance(value, TensorDataset):
+                    # Keep tensors as they are
+                    df[key] = value
+                else:
+                    # Convert lists to tensors
+                    df[key] = torch.tensor(value)
+        elif dim == "2D":
+            sigma = self.get_sigma(
+                noise,
+                inject_type=injection,
+                data_dimension=dim,
+            )
+            self.sample_params_from_prior(
+                size_df_gen,
+                low=[0, 1, -1.5],
+                high=[0.01, 10, 1.5],
+                n_params=3,
+                seed=42,
+            )
+            model_inputs, model_outputs = self.simulate_data_2d(
+                size_df_gen,
+                self.params,
+                sigma,
+                image_size=32,
+                inject_type=injection,
+            )
+        if dim == "0D":
+            len_df = len(df["params"][:, 0].numpy())
+            len_x = np.shape(df["output"])[1]
+            ms_array = np.repeat(df["params"][:, 0].numpy(), len_x)
+            bs_array = np.repeat(df["params"][:, 1].numpy(), len_x)
+            xs_array = np.reshape(df["input"].numpy(), (len_df * len_x))
+            model_inputs = np.array([xs_array, ms_array, bs_array]).T
+            model_outputs = np.reshape(df["output"].numpy(), (len_df * len_x))
+        if uniform:
+            model_inputs, model_outputs = self.select_uniform(
+                model_inputs,
+                model_outputs,
+                size_df,
+                verbose=verbose,
+                rs=40,
+            )
+            if verbose:
+                print('size after uniform', np.shape(model_inputs))
+        return model_inputs, model_outputs
+
     def select_uniform(
+        self,
         model_inputs,
         model_outputs,
-        dim,
+        size_df,
+        num_bins=10,
         verbose=False,
         rs=40,
     ):
@@ -152,20 +247,18 @@ class DataPreparation:
 
         This function divides the `model_outputs` into uniform bins and
         randomly samples from each bin to ensure a balanced representation of
-        output values. The number of samples per bin depends on the specified
-        dimension (`dim`), and the subset is returned for both `model_inputs`
-        and `model_outputs`.
+        output values. The number of samples per bin depends on the desired
+        size of the dataframe and the number of bins, and the subset
+        is returned for both `model_inputs` and `model_outputs`.
 
         Args:
             model_inputs (np.ndarray): Input data from which the subset will
                 be selected.
             model_outputs (np.ndarray): Output data used for binning and
                 sampling.
-            dim (str): The dimension of the data:
-                - "2D": For 2D input data, a smaller sample size is used
-                (500 per bin).
-                - "0D": For 0D input data, a larger sample size is used
-                (10,000 per bin).
+            size_df (float): The desired total size of the returned dataframe.
+            num_bins (int): Number of bins to use to select the uniform
+                distribution.
             verbose (bool): If True, the function prints debug information and
                 plots the distribution of the selected subset. Default is
                 False.
@@ -192,12 +285,13 @@ class DataPreparation:
             - The output subset is plotted if `verbose` is True.
         """
         # number of bins (adjust based on desired granularity)
-        num_bins = 10
         lower_bound = 0
         upper_bound = 2
 
         # Create bins and sample uniformly from each bin
         bins = np.linspace(lower_bound, upper_bound, num_bins + 1)
+        if verbose:
+            print('bins for uniformity in y', bins)
         n_bin_values = []
 
         # First go through and calculate how many are in each bin
@@ -209,17 +303,17 @@ class DataPreparation:
             n_bin_values.append(len(bin_indices))
 
         if verbose:
-            print("n_bin_values", n_bin_values)
+            print("starting n_bin_values", n_bin_values)
 
         # Setting a random seed
         np.random.seed(rs)
         selected_indices = []
 
-        if dim == "2D":
-            sample_size = 500
-        elif dim == "0D":
-            sample_size = 10000
-
+        # sample size is the number of samples to pull
+        # from each bin in order to achieve the desired
+        # uniform distribution across num_bins
+        # that add to the total desired size_df
+        sample_size = int(size_df / num_bins)
         for i in range(num_bins):
             # Get indices in the current bin
             bin_indices = np.where(
@@ -235,7 +329,8 @@ class DataPreparation:
         output_subset = np.array(model_outputs)[selected_indices]
 
         if verbose:
-            plt.hist(output_subset)
+            plt.hist(output_subset.flatten())
+            plt.xlabel('output variable')
             plt.show()
             print("shape before cut", np.shape(model_outputs))
             print(
@@ -586,20 +681,16 @@ class DataPreparation:
         output data, and output errors from the object. The keys in the
         dictionary are:
         - 'params': Model parameters or other relevant settings.
-        - 'inputs': Input data used for the model or simulation.
+        - 'input': Input data used for the model or simulation.
         - 'output': Output data generated by the model or simulation.
-        - 'output_err': Errors or uncertainties associated with the output
-            data.
 
         Returns:
-            dict: A dictionary containing 'params', 'inputs', 'output', and
-                'output_err'.
+            dict: A dictionary containing 'params', 'input', and 'output'.
         """
         data_dict = {
             "params": self.params,
-            "inputs": self.input,
-            "output": self.output,
-            #"output_err": self.output_err,
+            "input": self.input,
+            "output": self.output
         }
         return data_dict
 
@@ -645,7 +736,7 @@ class DataPreparation:
             sigma = 0.10 / abs(m)
         return sigma
 
-    def get_sigma(noise, inject_type="output", data_dimension="0D"):
+    def get_sigma(self, noise, inject_type="output", data_dimension="0D"):
         """Get the value of sigma (standard deviation) based on noise level
         and injection type.
 
@@ -698,7 +789,7 @@ class DataPreparation:
                 sigma = 0.10 / 32
         return sigma
 
-    def normalize(inputs, ys_array, norm=False):
+    def normalize(self, inputs, ys_array, norm=False):
         """Normalize input and output arrays, with optional normalization
         based on min-max scaling.
 
@@ -750,6 +841,7 @@ class DataPreparation:
         )
 
     def train_val_split(
+        self,
         model_inputs,
         model_outputs,
         val_proportion=0.1,

@@ -404,133 +404,52 @@ if __name__ == "__main__":
     dim = config.get_item("data", "data_dimension", "DE")
     assert dim == "0D" or dim == "2D", \
         f"data dimension must be '0D' or '2D' and is {dim}"
+    data = DataPreparation()
     if config.get_item("data", "generatedata", "DE", raise_exception=False):
-        # generate the df
         print("generating the data")
-        data = DataPreparation()
-        if dim == "0D":
-            data.sample_params_from_prior(size_df)
-            print("injecting this noise", noise)
-            if injection == "input":
-                vary_sigma = True
-                print("are we varying sigma", vary_sigma)
-                data.simulate_data(
-                    data.params,
-                    noise,
-                    x=np.linspace(0, 10, 100),
-                    inject_type=injection,
-                    vary_sigma=vary_sigma,
-                )
-            elif injection == "output":
-                sigma = DataPreparation.get_sigma(
-                    noise,
-                    inject_type=injection,
-                    data_dimension=dim,
-                )
-                print(
-                    f"inject type is {injection},"
-                    f"dim is {dim}, sigma is {sigma}"
-                )
-                data.simulate_data(
-                    data.params,
-                    sigma,
-                    x=np.linspace(0, 10, 100),
-                    inject_type=injection,
-                )
-            df_array = data.get_dict()
-            # Convert non-tensor entries to tensors
-            df = {}
-            for key, value in df_array.items():
-
-                if isinstance(value, TensorDataset):
-                    # Keep tensors as they are
-                    df[key] = value
-                else:
-                    # Convert lists to tensors
-                    df[key] = torch.tensor(value)
-        elif dim == "2D":
-            print("2D data")
-            sigma = DataPreparation.get_sigma(
-                noise,
-                inject_type=injection,
-                data_dimension=dim,
-            )
-            print(
-                f"inject type is {injection}, dim is {dim}, sigma is {sigma}"
-            )
-            data.sample_params_from_prior(
-                size_df,
-                low=[0, 1, -1.5],
-                high=[0.01, 10, 1.5],
-                n_params=3,
-                seed=42,
-            )
-            model_inputs, model_outputs = data.simulate_data_2d(
-                size_df,
-                data.params,
-                sigma,
-                image_size=32,
-                inject_type=injection,
-            )
+        model_inputs, model_outputs = data.generate_df(
+            size_df, noise, dim, injection, uniform, verbose)
     else:
-        sigma = DataPreparation.get_sigma(
-                    noise,
-                    inject_type=injection,
-                    data_dimension=dim,
-                )
+        print("loading data from file")
         loader = MyDataLoader()
         filename = (
             str(dim)
             + "_"
             + str(injection)
-            + "_sigma_"
-            + str(sigma)
+            + "_noise_"
+            + noise
             + "_size_"
             + str(size_df)
         )
         df = loader.load_data_h5(filename, path=path_to_data)
-        print("loaded this file: ", filename)
-        print("df", df)
         if dim == "2D":
-            model_inputs = df["inputs"]
+            model_inputs = df["input"]
             model_outputs = df["output"]
-    if dim == "0D":
-        len_df = len(df["params"][:, 0].numpy())
-        len_x = np.shape(df["output"])[1]
-        ms_array = np.repeat(df["params"][:, 0].numpy(), len_x)
-        bs_array = np.repeat(df["params"][:, 1].numpy(), len_x)
-        xs_array = np.reshape(df["inputs"].numpy(), (len_df * len_x))
-        model_inputs = np.array([xs_array, ms_array, bs_array]).T
-        model_outputs = np.reshape(df["output"].numpy(), (len_df * len_x))
-    print(np.shape(model_inputs), np.shape(model_outputs))
-    '''
-    elif dim == "2D":
-        model_inputs = df["inputs"].numpy()
-        model_outputs = df["output"].numpy()
-    '''
-    model_inputs, model_outputs, norm_params = DataPreparation.normalize(
+        if dim == "0D":
+            len_df = len(df["params"][:, 0].numpy())
+            len_x = np.shape(df["output"])[1]
+            ms_array = np.repeat(df["params"][:, 0].numpy(), len_x)
+            bs_array = np.repeat(df["params"][:, 1].numpy(), len_x)
+            xs_array = np.reshape(df["input"].numpy(), (len_df * len_x))
+            model_inputs = np.array([xs_array, ms_array, bs_array]).T
+            model_outputs = np.reshape(df["output"].numpy(), (len_df * len_x))
+    print('shape of input', np.shape(model_inputs), \
+          'shape of output', np.shape(model_outputs))
+    model_inputs, model_outputs, norm_params = data.normalize(
         model_inputs, model_outputs, norm
     )
-    if uniform:
-        model_inputs, model_outputs = DataPreparation.select_uniform(
-            model_inputs,
-            model_outputs,
-            dim=dim,
-            verbose=verbose,
-            rs=40,
-        )
     if verbose:
         plt.clf()
         plt.hist(model_outputs)
         plt.axvline(x=np.mean(model_outputs), color="yellow")
+        plt.xlabel('output variable')
         plt.annotate(
-            str(np.mean(model_outputs)),
+            'mean output variable (should be ~1)= '+str(np.mean(model_outputs)),
             xy=(0.02, 0.9),
             xycoords="axes fraction",
         )
         plt.show()
         if dim == "2D":
-            print(model_outputs)
             counter = 0
             for p in range(len(model_outputs)):
                 if counter > 5:
@@ -556,53 +475,13 @@ if __name__ == "__main__":
                 c=model_inputs[0:1000, 1],
                 cmap="viridis",
             )
+            plt.xlabel('model input')
+            plt.ylabel('model output')
             plt.colorbar()
-            # plt.plot(model_inputs[0:100, 0], model_outputs[0:100])
-            plt.title("x and y, colorbar is m value")
+            plt.title("a selection of x and y, colorbar is m value")
             plt.show()
 
-            # select an m value
-            print(
-                "m value",
-                model_inputs[0, 1],
-                model_inputs[500, 1],
-            )
-            # grab everything that corresponds to it
-            plt.clf()
-            plt.scatter(
-                model_inputs[:, 0][model_inputs[:, 1] == model_inputs[0, 1]],
-                model_outputs[model_inputs[:, 1] == model_inputs[0, 1]],
-                color="yellow",
-            )
-            plt.scatter(
-                model_inputs[:, 0][model_inputs[:, 1] == model_inputs[500, 1]],
-                model_outputs[model_inputs[:, 1] == model_inputs[500, 1]],
-                color="orange",
-            )
-            plt.scatter(
-                model_inputs[:, 0][model_inputs[:, 1] == model_inputs[550, 1]],
-                model_outputs[model_inputs[:, 1] == model_inputs[550, 1]],
-                color="green",
-            )
-            plt.scatter(
-                model_inputs[:, 0][model_inputs[:, 1] == model_inputs[350, 1]],
-                model_outputs[model_inputs[:, 1] == model_inputs[350, 1]],
-                color="blue",
-            )
-            plt.colorbar()
-            # plt.plot(model_inputs[0:100, 0], model_outputs[0:100])
-            plt.title("plotting just a couple of m values")
-            plt.show()
-
-            # look at how m is distributed
-            plt.hist(model_inputs[:, 1], bins=100)
-            plt.show()
-
-            # now look at how noise/m is distributed
-            plt.hist(0.01 / model_inputs[:, 1], bins=100)
-            plt.xlabel("injected uncertainty in x")
-            plt.show()
-    x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
+    x_train, x_val, y_train, y_val = data.train_val_split(
         model_inputs,
         model_outputs,
         val_proportion=val_prop,
