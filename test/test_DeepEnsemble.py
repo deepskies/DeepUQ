@@ -48,31 +48,25 @@ def temp_data():  # noise_level, size_df):
 
     # now create
     data = DataPreparation()
-    noise_level = "low"
+    noise = "low"
     size_df = 10
-    data.sample_params_from_prior(size_df)
-    if noise_level == "low":
-        sigma = 1
-    if noise_level == "medium":
-        sigma = 5
-    if noise_level == "high":
-        sigma = 10
-    if noise_level == "vhigh":
-        sigma = 100
-    data.simulate_data(
-        data.params,
-        sigma,
-        inject_type="output",
-    )
+    dim = "2D"
+    injection = "input"
+    uniform = True
+    verbose = False
+    data.generate_df(size_df, noise, dim, injection, uniform, verbose)
     dict = data.get_dict()
     saver = MyDataLoader()
     # save the dataframe
     filename = (
-        "output_sigma_"
-        + str(sigma)
-        + "_size_"
-        + str(size_df)
-    )
+            str(dim)
+            + "_"
+            + str(injection)
+            + "_noise_"
+            + noise
+            + "_size_"
+            + str(size_df)
+        )
     saver.save_data_h5(filename, dict, path=data_dir)
 
     yield data_dir  # provide the temporary directory path to the test function
