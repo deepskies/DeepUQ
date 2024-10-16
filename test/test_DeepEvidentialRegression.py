@@ -7,7 +7,6 @@ import yaml
 from data.data import MyDataLoader, DataPreparation
 
 
-
 @pytest.fixture()
 def temp_data():  # noise_level, size_df):
     """Create a temporary directory, generate synthetic data, and save it to

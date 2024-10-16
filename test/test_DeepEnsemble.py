@@ -280,7 +280,6 @@ class TestDE:
                 expected_substring in file_name
             ), f"File '{file_name}' does not contain the expected substring"
 
-
     def test_DE_chkpt_saved(
         self, temp_directory, temp_data, noise_level="low", size_df=100
     ):
@@ -353,7 +352,7 @@ class TestDE:
             assert (
                 expected_substring in file_name
             ), f"File '{file_name}' does not contain the expected substring"
-    
+
     def test_DE_from_config(
         self, temp_directory, temp_data, noise_level="low", size_df=100
     ):
@@ -415,7 +414,6 @@ class TestDE:
                 expected_substring in file_name
             ), f"File '{file_name}' does not contain the expected substring"
 
-    
     @pytest.mark.xfail(strict=True)
     def test_DE_no_chkpt_saved_xfail(
         self, temp_directory, temp_data, noise_level="low", size_df=100
@@ -600,4 +598,3 @@ class TestDE:
         ]
         # now run the subprocess
         subprocess.run(subprocess_args, check=True)
-
