@@ -2,7 +2,7 @@
 name = "DeepUQ"
 packages = [{include = "*", from="src"}]
 version = "0.1.0"
-description = "a package for investigating and comparing ML model's predictive uncertainties"
+description = "a package for investigating and comparing the predictive uncertainties from deep learning models"
 authors = ["beckynevin <beckynevin@gmail.com>"]
 readme = "README.md"
 license = "MIT"
