@@ -399,16 +399,19 @@ if __name__ == "__main__":
     BATCH_SIZE = config.get_item("data", "batchsize", "DE")
     path_to_data = config.get_item("data", "data_path", "DE")
     injection = config.get_item("data", "data_injection", "DE")
-    assert injection == "input" or injection == "output", \
-        f"data injection type must be 'input' or 'output' and is {injection}"
+    assert (
+        injection == "input" or injection == "output"
+    ), f"data injection type must be 'input' or 'output' and is {injection}"
     dim = config.get_item("data", "data_dimension", "DE")
-    assert dim == "0D" or dim == "2D", \
-        f"data dimension must be '0D' or '2D' and is {dim}"
+    assert (
+        dim == "0D" or dim == "2D"
+    ), f"data dimension must be '0D' or '2D' and is {dim}"
     data = DataPreparation()
     if config.get_item("data", "generatedata", "DE", raise_exception=False):
         print("generating the data")
         model_inputs, model_outputs = data.generate_df(
-            size_df, noise, dim, injection, uniform, verbose)
+            size_df, noise, dim, injection, uniform, verbose
+        )
     else:
         print("loading data from file")
         loader = MyDataLoader()
@@ -433,9 +436,14 @@ if __name__ == "__main__":
             xs_array = np.reshape(df["input"].numpy(), (len_df * len_x))
             model_inputs = np.array([xs_array, ms_array, bs_array]).T
             model_outputs = np.reshape(df["output"].numpy(), (len_df * len_x))
-    print('shape of input', np.shape(model_inputs),
-          'shape of output', np.shape(model_outputs),
-          'type of input', type(model_inputs))
+    print(
+        "shape of input",
+        np.shape(model_inputs),
+        "shape of output",
+        np.shape(model_outputs),
+        "type of input",
+        type(model_inputs),
+    )
     model_inputs, model_outputs, norm_params = data.normalize(
         model_inputs, model_outputs, norm
     )
@@ -443,9 +451,10 @@ if __name__ == "__main__":
         plt.clf()
         plt.hist(model_outputs)
         plt.axvline(x=np.mean(model_outputs), color="yellow")
-        plt.xlabel('output variable')
+        plt.xlabel("output variable")
         plt.annotate(
-            'mean output variable (should be ~1) = '+str(np.mean(model_outputs)),
+            "mean output variable (should be ~1) = "
+            + str(np.mean(model_outputs)),
             xy=(0.02, 0.9),
             xycoords="axes fraction",
         )
@@ -476,8 +485,8 @@ if __name__ == "__main__":
                 c=model_inputs[0:1000, 1],
                 cmap="viridis",
             )
-            plt.xlabel('model input')
-            plt.ylabel('model output')
+            plt.xlabel("model input")
+            plt.ylabel("model output")
             plt.colorbar()
             plt.title("a selection of x and y, colorbar is m value")
             plt.show()

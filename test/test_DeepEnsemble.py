@@ -49,7 +49,7 @@ def temp_data():  # noise_level, size_df):
     # now create
     data = DataPreparation()
     noise = "low"
-    size_df = 10
+    size_df = 100
     dim = "2D"
     injection = "input"
     uniform = True
@@ -127,7 +127,7 @@ def temp_directory():
 
 
 def create_test_config(
-    temp_directory, temp_data, n_epochs, noise_level="low", size_df=10
+    temp_directory, temp_data, n_epochs, noise_level="low", size_df=100
 ):
     """Generate and save a test configuration YAML file for a deep ensemble
     model.
@@ -148,7 +148,7 @@ def create_test_config(
                                      is "low". Options include "low", "medium",
                                      "high", and "vhigh".
         size_df (int, optional): Size of the dataset used for testing, default
-                                 is 10.
+                                 is 100.
 
     File Output:
         Saves a YAML configuration file named `DE.yaml` in the 'yamls'
@@ -184,8 +184,8 @@ def create_test_config(
         "data": {
             "data_path": temp_data,
             "data_engine": "DataLoader",
-            "data_dimension": "0D",
-            "data_injection": "output",
+            "data_dimension": "2D",
+            "data_injection": "input",
             "size_df": size_df,
             "noise_level": noise_level,
             "val_proportion": 0.1,
@@ -208,69 +208,8 @@ class TestDE:
     training.
     """
 
-    def test_DE_from_config(
-        self, temp_directory, temp_data, noise_level="low", size_df=10
-    ):
-        """Test the Deep Ensemble (DE) model using a dynamically created
-        configuration file.
-
-        This test creates a YAML configuration file for the DE model, runs the
-        training process as a subprocess, and verifies that the correct number
-        of checkpoints and animations are saved during the training.
-
-        Args:
-            temp_directory (str): Path to the temporary directory where
-                                  outputs are saved.
-            temp_data (str): Path to the generated data for testing.
-            noise_level (str, optional): Noise level for data generation,
-                                         default is "low".
-            size_df (int, optional): Size of the dataset used for testing,
-                                     default is 10.
-        """
-        n_epochs = 2
-        n_models = 2
-        create_test_config(temp_directory + "/", temp_data, n_epochs)
-        subprocess_args = [
-            "python",
-            "src/scripts/DeepEnsemble.py",
-            "--config",
-            str(temp_directory) + "/yamls/DE.yaml",
-        ]
-        # now run the subprocess
-        subprocess.run(subprocess_args, check=True)
-        # check if the right number of checkpoints are saved
-        models_folder = os.path.join(temp_directory, "checkpoints")
-        print("this is the checkpoints folder", models_folder)
-        # list all files in the "models" folder
-        files_in_models_folder = os.listdir(models_folder)
-        print("files in checkpoints folder", files_in_models_folder)
-        # assert that the number of files is equal to 10
-        assert (
-            len(files_in_models_folder) == n_models
-        ), f"Expected {n_models} file in the 'checkpoints' folder"
-
-        # check if the right number of images were saved
-        animations_folder = os.path.join(temp_directory, "images/animations")
-        files_in_animations_folder = os.listdir(animations_folder)
-        assert (
-            len(files_in_animations_folder) == n_models
-        ), f"Expected {n_models} file in the 'images/animations' folder"
-
-        # also check that all files in here have the same name elements
-        expected_substring = "epoch_" + str(n_epochs - 1)
-        for file_name in files_in_models_folder:
-            assert (
-                expected_substring in file_name
-            ), f"File '{file_name}' does not contain the expected substring"
-
-        # also check that all files in here have the same name elements
-        for file_name in files_in_animations_folder:
-            assert (
-                expected_substring in file_name
-            ), f"File '{file_name}' does not contain the expected substring"
-
-    def test_DE_chkpt_saved(
-        self, temp_directory, temp_data, noise_level="low", size_df=10
+    def test_DE_from_saved_data(
+        self, temp_directory, temp_data, noise_level="low", size_df=100
     ):
         """Test that the correct number of checkpoints and animations are
         saved during DE model training.
@@ -307,7 +246,6 @@ class TestDE:
             str(n_epochs),
             "--save_final_checkpoint",
             "--savefig",
-            "--generatedata",
         ]
         # now run the subprocess
         subprocess.run(subprocess_args, check=True)
@@ -342,9 +280,145 @@ class TestDE:
                 expected_substring in file_name
             ), f"File '{file_name}' does not contain the expected substring"
 
+
+    def test_DE_chkpt_saved(
+        self, temp_directory, temp_data, noise_level="low", size_df=100
+    ):
+        """Test that the correct number of checkpoints and animations are
+        saved during DE model training.
+
+        Runs the DE model training as a subprocess and verifies that
+        checkpoints and animations corresponding to each epoch are saved in
+        the appropriate folders.
+
+        Args:
+            temp_directory (str): Path to the temporary directory where
+                                  outputs are saved.
+            temp_data (str): Path to the generated data for testing.
+            noise_level (str, optional): Noise level for data generation,
+                                         default is "low".
+            size_df (int, optional): Size of the dataset used for testing,
+                                     default is 100.
+        """
+        n_models = 2
+        n_epochs = 2
+        subprocess_args = [
+            "python",
+            "src/scripts/DeepEnsemble.py",
+            "--data_path",
+            str(temp_data),
+            "--size_df",
+            str(size_df),
+            "--noise_level",
+            noise_level,
+            "--n_models",
+            str(n_models),
+            "--out_dir",
+            str(temp_directory) + "/",
+            "--n_epochs",
+            str(n_epochs),
+            "--save_final_checkpoint",
+            "--savefig",
+            "--generatedata",
+        ]
+        # now run the subprocess
+        subprocess.run(subprocess_args, check=True)
+        # check if the right number of checkpoints are saved
+        models_folder = os.path.join(temp_directory, "checkpoints")
+        # list all files in the "models" folder
+        files_in_models_folder = os.listdir(models_folder)
+        # assert that the number of files is equal to n_models
+        assert (
+            len(files_in_models_folder) == n_models
+        ), f"Expected {n_models} files in the 'checkpoints' folder"
+        f"What is in there {files_in_models_folder}"
+
+        # check if the right number of images were saved
+        animations_folder = os.path.join(temp_directory, "images/animations")
+        files_in_animations_folder = os.listdir(animations_folder)
+        # assert that the number of files is equal to n_models
+        assert (
+            len(files_in_animations_folder) == n_models
+        ), f"Expected {n_models} files in the 'images/animations' folder"
+
+        # also check that all files in here have the same name elements
+        expected_substring = "epoch_" + str(n_epochs - 1)
+        for file_name in files_in_models_folder:
+            assert (
+                expected_substring in file_name
+            ), f"File '{file_name}' does not contain the expected substring"
+
+        # also check that all files in here have the same name elements
+        for file_name in files_in_animations_folder:
+            assert (
+                expected_substring in file_name
+            ), f"File '{file_name}' does not contain the expected substring"
+    
+    def test_DE_from_config(
+        self, temp_directory, temp_data, noise_level="low", size_df=100
+    ):
+        """Test the Deep Ensemble (DE) model using a dynamically created
+        configuration file.
+
+        This test creates a YAML configuration file for the DE model, runs the
+        training process as a subprocess, and verifies that the correct number
+        of checkpoints and animations are saved during the training.
+
+        Args:
+            temp_directory (str): Path to the temporary directory where
+                                  outputs are saved.
+            temp_data (str): Path to the generated data for testing.
+            noise_level (str, optional): Noise level for data generation,
+                                         default is "low".
+            size_df (int, optional): Size of the dataset used for testing,
+                                     default is 100.
+        """
+        n_epochs = 2
+        n_models = 2
+        create_test_config(temp_directory + "/", temp_data, n_epochs)
+        subprocess_args = [
+            "python",
+            "src/scripts/DeepEnsemble.py",
+            "--config",
+            str(temp_directory) + "/yamls/DE.yaml",
+        ]
+        # now run the subprocess
+        subprocess.run(subprocess_args, check=True)
+        # check if the right number of checkpoints are saved
+        models_folder = os.path.join(temp_directory, "checkpoints")
+        print("this is the checkpoints folder", models_folder)
+        # list all files in the "models" folder
+        files_in_models_folder = os.listdir(models_folder)
+        print("files in checkpoints folder", files_in_models_folder)
+        # assert that the number of files is equal to n_models
+        assert (
+            len(files_in_models_folder) == n_models
+        ), f"Expected {n_models} file in the 'checkpoints' folder"
+
+        # check if the right number of images were saved
+        animations_folder = os.path.join(temp_directory, "images/animations")
+        files_in_animations_folder = os.listdir(animations_folder)
+        assert (
+            len(files_in_animations_folder) == n_models
+        ), f"Expected {n_models} file in the 'images/animations' folder"
+
+        # also check that all files in here have the same name elements
+        expected_substring = "epoch_" + str(n_epochs - 1)
+        for file_name in files_in_models_folder:
+            assert (
+                expected_substring in file_name
+            ), f"File '{file_name}' does not contain the expected substring"
+
+        # also check that all files in here have the same name elements
+        for file_name in files_in_animations_folder:
+            assert (
+                expected_substring in file_name
+            ), f"File '{file_name}' does not contain the expected substring"
+
+    
     @pytest.mark.xfail(strict=True)
     def test_DE_no_chkpt_saved_xfail(
-        self, temp_directory, temp_data, noise_level="low", size_df=10
+        self, temp_directory, temp_data, noise_level="low", size_df=100
     ):
         """Test that expects failure when no checkpoints are saved.
 
@@ -359,7 +433,7 @@ class TestDE:
             noise_level (str, optional): Noise level for data generation,
                                          default is "low".
             size_df (int, optional): Size of the dataset used for testing,
-                                     default is 10.
+                                     default is 100.
         """
         n_models = 2
         n_epochs = 2
@@ -386,13 +460,13 @@ class TestDE:
         models_folder = os.path.join(temp_directory, "models")
         # list all files in the "models" folder
         files_in_models_folder = os.listdir(models_folder)
-        # assert that the number of files is equal to 10
+        # assert that the number of files is equal to n_models
         assert (
             len(files_in_models_folder) == n_models
         ), f"Expected {n_models} files in the 'models' folder"
 
-    def test_DE_no_chkpt_saved(
-        self, temp_directory, temp_data, noise_level="low", size_df=10
+    def test_DE_only_final_chkpt_saved(
+        self, temp_directory, temp_data, noise_level="low", size_df=100
     ):
         """Test that verifies no checkpoints are saved when expected.
 
@@ -406,10 +480,10 @@ class TestDE:
             noise_level (str, optional): Noise level for data generation,
                                          default is "low".
             size_df (int, optional): Size of the dataset used for testing,
-                                     default is 10.
+                                     default is 100.
         """
         n_models = 2
-        n_epochs = 2
+        n_epochs = 10
         subprocess_args = [
             "python",
             "src/scripts/DeepEnsemble.py",
@@ -426,6 +500,7 @@ class TestDE:
             "--n_epochs",
             str(n_epochs),
             "--generatedata",
+            "--save_final_checkpoint"
         ]
         # now run the subprocess
         subprocess.run(subprocess_args, check=True)
@@ -433,13 +508,64 @@ class TestDE:
         models_folder = os.path.join(temp_directory, "checkpoints")
         # list all files in the "models" folder
         files_in_models_folder = os.listdir(models_folder)
-        # assert that the number of files is equal to 10
+        # assert that the number of files is equal to zero
+        # because were not saving any checkpoints
         assert (
-            len(files_in_models_folder) == 0
-        ), "Expect 0 files in the 'models' folder"
+            len(files_in_models_folder) == n_models
+        ), f"Expect {n_models} files in the 'models' folder"
+
+    def test_DE_all_epochs_chkpt_saved(
+        self, temp_directory, temp_data, noise_level="low", size_df=100
+    ):
+        """Test that verifies no checkpoints are saved when expected.
+
+        This test runs the DE model training without saving any checkpoints
+        and checks that no files are present in the checkpoints folder.
+
+        Args:
+            temp_directory (str): Path to the temporary directory where
+                                  outputs are saved.
+            temp_data (str): Path to the generated data for testing.
+            noise_level (str, optional): Noise level for data generation,
+                                         default is "low".
+            size_df (int, optional): Size of the dataset used for testing,
+                                     default is 100.
+        """
+        n_models = 2
+        n_epochs = 10
+        subprocess_args = [
+            "python",
+            "src/scripts/DeepEnsemble.py",
+            "--data_path",
+            temp_data,
+            "--noise_level",
+            noise_level,
+            "--size_df",
+            str(size_df),
+            "--n_models",
+            str(n_models),
+            "--out_dir",
+            str(temp_directory) + "/",
+            "--n_epochs",
+            str(n_epochs),
+            "--generatedata",
+            "--save_final_checkpoint",
+            "--save_all_checkpoints"
+        ]
+        # now run the subprocess
+        subprocess.run(subprocess_args, check=True)
+        # check if the right number of checkpoints are saved
+        models_folder = os.path.join(temp_directory, "checkpoints")
+        # list all files in the "models" folder
+        files_in_models_folder = os.listdir(models_folder)
+        # assert that the number of files is equal to zero
+        # because were not saving any checkpoints
+        assert (
+            len(files_in_models_folder) == n_models * n_epochs
+        ), f"Expect {n_models*n_epochs} files in the 'models' folder"
 
     def test_DE_run_simple_ensemble(
-        self, temp_directory, temp_data, noise_level="low", size_df=10
+        self, temp_directory, temp_data, noise_level="low", size_df=100
     ):
         """Test the execution of a simple ensemble model with a few epochs.
 
@@ -453,7 +579,7 @@ class TestDE:
             noise_level (str, optional): Noise level for data generation,
                                          default is "low".
             size_df (int, optional): Size of the dataset used for testing,
-                                     default is 10.
+                                     default is 100.
         """
         n_models = 2
         subprocess_args = [
@@ -471,7 +597,7 @@ class TestDE:
             str(temp_directory) + "/",
             "--n_epochs",
             "2",
-            "--generatedata",
         ]
         # now run the subprocess
         subprocess.run(subprocess_args, check=True)
+

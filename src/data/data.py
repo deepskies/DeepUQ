@@ -141,14 +141,15 @@ class DataPreparation:
     def __init__(self):
         self.data = None
 
-    def generate_df(
-            self, size_df, noise, dim, injection, uniform, verbose):
+    def generate_df(self, size_df, noise, dim, injection, uniform, verbose):
         if verbose:
-            print('generating dataframe')
+            print("generating dataframe")
         if uniform:
             if verbose:
-                print('inflating starting size because sub-selecting \
-                      uniform')
+                print(
+                    "inflating starting size because sub-selecting \
+                      uniform"
+                )
             size_df_gen = 5 * size_df
         else:
             size_df_gen = size_df
@@ -230,7 +231,7 @@ class DataPreparation:
                 rs=40,
             )
             if verbose:
-                print('size after uniform', np.shape(model_inputs))
+                print("size after uniform", np.shape(model_inputs))
         return model_inputs, model_outputs
 
     def select_uniform(
@@ -291,7 +292,7 @@ class DataPreparation:
         # Create bins and sample uniformly from each bin
         bins = np.linspace(lower_bound, upper_bound, num_bins + 1)
         if verbose:
-            print('bins for uniformity in y', bins)
+            print("bins for uniformity in y", bins)
         n_bin_values = []
 
         # First go through and calculate how many are in each bin
@@ -330,7 +331,7 @@ class DataPreparation:
 
         if verbose:
             plt.hist(output_subset.flatten())
-            plt.xlabel('output variable')
+            plt.xlabel("output variable")
             plt.show()
             print("shape before cut", np.shape(model_outputs))
             print(
@@ -617,16 +618,16 @@ class DataPreparation:
             # self.input = x
             self.input = torch.Tensor(np.tile(x, thetas.shape[0]).T)
             self.output = torch.Tensor(y_noisy.T)
-            #self.output_err = ε[:, i].T
+            # self.output_err = ε[:, i].T
         elif inject_type == "input":
             self.input = torch.Tensor(x_noisy.T)
             self.output = torch.Tensor(y.T)
-            #self.output_err = ε[:, i].T
+            # self.output_err = ε[:, i].T
         print(
             f"0D data generated, \
                 with noise injected type: {inject_type}."
         )
-        return 
+        return
 
     def sample_params_from_prior(
         self,
@@ -690,7 +691,7 @@ class DataPreparation:
         data_dict = {
             "params": self.params,
             "input": self.input,
-            "output": self.output
+            "output": self.output,
         }
         return data_dict
 
