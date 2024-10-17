@@ -8,27 +8,36 @@ from data.data import MyDataLoader, DataPreparation
 
 
 @pytest.fixture()
-def temp_data():
-    """Fixture to generate and save simulated test data in a temporary
-    directory.
+def temp_data():  # noise_level, size_df):
+    """Create a temporary directory, generate synthetic data, and save it to
+    an HDF5 file for testing purposes.
 
-    This fixture creates a temporary directory with a subdirectory for storing
-    data, simulates data based on the 'linear_homoskedastic' model, and saves
-    it in HDF5 format. The data is generated with a specified noise level and
-    dataset size. The fixture yields the directory path containing the saved
-    data, and after the test completes, the temporary directory is deleted.
+    This pytest fixture creates a temporary directory with subdirectories for
+    storing data. It uses the `DataPreparation` class to sample parameters and
+    simulate data with different noise levels. The simulated data is saved as
+    an HDF5 file in the temporary directory. After the test runs, the
+    directory and its contents are deleted.
 
-    Yields:
-        str: Path to the temporary directory containing the simulated data.
-
-    Data Generation:
-        - Noise level: Default is "low" (sigma = 1).
-        - Data size: Default is 10.
-        - Injection type: "output".
-        - Data saved in HDF5 format.
+    Setup:
+        - Create a temporary directory and a 'data' subdirectory.
+        - Generate synthetic data using the `DataPreparation` class with
+          specified parameters.
+        - Simulate data based on a noise level (`low`, `medium`, `high`,
+          `vhigh`) which affects the value of `sigma`.
+        - Save the generated data as an HDF5 file in the temporary directory.
 
     Teardown:
-        Removes the temporary directory and its contents after the test.
+        - Delete the temporary directory and all of its contents after the
+          test completes.
+
+    Yields:
+        str: The path to the temporary directory containing the saved HDF5
+             file.
+
+    Example:
+        def test_example(temp_data):
+            data_dir = temp_data
+            # Use the data directory for testing
     """
     # setup: Create a temporary directory with one folder level
     temp_dir = tempfile.mkdtemp()
@@ -39,31 +48,25 @@ def temp_data():
 
     # now create
     data = DataPreparation()
-    noise_level = "low"
-    size_df = 10
-    data.sample_params_from_prior(size_df)
-    if noise_level == "low":
-        sigma = 1
-    if noise_level == "medium":
-        sigma = 5
-    if noise_level == "high":
-        sigma = 10
-    if noise_level == "vhigh":
-        sigma = 100
-    data.simulate_data(
-        data.params,
-        sigma,
-        inject_type="output",
-    )
+    noise = "low"
+    size_df = 100
+    dim = "2D"
+    injection = "input"
+    uniform = True
+    verbose = False
+    data.generate_df(size_df, noise, dim, injection, uniform, verbose)
     dict = data.get_dict()
     saver = MyDataLoader()
     # save the dataframe
     filename = (
-        "output_sigma_"
-        + str(sigma)
-        + "_size_"
-        + str(size_df)
-    )
+            str(dim)
+            + "_"
+            + str(injection)
+            + "_noise_"
+            + noise
+            + "_size_"
+            + str(size_df)
+        )
     saver.save_data_h5(filename, dict, path=data_dir)
 
     yield data_dir  # provide the temporary directory path to the test function
@@ -115,7 +118,7 @@ def temp_directory():
 
 
 def create_test_config(
-    temp_directory, temp_data, n_epochs, noise_level="low", size_df=10
+    temp_directory, temp_data, n_epochs, noise_level="low", size_df=100
 ):
     """Generates and saves a YAML configuration file for testing a model.
 
@@ -174,8 +177,8 @@ def create_test_config(
         "data": {
             "data_path": temp_data,
             "data_engine": "DataLoader",
-            "data_dimension": "0D",
-            "data_injection": "output",
+            "data_dimension": "2D",
+            "data_injection": "input",
             "size_df": size_df,
             "noise_level": noise_level,
             "val_proportion": 0.1,
@@ -200,9 +203,65 @@ class TestDER:
     This class includes tests to verify that checkpoints and images are saved
     correctly during training and when using a YAML configuration file.
     """
+    def test_DER_all_chkpts_saved(
+        self, temp_directory, temp_data, noise_level="low", size_df=100
+    ):
+        """Test that checkpoints and images are saved after training with DER.
 
-    def test_DER_chkpt_saved(
-        self, temp_directory, temp_data, noise_level="low", size_df=10
+        This test runs the DER model using subprocess and checks if the
+        correct number of checkpoint files and image files are saved in the
+        respective directories. It verifies that these files contain the
+        expected naming convention based on the number of epochs.
+
+        Args:
+            temp_directory (str): Path to the temporary directory where output
+                                  files are saved.
+            temp_data (str): Path to the temporary dataset used for training.
+            noise_level (str, optional): Noise level for the dataset.
+                                         Default is 'low'.
+            size_df (int, optional): Size of the dataset. Default is 10.
+
+        Asserts:
+            - One checkpoint file is saved in the 'checkpoints' folder.
+            - One image file is saved in the 'images/animations' folder.
+            - All saved files contain the substring 'epoch_{n_epochs-1}'.
+        """
+        noise_level = "low"
+        n_epochs = 10
+        subprocess_args = [
+            "python",
+            "src/scripts/DeepEvidentialRegression.py",
+            "--data_path",
+            str(temp_data),
+            "--noise_level",
+            noise_level,
+            "--size_df",
+            str(size_df),
+            "--out_dir",
+            str(temp_directory) + "/",
+            "--n_epochs",
+            str(n_epochs),
+            "--save_final_checkpoint",
+            "--savefig",
+            "--generatedata",
+            "--save_all_checkpoints",
+            "--save_final_checkpoint"
+        ]
+        # now run the subprocess
+        subprocess.run(subprocess_args, check=True)
+        # check if the right number of checkpoints are saved
+        models_folder = os.path.join(temp_directory, "checkpoints")
+        # list all files in the "models" folder
+        files_in_models_folder = os.listdir(models_folder)
+        # assert that the number of files is equal to 1
+        # because were only saving the final checkpoint
+        assert (
+            len(files_in_models_folder) == n_epochs
+        ), f"Expected {n_epochs} files in the 'models' folder and \
+             got {len(files_in_models_folder)}"
+
+    def test_DER_one_chkpt_saved(
+        self, temp_directory, temp_data, noise_level="low", size_df=100
     ):
         """Test that checkpoints and images are saved after training with DER.
 
@@ -242,6 +301,7 @@ class TestDER:
             "--save_final_checkpoint",
             "--savefig",
             "--generatedata",
+            "--save_final_checkpoint"
         ]
         # now run the subprocess
         subprocess.run(subprocess_args, check=True)
@@ -249,7 +309,8 @@ class TestDER:
         models_folder = os.path.join(temp_directory, "checkpoints")
         # list all files in the "models" folder
         files_in_models_folder = os.listdir(models_folder)
-        # assert that the number of files is equal to 10
+        # assert that the number of files is equal to 1
+        # because were only saving the final checkpoint
         assert (
             len(files_in_models_folder) == 1
         ), "Expected 1 file in the 'models' folder"
@@ -257,7 +318,8 @@ class TestDER:
         # check if the right number of images were saved
         animations_folder = os.path.join(temp_directory, "images/animations")
         files_in_animations_folder = os.listdir(animations_folder)
-        # assert that the number of files is equal to 10
+        # assert that the number of files is equal to 1
+        # because only saving the final checkpoint
         assert (
             len(files_in_animations_folder) == 1
         ), "Expected 1 file in the 'images/animations' folder"
@@ -276,7 +338,7 @@ class TestDER:
             ), f"File '{file_name}' does not contain the expected substring"
 
     def test_DER_from_config(
-        self, temp_directory, temp_data, noise_level="low", size_df=10
+        self, temp_directory, temp_data, noise_level="low", size_df=100
     ):
         """Test training of DER using a YAML configuration file.
 
@@ -315,14 +377,14 @@ class TestDER:
         models_folder = os.path.join(temp_directory, "checkpoints")
         # list all files in the "models" folder
         files_in_models_folder = os.listdir(models_folder)
-        # assert that the number of files is equal to 10
+        # assert that the number of files is equal to 1
         assert (
             len(files_in_models_folder) == 1
         ), "Expected 1 file in the 'models' folder"
         # check if the right number of images were saved
         animations_folder = os.path.join(temp_directory, "images/animations")
         files_in_animations_folder = os.listdir(animations_folder)
-        # assert that the number of files is equal to 10
+        # assert that the number of files is equal to 1
         assert (
             len(files_in_animations_folder) == 1
         ), "Expected 1 file in the 'images/animations' folder"

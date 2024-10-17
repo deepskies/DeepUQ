@@ -346,116 +346,69 @@ if __name__ == "__main__":
     val_prop = config.get_item("data", "val_proportion", "DER")
     rs = config.get_item("data", "randomseed", "DER")
     BATCH_SIZE = config.get_item("data", "batchsize", "DER")
-    sigma = DataPreparation.get_sigma(noise)
     path_to_data = config.get_item("data", "data_path", "DER")
-    injection = config.get_item("data", "data_injection", "DE")
-    dim = config.get_item("data", "data_dimension", "DE")
-
-    print(f"inject type is {injection}, dim is {dim}, sigma is {sigma}")
+    injection = config.get_item("data", "data_injection", "DER")
+    assert (
+        injection == "input" or injection == "output"
+    ), f"data injection type must be 'input' or 'output' and is {injection}"
+    dim = config.get_item("data", "data_dimension", "DER")
+    assert (
+        dim == "0D" or dim == "2D"
+    ), f"data dimension must be '0D' or '2D' and is {dim}"
+    data = DataPreparation()
     if config.get_item("data", "generatedata", "DER", raise_exception=False):
-        # generate the df
         print("generating the data")
-        data = DataPreparation()
-        if dim == "0D":
-            data.sample_params_from_prior(size_df)
-            print("injecting this noise", noise, sigma)
-            if injection == "input":
-                data.simulate_data(
-                    data.params,
-                    noise,
-                    x=np.linspace(0, 10, 100),
-                    inject_type=injection,
-                    vary_sigma=True,
-                    verbose=True,
-                )
-            elif injection == "output":
-                sigma = DataPreparation.get_sigma(
-                    noise,
-                    inject_type=injection,
-                    data_dimension=dim,
-                )
-                data.simulate_data(
-                    data.params,
-                    sigma,
-                    x=np.linspace(0, 10, 100),
-                    inject_type=injection,
-                    verbose=True,
-                )
-            df_array = data.get_dict()
-            # Convert non-tensor entries to tensors
-            df = {}
-            for key, value in df_array.items():
-
-                if isinstance(value, TensorDataset):
-                    # Keep tensors as they are
-                    df[key] = value
-                else:
-                    # Convert lists to tensors
-                    df[key] = torch.tensor(value)
-        elif dim == "2D":
-            print("2D data")
-            sigma = DataPreparation.get_sigma(
-                noise,
-                inject_type=injection,
-                data_dimension=dim,
-            )
-            data.sample_params_from_prior(
-                size_df,
-                low=[0, 1, -1.5],
-                high=[0.01, 10, 1.5],
-                n_params=3,
-                seed=42,
-            )
-            model_inputs, model_outputs = data.simulate_data_2d(
-                size_df,
-                data.params,
-                sigma,
-                image_size=32,
-                inject_type=injection,
-            )
+        model_inputs, model_outputs = data.generate_df(
+            size_df, noise, dim, injection, uniform, verbose
+        )
     else:
+        print("loading data from file")
         loader = MyDataLoader()
+        filename = (
+            str(dim)
+            + "_"
+            + str(injection)
+            + "_noise_"
+            + noise
+            + "_size_"
+            + str(size_df)
+        )
+        df = loader.load_data_h5(filename, path=path_to_data)
+        if dim == "2D":
+            model_inputs = df["input"].numpy()
+            model_outputs = df["output"].numpy()
         if dim == "0D":
-            filename = (
-                + str(injection)
-                + "_sigma_"
-                + str(sigma)
-                + "_size_"
-                + str(size_df)
-            )
-            df = loader.load_data_h5(filename, path=path_to_data)
-            print("loaded this file: ", filename)
-    if dim == "0D":
-        len_df = len(df["params"][:, 0].numpy())
-        len_x = np.shape(df["output"])[1]
-        ms_array = np.repeat(df["params"][:, 0].numpy(), len_x)
-        bs_array = np.repeat(df["params"][:, 1].numpy(), len_x)
-        xs_array = np.reshape(df["inputs"].numpy(), (len_df * len_x))
-        model_outputs = np.reshape(df["output"].numpy(), (len_df * len_x))
-        model_inputs = np.array([xs_array, ms_array, bs_array]).T
-    model_inputs, model_outputs, norm_params = DataPreparation.normalize(
+            len_df = len(df["params"][:, 0].numpy())
+            len_x = np.shape(df["output"])[1]
+            ms_array = np.repeat(df["params"][:, 0].numpy(), len_x)
+            bs_array = np.repeat(df["params"][:, 1].numpy(), len_x)
+            xs_array = np.reshape(df["input"].numpy(), (len_df * len_x))
+            model_inputs = np.array([xs_array, ms_array, bs_array]).T
+            model_outputs = np.reshape(df["output"].numpy(), (len_df * len_x))
+    print(
+        "shape of input",
+        np.shape(model_inputs),
+        "shape of output",
+        np.shape(model_outputs),
+        "type of input",
+        type(model_inputs),
+    )
+    model_inputs, model_outputs, norm_params = data.normalize(
         model_inputs, model_outputs, norm
     )
-    if uniform:
-        model_inputs, model_outputs = DataPreparation.select_uniform(
-            model_inputs,
-            model_outputs,
-            dim,
-            verbose=verbose,
-            rs=40,
-        )
     if verbose:
         plt.clf()
         plt.hist(model_outputs)
         plt.axvline(x=np.mean(model_outputs), color="yellow")
+        plt.xlabel("output variable")
         plt.annotate(
-            str(np.mean(model_outputs)),
+            "mean output variable (should be ~1) = "
+            + str(np.mean(model_outputs)),
             xy=(0.02, 0.9),
             xycoords="axes fraction",
         )
         plt.show()
         if dim == "2D":
-            print(model_outputs)
             counter = 0
             for p in range(len(model_outputs)):
                 if counter > 5:
@@ -481,11 +434,13 @@ if __name__ == "__main__":
                 c=model_inputs[0:1000, 1],
                 cmap="viridis",
             )
+            plt.xlabel("model input")
+            plt.ylabel("model output")
             plt.colorbar()
-            # plt.plot(model_inputs[0:100, 0], model_outputs[0:100])
-            plt.title("x and y, colorbar is m value")
+            plt.title("a selection of x and y, colorbar is m value")
             plt.show()
-    x_train, x_val, y_train, y_val = DataPreparation.train_val_split(
+
+    x_train, x_val, y_train, y_val = data.train_val_split(
         model_inputs,
         model_outputs,
         val_proportion=val_prop,
@@ -495,7 +450,6 @@ if __name__ == "__main__":
     trainDataLoader = DataLoader(
         trainData, batch_size=BATCH_SIZE, shuffle=True
     )
-    print("[INFO] initializing the gal model...")
     # set the device we will be using to train the model
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model_name = config.get_item("model", "model_type", "DER")
