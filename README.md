@@ -1,19 +1,20 @@
 # DeepUQ
 DeepUQ is a package for injecting and measuring different types of uncertainty in ML models.
 
-![status](https://img.shields.io/badge/PyPi-0.0.0.0-blue)(pypi link if applicable)
-
-![status](https://img.shields.io/badge/License-MIT-lightgrey)(MIT or Apache 2.0 or another requires link changed)
-
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/owner/repo/build-repo)
-
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/owner/repo/test-repo?label=test)
+![PyPi](https://img.shields.io/badge/PyPi-0.1.0-blue)(https://pypi.org/project/deepuq/)
+![License](https://img.shields.io/badge/License-MIT-lightgrey)(https://opensource.org/licenses/MIT)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/beckynevin/deepuq/build-repo)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/beckynevin/deepuq/test-repo?label=test)
 
 
 ## Installation
 
 ### Install via pypi
-To be updated, not yet released.
+> pip install deepuq
+(Make sure your python version is 3.10)
+
+Verify the install works by also pip installing pytest, cd'ing to the DeepUQ/ directory, and running
+> pytest
 
 ### Clone this repo
 First, cd to where you'd like to put this repo and type:
