@@ -5,9 +5,9 @@ DeepUQ is a package for injecting and measuring different types of uncertainty i
 
 [![License](https://img.shields.io/badge/License-MIT-lightgrey)](https://opensource.org/licenses/MIT)
 
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/yourusername/deepuq/build-repo)](https://github.com/yourusername/deepuq/actions)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/beckynevin/deepuq/build-repo)](https://github.com/beckynevin/deepuq/actions)
 
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/yourusername/deepuq/test-repo?label=test)](https://github.com/yourusername/deepuq/actions)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/beckynevin/deepuq/test-repo?label=test)](https://github.com/beckynevin/deepuq/actions)
 
 
 ## Installation
