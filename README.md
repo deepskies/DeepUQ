@@ -14,26 +14,29 @@ DeepUQ is a package for injecting and measuring different types of uncertainty i
 
 ## Installation
 
-### Install via venv and pypi
+### Install the deepuq package via venv and pypi
 > python3.10 -m venv test_env
 
->source test_env/bin/activate
+> source test_env/bin/activate
 
 > pip install deepuq
 
-> pip show deepuq
+Now you can run some of the scripts!
+> UQensemble --generatedata
+^`generatedata` is required if you don't have any saved data. You can set other keywords like so.
 
-Verify the install works by also pip installing pytest, cd'ing to the DeepUQ/ directory, and running
+It's also possible to verify the install works by running:
 > pytest
 
-### Clone this repo
-First, cd to where you'd like to put this repo and type:
+### Preferred dev install option: Poetry
+If you'd like to contribute to the package development, please follow these instructions.
+
+First, navigate to where you'd like to put this repo and type:
 > git clone https://github.com/deepskies/DeepUQ.git
 
 Then, cd into the repo:
 > cd DeepUQ
 
-### Preferred installation method: Poetry
 Poetry is our recommended method of handling a package environment as publishing and building is handled by a toml file that handles all possibly conflicting dependencies. 
 Full docs can be found [here](https://python-poetry.org/docs/basic-usage/).
 
@@ -50,10 +53,8 @@ Install the pyproject file
 Begin the environment
 > poetry shell
 
-### Verify DeepUQ is installed correctly
+Now you have access to all the dependencies necessary to run the package.
 
-After following the installation instructions, verify installation is functional is all tests are passing by running the following in the root directory:
-> pytest
 
 ## How to run the workflow
 ![Folder structure overview](images/DeepUQWorkflow_Maggie.png)
