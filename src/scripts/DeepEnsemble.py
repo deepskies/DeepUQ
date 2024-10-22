@@ -370,7 +370,7 @@ def beta_type(value):
         )
 
 
-if __name__ == "__main__":
+def main():
     """Main execution script for the DeepEnsemble pipeline.
 
     This script performs the following steps:
@@ -555,3 +555,7 @@ if __name__ == "__main__":
         size_df=size_df,
         verbose=verbose,
     )
+
+
+if __name__ == "__main__":
+    main()

@@ -320,7 +320,7 @@ def parse_args():
     return config
 
 
-if __name__ == "__main__":
+def main():
     """Main execution script for the DeepEvidentialRegression pipeline.
 
     This script performs the following steps:
@@ -496,3 +496,7 @@ if __name__ == "__main__":
         size_df=size_df,
         verbose=config.get_item("model", "verbose", "DER"),
     )
+
+
+if __name__ == "__main__":
+    main()
