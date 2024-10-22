@@ -64,27 +64,43 @@ DeepUQ/
 ├── README.md
 ├── DeepUQResources/
 ├── data/
-├── dist/
 ├── environment.yml
-├── images/
-├── models/
 ├── notebooks/
 ├── poetry.lock
 ├── pyproject.toml
 ├── src/
 │   ├── __init__.py
 │   ├── analyze/
+│   │   ├── __init__.py
+│   │   ├── analyze.py
 │   ├── data/
+│   │   ├── __init__.py
+│   │   ├── data.py
 │   ├── models/
+│   │   ├── __init__.py
+│   │   ├── models.py
 │   ├── scripts/
+│   │   ├── __init__.py
+│   │   ├── DeepEnsemble.py
+│   │   ├── DeepEvidentialRegression.py
 │   ├── train/
+│   │   ├── __init__.py
+│   │   ├── train.py
 │   └── utils/
+│   │   ├── __init__.py
+│   │   ├── defaults.py
+│   │   ├── config.py
 ├── test/
 │   ├── DeepUQResources/
 │   ├── data/
 │   ├── test_DeepEnsemble.py
 │   └── test_DeepEvidentialRegression.py
 ```
+The `src/` folder contains the relevant modules for config settings, data generation, model parameters, training, and the two scripts for training the Deep Ensemble and the Deep Evidential Regression models. It also includes tools for loading and analyzing the saved checkpoints in `analysis/`.
+
+Example notebooks for how to train and analyze the results of the models can be found in the `notebooks/` folder.
+
+The `DeepUQResources/` folder is the default location for saving checkpoints from the trained model and the `data/` folder is where the training and validation set are saved.
 
 ## How to run the workflow
 The scripts can be accessed via the ipython example notebooks or via the model modules (ie `DeepEnsemble.py`). For example, to ingest data and train a Deep Ensemble from the DeepUQ/ directory:
