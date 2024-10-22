@@ -57,6 +57,7 @@ Begin the environment
 Now you have access to all the dependencies necessary to run the package.
 
 ## Package structure
+```
 DeepUQ/
 ├── CHANGELOG.md
 ├── LICENSE.txt
@@ -83,7 +84,7 @@ DeepUQ/
 │   ├── data/
 │   ├── test_DeepEnsemble.py
 │   └── test_DeepEvidentialRegression.py
-
+```
 
 ## How to run the workflow
 The scripts can be accessed via the ipython example notebooks or via the model modules (ie `DeepEnsemble.py`). For example, to ingest data and train a Deep Ensemble from the DeepUQ/ directory:
@@ -115,6 +116,8 @@ The other available script is the `DeepEvidentialRegression.py` script:
 
 The shortcut:
 > UQder
+
+
 
 
 
