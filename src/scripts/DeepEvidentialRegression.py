@@ -8,13 +8,13 @@ import torch
 from torch.utils.data import TensorDataset, DataLoader
 
 # from scripts import train, models, io
-from train import train
-from models import models
-from data import DataModules
-from models import ModelModules
-from utils.config import Config
-from utils.defaults import DefaultsDER
-from data.data import DataPreparation, MyDataLoader
+from src.train import train
+from src.models import models
+from src.data import DataModules
+from src.models import ModelModules
+from src.utils.config import Config
+from src.utils.defaults import DefaultsDER
+from src.data.data import DataPreparation, MyDataLoader
 
 # from plots import Plots
 

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "DeepUQ"
-packages = [{include = "*", from="src"}]
+packages = [{include = "src"}]
 version = "0.1.0"
 description = "a package for investigating and comparing the predictive uncertainties from deep learning models"
 authors = ["beckynevin <beckynevin@gmail.com>"]
