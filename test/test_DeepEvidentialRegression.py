@@ -4,7 +4,7 @@ import subprocess
 import tempfile
 import shutil
 import yaml
-from data.data import MyDataLoader, DataPreparation
+from src.data.data import MyDataLoader, DataPreparation
 
 
 @pytest.fixture()
