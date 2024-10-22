@@ -1,3 +1,3 @@
-from models.models import ModelLoader
+from src.models.models import ModelLoader
 
 ModelModules = {"ModelLoader": ModelLoader}

@@ -1,4 +1,4 @@
-from data.data import MyDataLoader, DataPreparation
+from src.data.data import MyDataLoader, DataPreparation
 
 DataModules = {
     "MyDataLoader": MyDataLoader,
