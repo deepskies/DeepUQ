@@ -15,14 +15,15 @@ DeepUQ is a package for injecting and measuring different types of uncertainty i
 ## Installation
 
 ### Install the deepuq package via venv and pypi
-> python3.10 -m venv test_env
+> python3.10 -m venv name_of_your_virtual_env
 
-> source test_env/bin/activate
+> source name_of_your_virtual_env/bin/activate
 
 > pip install deepuq
 
 Now you can run some of the scripts!
 > UQensemble --generatedata
+
 ^`generatedata` is required if you don't have any saved data. You can set other keywords like so.
 
 It's also possible to verify the install works by running:
@@ -55,13 +56,42 @@ Begin the environment
 
 Now you have access to all the dependencies necessary to run the package.
 
+## Package structure
+DeepUQ/
+├── CHANGELOG.md
+├── LICENSE.txt
+├── README.md
+├── DeepUQResources/
+├── data/
+├── dist/
+├── environment.yml
+├── images/
+├── models/
+├── notebooks/
+├── poetry.lock
+├── pyproject.toml
+├── src/
+│   ├── __init__.py
+│   ├── analyze/
+│   ├── data/
+│   ├── models/
+│   ├── scripts/
+│   ├── train/
+│   └── utils/
+├── test/
+│   ├── DeepUQResources/
+│   ├── data/
+│   ├── test_DeepEnsemble.py
+│   └── test_DeepEvidentialRegression.py
+
 
 ## How to run the workflow
-![Folder structure overview](images/DeepUQWorkflow_Maggie.png)
-
 The scripts can be accessed via the ipython example notebooks or via the model modules (ie `DeepEnsemble.py`). For example, to ingest data and train a Deep Ensemble from the DeepUQ/ directory:
 
 > python src/scripts/DeepEnsemble.py
+
+The equivalent shortcut command:
+> UQensemble
 
 With no config file specified, this command will pull settings from the `default.py` file within `utils`. For the `DeepEnsemble.py` script, it will automatically select the `DefaultsDE` dictionary.
 
@@ -82,6 +112,9 @@ For more information on the arguments:
 
 The other available script is the `DeepEvidentialRegression.py` script:
 > python src/scripts/DeepEvidentialRegression.py --help
+
+The shortcut:
+> UQder
 
 
 
