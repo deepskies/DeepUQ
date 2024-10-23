@@ -8,13 +8,13 @@ import torch
 from torch.utils.data import TensorDataset, DataLoader
 
 # from scripts import train, models, io
-from train import train
-from models import models
-from data import DataModules
-from models import ModelModules
-from utils.config import Config
-from utils.defaults import DefaultsDE
-from data.data import DataPreparation, MyDataLoader
+from src.train import train
+from src.models import models
+from src.data import DataModules
+from src.models import ModelModules
+from src.utils.config import Config
+from src.utils.defaults import DefaultsDE
+from src.data.data import DataPreparation, MyDataLoader
 
 # from analyze.analyze import AggregateCheckpoints
 
@@ -370,7 +370,7 @@ def beta_type(value):
         )
 
 
-if __name__ == "__main__":
+def main():
     """Main execution script for the DeepEnsemble pipeline.
 
     This script performs the following steps:
@@ -518,7 +518,7 @@ if __name__ == "__main__":
     print("model name is ", model_name)
     print("dim is ", dim)
     print("norm params", norm_params)
-    model_ensemble = train.train_DE(
+    train.train_DE(
         trainDataLoader,
         x_val,
         y_val,
@@ -555,3 +555,7 @@ if __name__ == "__main__":
         size_df=size_df,
         verbose=verbose,
     )
+
+
+if __name__ == "__main__":
+    main()

@@ -1,28 +1,37 @@
 # DeepUQ
 DeepUQ is a package for injecting and measuring different types of uncertainty in ML models.
 
-![status](https://img.shields.io/badge/PyPi-0.0.0.0-blue)(pypi link if applicable)
+[![PyPi](https://img.shields.io/badge/PyPi-0.1.0-blue)](https://pypi.org/project/deepuq/) 
+[![License](https://img.shields.io/badge/License-MIT-lightgrey)](https://opensource.org/licenses/MIT)
 
-![status](https://img.shields.io/badge/License-MIT-lightgrey)(MIT or Apache 2.0 or another requires link changed)
-
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/owner/repo/build-repo)
-
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/owner/repo/test-repo?label=test)
 
 
 ## Installation
 
-### Install via pypi
-To be updated, not yet released.
+### Install the deepuq package via venv and pypi
+> python3.10 -m venv name_of_your_virtual_env
 
-### Clone this repo
-First, cd to where you'd like to put this repo and type:
+> source name_of_your_virtual_env/bin/activate
+
+> pip install deepuq
+
+Now you can run some of the scripts!
+> UQensemble --generatedata
+
+^`generatedata` is required if you don't have any saved data. You can set other keywords like so.
+
+It's also possible to verify the install works by running:
+> pytest
+
+### Preferred dev install option: Poetry
+If you'd like to contribute to the package development, please follow these instructions.
+
+First, navigate to where you'd like to put this repo and type:
 > git clone https://github.com/deepskies/DeepUQ.git
 
 Then, cd into the repo:
 > cd DeepUQ
 
-### Install and use poetry to set up the environment
 Poetry is our recommended method of handling a package environment as publishing and building is handled by a toml file that handles all possibly conflicting dependencies. 
 Full docs can be found [here](https://python-poetry.org/docs/basic-usage/).
 
@@ -39,17 +48,61 @@ Install the pyproject file
 Begin the environment
 > poetry shell
 
-### Verify DeepUQ is installed correctly
+Now you have access to all the dependencies necessary to run the package.
 
-After following the installation instructions, verify installation is functional is all tests are passing by running the following in the root directory:
-> pytest
+## Package structure
+```
+DeepUQ/
+├── CHANGELOG.md
+├── LICENSE.txt
+├── README.md
+├── DeepUQResources/
+├── data/
+├── environment.yml
+├── notebooks/
+├── poetry.lock
+├── pyproject.toml
+├── src/
+│   ├── __init__.py
+│   ├── analyze/
+│   │   ├── __init__.py
+│   │   ├── analyze.py
+│   ├── data/
+│   │   ├── __init__.py
+│   │   ├── data.py
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── models.py
+│   ├── scripts/
+│   │   ├── __init__.py
+│   │   ├── DeepEnsemble.py
+│   │   ├── DeepEvidentialRegression.py
+│   ├── train/
+│   │   ├── __init__.py
+│   │   ├── train.py
+│   └── utils/
+│   │   ├── __init__.py
+│   │   ├── defaults.py
+│   │   ├── config.py
+├── test/
+│   ├── DeepUQResources/
+│   ├── data/
+│   ├── test_DeepEnsemble.py
+│   └── test_DeepEvidentialRegression.py
+```
+The `src/` folder contains the relevant modules for config settings, data generation, model parameters, training, and the two scripts for training the Deep Ensemble and the Deep Evidential Regression models. It also includes tools for loading and analyzing the saved checkpoints in `analysis/`.
+
+Example notebooks for how to train and analyze the results of the models can be found in the `notebooks/` folder.
+
+The `DeepUQResources/` folder is the default location for saving checkpoints from the trained model and the `data/` folder is where the training and validation set are saved.
 
 ## How to run the workflow
-![Folder structure overview](images/DeepUQWorkflow_Maggie.png)
-
 The scripts can be accessed via the ipython example notebooks or via the model modules (ie `DeepEnsemble.py`). For example, to ingest data and train a Deep Ensemble from the DeepUQ/ directory:
 
 > python src/scripts/DeepEnsemble.py
+
+The equivalent shortcut command:
+> UQensemble
 
 With no config file specified, this command will pull settings from the `default.py` file within `utils`. For the `DeepEnsemble.py` script, it will automatically select the `DefaultsDE` dictionary.
 
@@ -70,6 +123,11 @@ For more information on the arguments:
 
 The other available script is the `DeepEvidentialRegression.py` script:
 > python src/scripts/DeepEvidentialRegression.py --help
+
+The shortcut:
+> UQder
+
+
 
 
 

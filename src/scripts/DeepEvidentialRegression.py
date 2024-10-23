@@ -8,13 +8,13 @@ import torch
 from torch.utils.data import TensorDataset, DataLoader
 
 # from scripts import train, models, io
-from train import train
-from models import models
-from data import DataModules
-from models import ModelModules
-from utils.config import Config
-from utils.defaults import DefaultsDER
-from data.data import DataPreparation, MyDataLoader
+from src.train import train
+from src.models import models
+from src.data import DataModules
+from src.models import ModelModules
+from src.utils.config import Config
+from src.utils.defaults import DefaultsDER
+from src.data.data import DataPreparation, MyDataLoader
 
 # from plots import Plots
 
@@ -320,7 +320,7 @@ def parse_args():
     return config
 
 
-if __name__ == "__main__":
+def main():
     """Main execution script for the DeepEvidentialRegression pipeline.
 
     This script performs the following steps:
@@ -460,7 +460,7 @@ if __name__ == "__main__":
         data_type=dim,
     )
     print("model name is ", model_name)
-    model = train.train_DER(
+    train.train_DER(
         trainDataLoader,
         x_val,
         y_val,
@@ -496,3 +496,7 @@ if __name__ == "__main__":
         size_df=size_df,
         verbose=config.get_item("model", "verbose", "DER"),
     )
+
+
+if __name__ == "__main__":
+    main()
