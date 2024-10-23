@@ -460,7 +460,7 @@ def main():
         data_type=dim,
     )
     print("model name is ", model_name)
-    model = train.train_DER(
+    train.train_DER(
         trainDataLoader,
         x_val,
         y_val,

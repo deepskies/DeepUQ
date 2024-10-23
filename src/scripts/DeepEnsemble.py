@@ -518,7 +518,7 @@ def main():
     print("model name is ", model_name)
     print("dim is ", dim)
     print("norm params", norm_params)
-    model_ensemble = train.train_DE(
+    train.train_DE(
         trainDataLoader,
         x_val,
         y_val,
