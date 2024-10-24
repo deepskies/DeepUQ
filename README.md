@@ -3,6 +3,7 @@ DeepUQ is a package for injecting and measuring different types of uncertainty i
 
 [![PyPi](https://img.shields.io/badge/PyPi-0.1.0-blue)](https://pypi.org/project/deepuq/) 
 [![License](https://img.shields.io/badge/License-MIT-lightgrey)](https://opensource.org/licenses/MIT)
+![Build Status](https://github.com/deepskies/DeepUQ/workflows/test/badge.svg)
 
 
 
