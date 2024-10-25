@@ -1,4 +1,4 @@
-from src.data.data import MyDataLoader, DataPreparation
+from deepuq.data.data import MyDataLoader, DataPreparation
 
 DataModules = {
     "MyDataLoader": MyDataLoader,

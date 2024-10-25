@@ -1,3 +1,3 @@
-from src.models.models import ModelLoader
+from deepuq.models.models import ModelLoader
 
 ModelModules = {"ModelLoader": ModelLoader}

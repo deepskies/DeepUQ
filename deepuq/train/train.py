@@ -4,7 +4,7 @@ import time
 import glob
 import numpy as np
 import matplotlib.pyplot as plt
-from src.models import models
+from deepuq.models import models
 
 
 def set_random_seeds(seed_value=42):

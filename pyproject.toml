@@ -1,15 +1,15 @@
 [tool.poetry]
 name = "DeepUQ"
-packages = [{include = "src"}]
-version = "0.1.1"
+packages = [{include = "deepuq"}]
+version = "0.1.2"
 description = "a package for investigating and comparing the predictive uncertainties from deep learning models"
 authors = ["beckynevin <beckynevin@gmail.com>"]
 readme = "README.md"
 license = "MIT"
 
 [tool.poetry.scripts]
-UQensemble = "src.scripts.DeepEnsemble:main"
-UQder = "src.scripts.DeepEvidentialRegression:main"
+UQensemble = "deepuq.scripts.DeepEnsemble:main"
+UQder = "deepuq.scripts.DeepEvidentialRegression:main"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.11"
