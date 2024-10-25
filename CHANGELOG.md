@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.2] - 2024-10-25
+### Fixed
+- Decided to rename src/ to deepuq/ in order for easier imports
+
 ## [0.1.1] - 2024-10-23
 ### Fixed
 - Fixed packaging to enable use of commands for running scripts.

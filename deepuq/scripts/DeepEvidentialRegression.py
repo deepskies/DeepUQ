@@ -8,13 +8,13 @@ import torch
 from torch.utils.data import TensorDataset, DataLoader
 
 # from scripts import train, models, io
-from src.train import train
-from src.models import models
-from src.data import DataModules
-from src.models import ModelModules
-from src.utils.config import Config
-from src.utils.defaults import DefaultsDER
-from src.data.data import DataPreparation, MyDataLoader
+from deepuq.train import train
+from deepuq.models import models
+from deepuq.data import DataModules
+from deepuq.models import ModelModules
+from deepuq.utils.config import Config
+from deepuq.utils.defaults import DefaultsDER
+from deepuq.data.data import DataPreparation, MyDataLoader
 
 # from plots import Plots
 

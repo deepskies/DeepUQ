@@ -1,7 +1,7 @@
 from typing import Optional
 import os
 import yaml
-from src.utils.defaults import (
+from deepuq.utils.defaults import (
     DefaultsDE,
     DefaultsDER,
     DefaultsAnalysis,
