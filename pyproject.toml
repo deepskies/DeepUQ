@@ -8,8 +8,8 @@ readme = "README.md"
 license = "MIT"
 
 [tool.poetry.scripts]
-UQensemble = "src.scripts.DeepEnsemble:main"
-UQder = "src.scripts.DeepEvidentialRegression:main"
+UQensemble = "deepuq.scripts.DeepEnsemble:main"
+UQder = "deepuq.scripts.DeepEvidentialRegression:main"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.11"

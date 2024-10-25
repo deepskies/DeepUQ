@@ -4,7 +4,7 @@ import subprocess
 import tempfile
 import shutil
 import yaml
-from src.data.data import MyDataLoader, DataPreparation
+from deepuq.data.data import MyDataLoader, DataPreparation
 
 
 @pytest.fixture()
@@ -230,7 +230,7 @@ class TestDER:
         n_epochs = 10
         subprocess_args = [
             "python",
-            "src/scripts/DeepEvidentialRegression.py",
+            "deepuq/scripts/DeepEvidentialRegression.py",
             "--data_path",
             str(temp_data),
             "--noise_level",
@@ -287,7 +287,7 @@ class TestDER:
         n_epochs = 2
         subprocess_args = [
             "python",
-            "src/scripts/DeepEvidentialRegression.py",
+            "deepuq/scripts/DeepEvidentialRegression.py",
             "--data_path",
             str(temp_data),
             "--noise_level",
@@ -367,7 +367,7 @@ class TestDER:
         create_test_config(temp_directory + "/", temp_data, n_epochs)
         subprocess_args = [
             "python",
-            "src/scripts/DeepEvidentialRegression.py",
+            "deepuq/scripts/DeepEvidentialRegression.py",
             "--config",
             str(temp_directory) + "/yamls/DER.yaml",
         ]
