@@ -15,6 +15,7 @@ from deepuq.utils.config import Config
 from deepuq.utils.defaults import DefaultsDE
 from deepuq.data.data import DataPreparation, MyDataLoader
 
+
 def parse_args():
     """Parses command-line (or config) arguments for the DeepEnsemble script.
 
