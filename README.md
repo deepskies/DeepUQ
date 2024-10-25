@@ -59,11 +59,10 @@ DeepUQ/
 ├── README.md
 ├── DeepUQResources/
 ├── data/
-├── environment.yml
 ├── notebooks/
 ├── poetry.lock
 ├── pyproject.toml
-├── src/
+├── deepuq/
 │   ├── __init__.py
 │   ├── analyze/
 │   │   ├── __init__.py
@@ -91,7 +90,7 @@ DeepUQ/
 │   ├── test_DeepEnsemble.py
 │   └── test_DeepEvidentialRegression.py
 ```
-The `src/` folder contains the relevant modules for config settings, data generation, model parameters, training, and the two scripts for training the Deep Ensemble and the Deep Evidential Regression models. It also includes tools for loading and analyzing the saved checkpoints in `analysis/`.
+The `deepuq/` folder contains the relevant modules for config settings, data generation, model parameters, training, and the two scripts for training the Deep Ensemble and the Deep Evidential Regression models. It also includes tools for loading and analyzing the saved checkpoints in `analysis/`.
 
 Example notebooks for how to train and analyze the results of the models can be found in the `notebooks/` folder.
 
@@ -100,7 +99,7 @@ The `DeepUQResources/` folder is the default location for saving checkpoints fro
 ## How to run the workflow
 The scripts can be accessed via the ipython example notebooks or via the model modules (ie `DeepEnsemble.py`). For example, to ingest data and train a Deep Ensemble from the DeepUQ/ directory:
 
-> python src/scripts/DeepEnsemble.py
+> python deepuq/scripts/DeepEnsemble.py
 
 The equivalent shortcut command:
 > UQensemble
@@ -109,21 +108,21 @@ With no config file specified, this command will pull settings from the `default
 
 Another option is to specify your own config file:
 
-> python src/scripts/DeepEnsemble.py --config "path/to/config/myconfig.yaml"
+> python deepuq/scripts/DeepEnsemble.py --config "path/to/config/myconfig.yaml"
 
 Where you would modify the "path/to/config/myconfig.yaml" to specify where your own yaml lives.
 
 The third option is to input settings on the command line. These choices are then combined with the default settings and output in a temporary yaml.
 
-> python src/scripts/DeepEnsemble.py --noise_level "low" --n_models 10 --out_dir ./DeepUQResources/results/ --save_final_checkpoint True --savefig True --n_epochs 10
+> python deepuq/scripts/DeepEnsemble.py --noise_level "low" --n_models 10 --out_dir ./DeepUQResources/results/ --save_final_checkpoint True --savefig True --n_epochs 10
 
 This command will train a 10 network, 10 epoch ensemble on the low noise data and will save figures and final checkpoints to the specified directory. Required arguments are the noise setting (low/medium/high), the number of ensembles, and the working directory.
 
 For more information on the arguments:
-> python src/scripts/DeepEnsemble.py --help
+> python deepuq/scripts/DeepEnsemble.py --help
 
 The other available script is the `DeepEvidentialRegression.py` script:
-> python src/scripts/DeepEvidentialRegression.py --help
+> python deepuq/scripts/DeepEvidentialRegression.py --help
 
 The shortcut:
 > UQder
