@@ -142,7 +142,8 @@ class DataPreparation:
         self.data = None
 
     def generate_df(self, size_df, noise, dim, injection, uniform,
-                    verbose, rs_prior=42, rs_uniform=40):
+                    verbose, rs_prior=42, rs_simulate_0D=42,
+                    rs_simulate_2D=40, rs_uniform=40):
         if verbose:
             print("generating dataframe")
         if uniform:
@@ -172,6 +173,7 @@ class DataPreparation:
                     x=np.linspace(0, 10, 100),
                     inject_type=injection,
                     vary_sigma=vary_sigma,
+                    rs_simulate_0D=rs_simulate_0D
                 )
             elif injection == "output":
                 sigma = self.get_sigma(
@@ -184,6 +186,7 @@ class DataPreparation:
                     sigma,
                     x=np.linspace(0, 10, 100),
                     inject_type=injection,
+                    rs_simulate_0D=rs_simulate_0D
                 )
             df_array = self.get_dict()
             # Convert non-tensor entries to tensors
@@ -215,6 +218,7 @@ class DataPreparation:
                 sigma,
                 image_size=32,
                 inject_type=injection,
+                rs_simulate_2D=rs_simulate_2D
             )
         if dim == "0D":
             len_df = len(df["params"][:, 0].numpy())
@@ -417,7 +421,7 @@ class DataPreparation:
         sigma,
         image_size=32,
         inject_type="output",
-        rs=40,
+        rs_simulate_2D=40,
     ):
         """Simulates 2D image data based on provided parameters and noise
         levels.
@@ -470,7 +474,7 @@ class DataPreparation:
                 `inject_type="input"`.
         """
         # set the random seed
-        np.random.seed(rs)
+        np.random.seed(rs_simulate_2D)
         image_size = 32
         image_array = np.zeros((size_df, image_size, image_size))
         total_brightness = []
@@ -514,7 +518,7 @@ class DataPreparation:
         sigma,
         x=np.linspace(0, 10, 100),
         inject_type="output",
-        seed=42,
+        rs_simulate_0D=42,
         vary_sigma=False,
         verbose=False,
     ):
@@ -577,7 +581,7 @@ class DataPreparation:
             # If there are multiple sets of parameters,
             # extract them for each row
             m, b = thetas[:, 0], thetas[:, 1]
-        rs = np.random.RandomState(seed)  # 2147483648)#
+        rs = np.random.RandomState(rs_simulate_0D)  # 2147483648)#
         # I'm thinking sigma could actually be a function of x
         # if we want to get fancy down the road
         # Generate random noise (epsilon) based

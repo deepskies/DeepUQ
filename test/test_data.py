@@ -55,7 +55,8 @@ def temp_data():  # noise_level, size_df):
     uniform = True
     verbose = False
     data.generate_df(size_df, noise, dim, injection, uniform, verbose,
-                     rs_uniform=0, rs_simulate_0D=0, rs_simulate_2D=0, rs_prior=0)
+                     rs_uniform=0, rs_simulate_0D=0, rs_simulate_2D=0,
+                     rs_prior=0)
     dict = data.get_dict()
     saver = MyDataLoader()
     # save the dataframe
