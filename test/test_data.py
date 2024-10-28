@@ -4,9 +4,7 @@ import subprocess
 import tempfile
 import shutil
 import yaml
-import torch
-from deepuq.data.data import DataPreparation, MyDataLoader
-from deepuq.analyze.analyze import AggregateCheckpoints
+from deepuq.data.data import MyDataLoader, DataPreparation
 
 
 @pytest.fixture()
@@ -56,7 +54,8 @@ def temp_data():  # noise_level, size_df):
     injection = "input"
     uniform = True
     verbose = False
-    data.generate_df(size_df, noise, dim, injection, uniform, verbose)
+    data.generate_df(size_df, noise, dim, injection, uniform, verbose,
+                     rs_uniform=0, rs_simulate_0D=0, rs_simulate_2D=0, rs_prior=0)
     dict = data.get_dict()
     saver = MyDataLoader()
     # save the dataframe
@@ -203,7 +202,7 @@ def create_test_config(
     yaml.dump(input_yaml, open(str(temp_directory) + "yamls/DE.yaml", "w"))
 
 
-class TestAnalyze:
+class TestData:
     """
     Test suite for validating the behavior of the Deep Ensemble (DE) model
     training process, including checkpoint and image generation during
@@ -247,27 +246,37 @@ class TestAnalyze:
             "--n_epochs",
             str(n_epochs),
             "--save_final_checkpoint",
-            "--save_all_checkpoints",
             "--savefig",
         ]
         # now run the subprocess
         subprocess.run(subprocess_args, check=True)
         # check if the right number of checkpoints are saved
-        models_folder = os.path.join(temp_directory, "checkpoints/")
+        models_folder = os.path.join(temp_directory, "checkpoints")
         # list all files in the "models" folder
         files_in_models_folder = os.listdir(models_folder)
         # assert that the number of files is equal to 10
         assert (
-            len(files_in_models_folder) == n_models * n_epochs
-        ), f"Expected {n_models * n_epochs} files in the 'checkpoints' folder"
+            len(files_in_models_folder) == n_models
+        ), f"Expected {n_models} files in the 'checkpoints' folder"
         f"What is in there {files_in_models_folder}"
 
-        # now test running the analysis module
-        # which will load the checkpoints separately
-        DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        checkpoints = AggregateCheckpoints()
-        for e in range(n_epochs):
-            chk = checkpoints.load_checkpoint(
-                "DE", "input", "2D", noise_level,
-                e, DEVICE, path=models_folder)
-            assert chk['epoch'] == e, f"chk {chk}"
+        # check if the right number of images were saved
+        animations_folder = os.path.join(temp_directory, "images/animations")
+        files_in_animations_folder = os.listdir(animations_folder)
+        # assert that the number of files is equal to 10
+        assert (
+            len(files_in_animations_folder) == n_models
+        ), f"Expected {n_models} files in the 'images/animations' folder"
+
+        # also check that all files in here have the same name elements
+        expected_substring = "epoch_" + str(n_epochs - 1)
+        for file_name in files_in_models_folder:
+            assert (
+                expected_substring in file_name
+            ), f"File '{file_name}' does not contain the expected substring"
+
+        # also check that all files in here have the same name elements
+        for file_name in files_in_animations_folder:
+            assert (
+                expected_substring in file_name
+            ), f"File '{file_name}' does not contain the expected substring"
