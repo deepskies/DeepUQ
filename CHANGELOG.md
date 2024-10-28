@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.4] - 2024-10-28
+### Added
+- test_data
+- test_Analyze --> test_analyze
+- Functionality within data.py to set seeds for generate_df for simulate_0D and simulate_2D
+
+## [0.1.3] - 2024-10-28
+### Fixed
+- Imports so analyze.py can be imported
+### Added
+- test_Analyze
+- Functionality within data.py to set seeds for generate_df for uniform and priors
+
 ## [0.1.2] - 2024-10-25
 ### Fixed
 - Decided to rename src/ to deepuq/ in order for easier imports
