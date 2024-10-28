@@ -141,7 +141,8 @@ class DataPreparation:
     def __init__(self):
         self.data = None
 
-    def generate_df(self, size_df, noise, dim, injection, uniform, verbose):
+    def generate_df(self, size_df, noise, dim, injection, uniform,
+                    verbose, rs_prior=42, rs_uniform=40):
         if verbose:
             print("generating dataframe")
         if uniform:
@@ -154,7 +155,7 @@ class DataPreparation:
         else:
             size_df_gen = size_df
         if dim == "0D":
-            self.sample_params_from_prior(size_df_gen)
+            self.sample_params_from_prior(size_df_gen, seed=rs_prior)
             if verbose:
                 print("injecting this noise", noise)
                 print(
@@ -206,7 +207,7 @@ class DataPreparation:
                 low=[0, 1, -1.5],
                 high=[0.01, 10, 1.5],
                 n_params=3,
-                seed=42,
+                seed=rs_prior,
             )
             model_inputs, model_outputs = self.simulate_data_2d(
                 size_df_gen,
@@ -229,7 +230,7 @@ class DataPreparation:
                 model_outputs,
                 size_df,
                 verbose=verbose,
-                rs=40,
+                rs=rs_uniform,
             )
             if verbose:
                 print("size after uniform", np.shape(model_inputs))
