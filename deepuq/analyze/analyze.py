@@ -36,7 +36,7 @@ class AggregateCheckpoints:
         noise,
         epoch,
         device,
-        path="models/",
+        path="DeepUQResources/checkpoints/",
         BETA=0.5,
         nmodel=1,
         COEFF=0.5,
@@ -94,7 +94,8 @@ class AggregateCheckpoints:
                 f"_noise_{noise}_beta_{BETA}_nmodel_{nmodel}_epoch_{epoch}.pt"
             )
         print("loading this chk", file_name)
-        checkpoint = torch.load(file_name, map_location=device)
+        checkpoint = torch.load(file_name, map_location=device,
+                                weights_only=False)
         return checkpoint
 
     def ep_al_checkpoint_DE(self, checkpoint):

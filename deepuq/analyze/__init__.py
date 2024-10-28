@@ -1,3 +1,3 @@
-from analyze.analyze import AggregateCheckpoints
+from deepuq.analyze.analyze import AggregateCheckpoints
 
 ModelModules = {"AggregateCheckpoints": AggregateCheckpoints}
