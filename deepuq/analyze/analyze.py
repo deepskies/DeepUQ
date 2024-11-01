@@ -39,12 +39,13 @@ class AggregateCheckpoints:
         path="DeepUQResources/checkpoints/",
         BETA=0.5,
         nmodel=1,
-        COEFF=0.5,
-        loss="SDER",
+        COEFF=0.01,
+        loss="DER",
         load_rs_chk=False,
         rs=42,
         load_nh_chk=False,
         nh=64,
+        verbose=False
     ):
         """Loads a PyTorch model checkpoint from a .pt file, constructing the
         file name based on model type (DE or DER) and other configuration
@@ -60,8 +61,8 @@ class AggregateCheckpoints:
             path (str): Directory path to the model checkpoints
             (default: "models/").
             BETA (float): Beta value for DE models (default: 0.5).
-            nmodel (int): Number of models in the ensemble (default: 1).
-            COEFF (float): Coefficient for the DER model (default: 0.5).
+            nmodel (int): Number of the model to select in the DE (default: 1).
+            COEFF (float): Coefficient for the DER model (default: 0.01).
             loss (str): Type of loss used for DER models (e.g., 'SDER', 'DER').
             load_rs_chk (bool): Flag to indicate if random seed checkpoint is
             used (default: False).
@@ -70,6 +71,8 @@ class AggregateCheckpoints:
             configuration is used (default: False).
             nh (int): Number of hidden units if load_nh_chk is True
             (default: 64).
+            verbose (bool): Whether to print out the checkpoint
+            (default: False).
 
         Returns:
             dict: The loaded checkpoint containing model weights and
@@ -82,53 +85,19 @@ class AggregateCheckpoints:
                 + f"{model_name}_{inject_type}_{data_dim}"
                 + f"_noise_{noise}_loss_{loss}_COEFF_{COEFF}_epoch_{epoch}"
             )
-            if load_rs_chk:
-                file_name += f"_rs_{rs}"
-            if load_nh_chk:
-                file_name += f"_n_hidden_{nh}"
-            file_name += ".pt"
         elif model_name[0:2] == "DE":
             file_name = (
                 str(path)
                 + f"{model_name}_{inject_type}_{data_dim}"
-                f"_noise_{noise}_beta_{BETA}_nmodel_{nmodel}_epoch_{epoch}.pt"
+                f"_noise_{noise}_beta_{BETA}_nmodel_{nmodel}_epoch_{epoch}"
             )
-        print("loading this chk", file_name)
+        if load_rs_chk:
+            file_name += f"_rs_{rs}"
+        if load_nh_chk:
+            file_name += f"_n_hidden_{nh}"
+        file_name += ".pt"
+        if verbose:
+            print("loading this chk", file_name)
         checkpoint = torch.load(file_name, map_location=device,
                                 weights_only=False)
         return checkpoint
-
-    def ep_al_checkpoint_DE(self, checkpoint):
-        """Extracts mean and variance validation metrics from a loaded DE model
-        checkpoint.
-
-        Parameters:
-            checkpoint (dict): The loaded DE model checkpoint.
-
-        Returns:
-            tuple: A tuple containing mean validation and variance validation
-            metrics.
-        """
-        # Extract additional information
-        # loaded_epoch = checkpoint.get("epoch", None)
-        mean_validation = checkpoint.get("valid_mean", None).detach().numpy()
-        var_validation = checkpoint.get("valid_var", None).detach().numpy()
-        return mean_validation, var_validation
-
-    def ep_al_checkpoint_DER(self, checkpoint):
-        """Extracts mean and variance validation metrics from a loaded DER
-        model checkpoint.
-
-        Parameters:
-            checkpoint (dict): The loaded DER model checkpoint.
-
-        Returns:
-            tuple: A tuple containing mean validation and variance validation
-            metrics.
-        """
-        mean_u_ep = checkpoint.get("mean_u_ep_validation", None)
-        mean_u_al = checkpoint.get("mean_u_al_validation", None)
-        std_u_ep = checkpoint.get("std_u_ep_validation", None)
-        std_u_al = checkpoint.get("std_u_al_validation", None)
-
-        return mean_u_ep, mean_u_al, std_u_ep, std_u_al
