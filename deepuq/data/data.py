@@ -78,7 +78,8 @@ class MyDataLoader:
         loaded_data = {}
         with h5py.File(file_name, "r") as file:
             for key in file.keys():
-                loaded_data[key] = torch.Tensor(file[key][...])
+                loaded_data[key] = torch.tensor(file[key][...],
+                                                dtype=torch.float32)
         return loaded_data
 
 
@@ -448,7 +449,7 @@ class DataPreparation:
                 - "input": Noise is added to the image pixels directly.
                 Default is "output".
             rs (int): Random seed for reproducibility. Default is 40.
-            verbose (bool): Default false
+            verbose (bool): Display printouts? Default False.
 
         Returns:
             tuple:
@@ -626,13 +627,11 @@ class DataPreparation:
                 x_noisy[:, i] = x + ε[:, i]
 
         if inject_type == "output":
-            # self.input = x
-            self.input = torch.Tensor(np.tile(x, thetas.shape[0]).T)
-            self.output = torch.Tensor(y_noisy.T)
-            # self.output_err = ε[:, i].T
+            self.input = torch.tensor(np.tile(x, thetas.shape[0]).T, dtype=torch.float32)
+            self.output = torch.tensor(y_noisy.T, dtype=torch.float32)
         elif inject_type == "input":
-            self.input = torch.Tensor(x_noisy.T)
-            self.output = torch.Tensor(y.T)
+            self.input = torch.tensor(x_noisy.T, dtype=torch.float32)
+            self.output = torch.tensor(y.T, dtype=torch.float32)
             # self.output_err = ε[:, i].T
         if verbose:
             print(
