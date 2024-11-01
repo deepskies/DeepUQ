@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.5] - 2024-11-01
+### Fixed
+- verbosity in data.py and analyze.py
+- can load rs DE model in analyze.py
+- torch.Tensor error addressed in data.py
+
 ## [0.1.4] - 2024-10-28
 ### Added
 - test_data

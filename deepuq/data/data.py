@@ -78,7 +78,8 @@ class MyDataLoader:
         loaded_data = {}
         with h5py.File(file_name, "r") as file:
             for key in file.keys():
-                loaded_data[key] = torch.Tensor(file[key][...])
+                loaded_data[key] = torch.tensor(file[key][...],
+                                                dtype=torch.float32)
         return loaded_data
 
 
@@ -422,6 +423,7 @@ class DataPreparation:
         image_size=32,
         inject_type="output",
         rs_simulate_2D=40,
+        verbose=False
     ):
         """Simulates 2D image data based on provided parameters and noise
         levels.
@@ -447,6 +449,7 @@ class DataPreparation:
                 - "input": Noise is added to the image pixels directly.
                 Default is "output".
             rs (int): Random seed for reproducibility. Default is 40.
+            verbose (bool): Display printouts? Default False.
 
         Returns:
             tuple:
@@ -506,10 +509,10 @@ class DataPreparation:
             # total_brightness_prop_noisy.append(np.sum(noisy_image))
         self.input = image_array
         self.output = total_brightness
-        print(
-            f"2D data generated, \
-                with noise injected type: {inject_type}."
-        )
+        if verbose:
+            print(
+                f"2D data generated, with noise injected type: {inject_type}."
+            )
         return image_array, total_brightness
 
     def simulate_data(
@@ -565,7 +568,8 @@ class DataPreparation:
         # convert to numpy array (if tensor):
         thetas = np.atleast_2d(thetas)
         n_sim = thetas.shape[0]
-        print("number of sims", n_sim)
+        if verbose:
+            print("number of sims", n_sim)
         # Check if the input has the correct shape
         if thetas.shape[1] != 2:
             raise ValueError(
@@ -587,12 +591,14 @@ class DataPreparation:
         # Generate random noise (epsilon) based
         # on a normal distribution with mean 0 and standard deviation sigma
         if vary_sigma:
-            print("YES WERE VARYING SIGMA")
+            if verbose:
+                print("YES WERE VARYING SIGMA")
             new_sig = self.get_sigma_m(sigma, m)
             ε = rs.normal(loc=0, scale=new_sig, size=(len(x), n_sim))
             scale = new_sig
         else:
-            print("NO WERE NOT VARYING SIGMA")
+            if verbose:
+                print("NO WERE NOT VARYING SIGMA")
             ε = rs.normal(loc=0, scale=sigma, size=(len(x), n_sim))
             scale = sigma
         if verbose:
@@ -621,18 +627,17 @@ class DataPreparation:
                 x_noisy[:, i] = x + ε[:, i]
 
         if inject_type == "output":
-            # self.input = x
-            self.input = torch.Tensor(np.tile(x, thetas.shape[0]).T)
-            self.output = torch.Tensor(y_noisy.T)
-            # self.output_err = ε[:, i].T
+            self.input = torch.tensor(np.tile(x, thetas.shape[0]).T,
+                                      dtype=torch.float32)
+            self.output = torch.tensor(y_noisy.T, dtype=torch.float32)
         elif inject_type == "input":
-            self.input = torch.Tensor(x_noisy.T)
-            self.output = torch.Tensor(y.T)
+            self.input = torch.tensor(x_noisy.T, dtype=torch.float32)
+            self.output = torch.tensor(y.T, dtype=torch.float32)
             # self.output_err = ε[:, i].T
-        print(
-            f"0D data generated, \
-                with noise injected type: {inject_type}."
-        )
+        if verbose:
+            print(
+                f"0D data generated, with noise injected type: {inject_type}."
+            )
         return
 
     def sample_params_from_prior(
