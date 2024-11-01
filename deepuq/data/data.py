@@ -627,7 +627,8 @@ class DataPreparation:
                 x_noisy[:, i] = x + ε[:, i]
 
         if inject_type == "output":
-            self.input = torch.tensor(np.tile(x, thetas.shape[0]).T, dtype=torch.float32)
+            self.input = torch.tensor(np.tile(x, thetas.shape[0]).T,
+                                      dtype=torch.float32)
             self.output = torch.tensor(y_noisy.T, dtype=torch.float32)
         elif inject_type == "input":
             self.input = torch.tensor(x_noisy.T, dtype=torch.float32)
