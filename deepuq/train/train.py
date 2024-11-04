@@ -771,7 +771,8 @@ def train_DE(
                         epoch,
                     )
                 # best_weights = copy.deepcopy(model.state_dict())
-            if (plot_inline or plot_savefig) and (e % (EPOCHS - 1) == 0) and (e != 0):
+            if ((plot_inline or plot_savefig) and
+               (e % (EPOCHS - 1) == 0) and (e != 0)):
                 ax1.plot(
                     range(0, 1000),
                     range(0, 1000),

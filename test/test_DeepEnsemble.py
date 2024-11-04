@@ -375,7 +375,7 @@ class TestDE:
         # Assert that the file was overwritten
         # (modification time not be the same)
         assert initial_mtime < final_mtime
-    
+
     def test_DE_from_saved_data(
         self, temp_directory, temp_data, noise_level="low", size_df=100
     ):

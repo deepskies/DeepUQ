@@ -8,7 +8,6 @@ import torch
 from torch.utils.data import TensorDataset, DataLoader
 
 from deepuq.train import train
-from deepuq.models import models
 from deepuq.data import DataModules
 from deepuq.models import ModelModules
 from deepuq.utils.config import Config

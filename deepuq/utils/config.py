@@ -213,5 +213,4 @@ class Config:
                 return {
                     "DER": DefaultsDER,
                     "DE": DefaultsDE,
-                    "Analysis": DefaultsAnalysis,
                 }[defaulttype][section]

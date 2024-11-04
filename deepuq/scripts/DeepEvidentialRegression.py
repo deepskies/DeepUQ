@@ -40,7 +40,7 @@ def parse_args():
     - Model-related arguments:
         --model_engine, --init_lr, --loss_type, --COEFF, --model_type,
         --n_epochs, --save_all_checkpoints, --save_final_checkpoint,
-        --overwrite_final_checkpoint, --plot, --savefig,
+        --overwrite_model, --plot_inline, --plot_savefig,
         --save_chk_random_seed_init, --rs_list, --n_hidden, --save_n_hidden,
         --save_data_size, --verbose
     - General arguments:
@@ -199,21 +199,21 @@ def parse_args():
         help="option to save the final epoch checkpoint for each ensemble",
     )
     parser.add_argument(
-        "--overwrite_final_checkpoint",
+        "--overwrite_model",
         action="store_true",
-        default=DefaultsDER["model"]["overwrite_final_checkpoint"],
+        default=DefaultsDER["model"]["overwrite_model"],
         help="option to overwite already saved checkpoints",
     )
     parser.add_argument(
-        "--plot",
+        "--plot_inline",
         action="store_true",
-        default=DefaultsDER["model"]["plot"],
+        default=DefaultsDER["model"]["plot_inline"],
         help="option to plot in notebook",
     )
     parser.add_argument(
-        "--savefig",
+        "--plot_savefig",
         action="store_true",
-        default=DefaultsDER["model"]["savefig"],
+        default=DefaultsDER["model"]["plot_savefig"],
         help="option to save a figure of the true and predicted values",
     )
     parser.add_argument(
@@ -286,9 +286,9 @@ def parse_args():
                 "n_epochs": args.n_epochs,
                 "save_all_checkpoints": args.save_all_checkpoints,
                 "save_final_checkpoint": args.save_final_checkpoint,
-                "overwrite_final_checkpoint": args.overwrite_final_checkpoint,
-                "plot": args.plot,
-                "savefig": args.savefig,
+                "overwrite_model": args.overwrite_model,
+                "plot_inline": args.plot_inline,
+                "plot_savefig": args.plot_savefig,
                 "save_chk_random_seed_init": args.save_chk_random_seed_init,
                 "rs": args.rs,
                 "save_n_hidden": args.save_n_hidden,
@@ -310,8 +310,6 @@ def parse_args():
                 "normalize": args.normalize,
                 "uniform": args.uniform,
             },
-            # "plots": {key: {} for key in args.plots},
-            # "metrics": {key: {} for key in args.metrics},
         }
 
         yaml.dump(input_yaml, open(temp_config, "w"))
@@ -481,11 +479,11 @@ def main():
         save_final_checkpoint=config.get_item(
             "model", "save_final_checkpoint", "DER"
         ),
-        overwrite_final_checkpoint=config.get_item(
-            "model", "overwrite_final_checkpoint", "DER"
+        overwrite_model=config.get_item(
+            "model", "overwrite_model", "DER"
         ),
-        plot=config.get_item("model", "plot", "DER"),
-        savefig=config.get_item("model", "savefig", "DER"),
+        plot_inline=config.get_item("model", "plot_inline", "DER"),
+        plot_savefig=config.get_item("model", "plot_savefig", "DER"),
         set_and_save_rs=config.get_item(
             "model", "save_chk_random_seed_init", "DER"
         ),
