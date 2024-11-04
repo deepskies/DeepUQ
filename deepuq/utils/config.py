@@ -4,7 +4,6 @@ import yaml
 from deepuq.utils.defaults import (
     DefaultsDE,
     DefaultsDER,
-    DefaultsAnalysis,
 )
 
 
@@ -177,7 +176,6 @@ class Config:
                 return {
                     "DER": DefaultsDER,
                     "DE": DefaultsDE,
-                    "Analysis": DefaultsAnalysis,
                 }[defaulttype][section][item]
 
     def get_section(self, section, defaulttype, raise_exception=True):

@@ -412,7 +412,7 @@ def train_DER(
                 },
                 filename,
             )
-            if epoch == 99:
+            if epoch == EPOCHS - 1:
                 print("checkpoint saved here", filename)
 
         if save_final_checkpoint and (e % (EPOCHS - 1) == 0) and (e != 0):

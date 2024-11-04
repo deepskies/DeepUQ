@@ -36,7 +36,7 @@ def parse_args():
     - Model-related arguments:
         --model_engine, --n_models, --init_lr, --loss_type, --BETA,
         --model_type, --n_epochs, --save_all_checkpoints,
-        --save_final_checkpoint, --overwrite_final_checkpoint, --plot,
+        --save_final_checkpoint, --overwrite_model, --plot,
         --savefig, --save_chk_random_seed_init, --rs_list, --n_hidden,
         --save_n_hidden, --save_data_size, --verbose
     - General arguments:
@@ -205,21 +205,21 @@ def parse_args():
         help="option to save the final epoch checkpoint for each ensemble",
     )
     parser.add_argument(
-        "--overwrite_final_checkpoint",
+        "--overwrite_model",
         action="store_true",
-        default=DefaultsDE["model"]["overwrite_final_checkpoint"],
+        default=DefaultsDE["model"]["overwrite_model"],
         help="option to overwite already saved checkpoints",
     )
     parser.add_argument(
-        "--plot",
+        "--plot_inline",
         action="store_true",
-        default=DefaultsDE["model"]["plot"],
+        default=DefaultsDE["model"]["plot_inline"],
         help="option to plot in notebook",
     )
     parser.add_argument(
-        "--savefig",
+        "--plot_savefig",
         action="store_true",
-        default=DefaultsDE["model"]["savefig"],
+        default=DefaultsDE["model"]["plot_savefig"],
         help="option to save a figure of the true and predicted values",
     )
     parser.add_argument(
@@ -296,9 +296,9 @@ def parse_args():
                 "n_epochs": args.n_epochs,
                 "save_all_checkpoints": args.save_all_checkpoints,
                 "save_final_checkpoint": args.save_final_checkpoint,
-                "overwrite_final_checkpoint": args.overwrite_final_checkpoint,
-                "plot": args.plot,
-                "savefig": args.savefig,
+                "overwrite_model": args.overwrite_model,
+                "plot_inline": args.plot_inline,
+                "plot_savefig": args.plot_savefig,
                 "save_chk_random_seed_init": args.save_chk_random_seed_init,
                 "rs_list": args.rs_list,
                 "save_n_hidden": args.save_n_hidden,
@@ -320,8 +320,6 @@ def parse_args():
                 "normalize": args.normalize,
                 "uniform": args.uniform,
             },
-            # "plots": {key: {} for key in args.plots},
-            # "metrics": {key: {} for key in args.metrics},
         }
 
         yaml.dump(input_yaml, open(temp_config, "w"))
@@ -500,12 +498,6 @@ def main():
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     model_name = config.get_item("model", "model_type", "DE")
-    model, lossFn = models.model_setup_DE(
-        config.get_item("model", "loss_type", "DE"),
-        DEVICE,
-        n_hidden=config.get_item("model", "n_hidden", "DE"),
-        data_type=dim,
-    )
     print(
         "save final checkpoint has this value",
         config.get_item("model", "save_final_checkpoint", "DE"),
@@ -525,7 +517,7 @@ def main():
         model_name=model_name,
         BETA=config.get_item("model", "BETA", "DE"),
         EPOCHS=config.get_item("model", "n_epochs", "DE"),
-        path_to_model=config.get_item("common", "out_dir", "DE"),
+        out_dir=config.get_item("common", "out_dir", "DE"),
         inject_type=injection,
         data_dim=dim,
         noise_level=noise,
@@ -535,11 +527,15 @@ def main():
         save_final_checkpoint=config.get_item(
             "model", "save_final_checkpoint", "DE"
         ),
-        overwrite_final_checkpoint=config.get_item(
-            "model", "overwrite_final_checkpoint", "DE"
+        overwrite_model=config.get_item(
+            "model", "overwrite_model", "DE"
         ),
-        plot=config.get_item("model", "plot", "DE"),
-        savefig=config.get_item("model", "savefig", "DE"),
+        plot_inline=config.get_item(
+            "model", "plot_inline", "DE"
+        ),
+        plot_savefig=config.get_item(
+            "model", "plot_savefig", "DE"
+        ),
         set_and_save_rs=config.get_item(
             "model", "save_chk_random_seed_init", "DE"
         ),
