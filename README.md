@@ -17,9 +17,15 @@ DeepUQ is a package for injecting and measuring different types of uncertainty i
 > pip install deepuq
 
 Now you can run some of the scripts!
-> UQensemble --generatedata
+> UQensemble --generatedata --save_final_checkpoint
 
-^`generatedata` is required if you don't have any saved data. You can set other keywords like so.
+^`generatedata` is required if you don't have any saved data. 
+
+The default behavior is to train the model without saving any checkpoints. By specifying the `--save_final_checkpoint` flag, the script will save a pytorch checkpoint for the final epoch with the model weights as well as diagnostics like the MSE metric and the model loss. This checkpoint will be stored in a folder at the path specified by `--out_dir` flag, the default location is `DeepUQResources/checkpoints/`.
+
+To additionally save all checkpoints, use the `--save_all_checkpoints` flag.
+
+To save diagnostic plots of the true and predicted model outputs as well as the model residuals, specify `--plot` and `--savefig` (to save as a png).
 
 It's also possible to verify the install works by running:
 > pytest
