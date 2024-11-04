@@ -43,22 +43,22 @@ def train_DER(
     norm_params: dict,
     model_name: str = "DER",
     EPOCHS: float = 100,
-    path_to_model: str = "./DeepUQResources/checkpoints/",
+    out_dir: str = "./DeepUQResources/",
     inject_type: str = "output",
     data_dim: str = "0D",
     noise_level: str = "low",
     save_all_checkpoints: bool = False,
     save_final_checkpoint: bool = False,
-    overwrite_final_checkpoint: bool = False,
-    plot: bool = True,
-    savefig: bool = True,
+    overwrite_model: bool = False,
+    plot_inline: bool = True,
+    plot_savefig: bool = True,
     set_and_save_rs: bool = False,
     rs: int = 42,
     save_n_hidden: bool = False,
     n_hidden: float = 64,
     save_size_df: bool = False,
     size_df: float = 10000,
-    verbose: bool = True,
+    verbose: bool = False,
 ):
     """Trains a Deep Evidential Regression (DER) model on the provided data.
 
@@ -84,9 +84,9 @@ def train_DER(
         Name of the model (default is 'DER').
     EPOCHS : int, optional
         Number of epochs to train the model (default is 100).
-    path_to_model : str, optional
+    out_dir : str, optional
         Directory path where the model checkpoints will be saved
-        (default is './DeepUQResources/checkpoints/').
+        (default is './DeepUQResources/').
     inject_type : str, optional
         Type of noise injection used during training (default is 'output').
     data_dim : str, optional
@@ -98,14 +98,14 @@ def train_DER(
         Whether to save the model at every epoch (default is False).
     save_final_checkpoint : bool, optional
         Whether to save the final model checkpoint (default is False).
-    overwrite_final_checkpoint : bool, optional
-        Whether to overwrite the final checkpoint if it already exists
+    overwrite_model : bool, optional
+        Whether to overwrite the checkpoint(s) if it/they already exists
         (default is False).
-    plot : bool, optional
+    plot_inline : bool, optional
         Whether to generate plots of the training and validation performance
-        (default is True).
-    savefig : bool, optional
-        Whether to save the generated figures to disk (default is True).
+        (default is False).
+    plot_savefig : bool, optional
+        Whether to save the generated figures to disk (default is False).
     set_and_save_rs : bool, optional
         Whether to set and save random seed values (default is False).
     rs : int, optional
@@ -120,7 +120,7 @@ def train_DER(
     size_df : float, optional
         Size of the dataset to be used for training (default is 10000).
     verbose : bool, optional
-        Whether to print detailed logs during training (default is True).
+        Whether to print detailed logs during training (default is False).
 
     Returns:
     -------
@@ -142,25 +142,36 @@ def train_DER(
         # option to skip running the model if you don't care about
         # saving all checkpoints and only want to save the final
         final_chk = (
-            str(path_to_model)
+            str(out_dir)
+            + "checkpoints/"
             + str(model_name)
             + "_"
             + str(inject_type)
+            + "_"
+            + str(data_dim)
             + "_noise_"
             + str(noise_level)
             + "_loss_"
             + str(loss_type)
+            + "_COEFF_"
+            + str(COEFF)
             + "_epoch_"
             + str(EPOCHS - 1)
-            + ".pt"
         )
+        if set_and_save_rs:
+            final_chk += "_rs_" + str(rs)
+        if save_n_hidden:
+            final_chk += "_n_hidden_" + str(n_hidden)
+        if save_size_df:
+            final_chk += "_sizedf_" + str(size_df)
+        final_chk += ".pt"
         if verbose:
             print("final chk", final_chk)
             # check if the final epoch checkpoint already exists
             print(glob.glob(final_chk))
         if glob.glob(final_chk):
             print("final model already exists")
-            if overwrite_final_checkpoint:
+            if overwrite_model:
                 print("going to overwrite final checkpoint")
             else:
                 print("not overwriting, exiting")
@@ -175,8 +186,8 @@ def train_DER(
         print("saving final checkpoint?")
         print(save_final_checkpoint)
         print("overwriting final checkpoint if its already there?")
-        print(overwrite_final_checkpoint)
-        print(f"saving here: {path_to_model}")
+        print(overwrite_model)
+        print(f"saving here: {out_dir}")
         print(f"model name: {model_name}")
 
     startTime = time.time()
@@ -201,7 +212,7 @@ def train_DER(
 
     # loop over our epochs
     for e in range(0, EPOCHS):
-        if plot or savefig:
+        if plot_inline or plot_savefig:
             plt.clf()
             fig, (ax1, ax2) = plt.subplots(
                 2,
@@ -230,7 +241,7 @@ def train_DER(
             # perform a forward pass and calculate the training loss
             pred = model(x)
             loss = lossFn(pred, y, COEFF)
-            if plot or savefig:
+            if plot_inline or plot_savefig:
                 if (e % (EPOCHS - 1) == 0) and (e != 0):
                     ax1.scatter(
                         y,
@@ -282,7 +293,8 @@ def train_DER(
                 )
                 print("meanwhile mse is", mse)
             # best_weights = copy.deepcopy(model.state_dict())
-        if (plot or savefig) and (e != 0) and (e % (EPOCHS - 1) == 0):
+        if ((plot_inline or plot_savefig) and (e != 0)
+           and (e % (EPOCHS - 1) == 0)):
             # ax1.plot(range(0, 1000), range(0, 1000), color="black", ls="--")
             ax1.errorbar(
                 y_val,
@@ -348,11 +360,11 @@ def train_DER(
             # ax1.set_xlim([0, 1000])
             # ax1.set_ylim([0, 1000])
             ax1.legend()
-            if savefig:
+            if plot_savefig:
                 # ax1.errorbar(200, 600, yerr=5,
                 #                color='red', capsize=2)
                 plt.savefig(
-                    str(path_to_model)
+                    str(out_dir)
                     + "images/animations/"
                     + str(model_name)
                     + "_"
@@ -367,13 +379,13 @@ def train_DER(
                     + str(epoch)
                     + ".png"
                 )
-            if plot:
+            if plot_inline:
                 plt.show()
             plt.close()
         if save_all_checkpoints:
-
             filename = (
-                str(path_to_model)
+                str(out_dir)
+                + "checkpoints/"
                 + str(model_name)
                 + "_"
                 + str(inject_type)
@@ -417,7 +429,7 @@ def train_DER(
 
         if save_final_checkpoint and (e % (EPOCHS - 1) == 0) and (e != 0):
             filename = (
-                str(path_to_model)
+                str(out_dir)
                 + "checkpoints/"
                 + str(model_name)
                 + "_"

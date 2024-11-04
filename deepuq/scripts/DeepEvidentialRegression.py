@@ -469,7 +469,7 @@ def main():
         norm_params,
         model_name=model_name,
         EPOCHS=config.get_item("model", "n_epochs", "DER"),
-        path_to_model=config.get_item("common", "out_dir", "DER"),
+        out_dir=config.get_item("common", "out_dir", "DER"),
         inject_type=injection,
         data_dim=dim,
         noise_level=noise,
