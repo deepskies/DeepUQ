@@ -17,7 +17,7 @@ DeepUQ is a package for injecting and measuring different types of uncertainty i
 > pip install deepuq
 
 Now you can run some of the scripts!
-> UQensemble --generatedata --save_final_checkpoint
+> UQensemble --generatedata --save_final_checkpoint --save_all_checkpoints --plot_savefig --overwrite_model
 
 ^`generatedata` is required if you don't have any saved data. 
 
@@ -25,7 +25,9 @@ The default behavior is to train the model without saving any checkpoints. By sp
 
 To additionally save all checkpoints, use the `--save_all_checkpoints` flag.
 
-To save diagnostic plots of the true and predicted model outputs as well as the model residuals, specify `--plot` and `--savefig` (to save as a png).
+To save diagnostic plots of the true and predicted model outputs as well as the model residuals, specify `--plot_inline` and `--plot_savefig` (to plot inline and save as a png, respectively).
+
+The `--overwrite_model` flag will retrain and overwrite a previously existing version of the model.
 
 It's also possible to verify the install works by running:
 > pytest
