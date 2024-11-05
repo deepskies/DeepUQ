@@ -19,9 +19,9 @@ DeepUQ is a package for injecting and measuring different types of uncertainty i
 Now you can run some of the scripts!
 > UQensemble --generatedata --save_final_checkpoint --save_all_checkpoints --plot_savefig --overwrite_model
 
-^`generatedata` is required if you don't have any saved data. 
+^`--generatedata` is required if you don't have any saved data. 
 
-The default behavior is to train the model without saving any checkpoints. By specifying the `--save_final_checkpoint` flag, the script will save a pytorch checkpoint for the final epoch with the model weights as well as diagnostics like the MSE metric and the model loss. This checkpoint will be stored in a folder at the path specified by `--out_dir` flag, the default location is `DeepUQResources/checkpoints/`.
+The default behavior is to train the model without saving any checkpoints. By specifying the `--save_final_checkpoint` flag, the script will save a pytorch checkpoint for the final epoch with the model weights as well as diagnostics like the MSE metric and the model loss. This checkpoint will be stored in a folder at the path specified by `--out_dir` flag, the default location is `./DeepUQResources/checkpoints/`.
 
 To additionally save all checkpoints, use the `--save_all_checkpoints` flag.
 
@@ -102,10 +102,10 @@ The `deepuq/` folder contains the relevant modules for config settings, data gen
 
 Example notebooks for how to train and analyze the results of the models can be found in the `notebooks/` folder.
 
-The `DeepUQResources/` folder is the default location for saving checkpoints from the trained model and the `data/` folder is where the training and validation set are saved.
+The `DeepUQResources/` folder is the default location for saving checkpoints and diagnostic plots from the trained model and the `data/` folder is where the training and validation set are saved.
 
 ## How to run the workflow
-The scripts can be accessed via the ipython example notebooks or via the model modules (ie `DeepEnsemble.py`). For example, to ingest data and train a Deep Ensemble from the DeepUQ/ directory:
+The scripts can be accessed via the ipython example notebooks in the `notebooks/` folder or via the model modules (ie `deepuq/scripts/DeepEnsemble.py`). For example, to ingest data and train a Deep Ensemble from the DeepUQ/ directory:
 
 > python deepuq/scripts/DeepEnsemble.py
 
@@ -122,9 +122,9 @@ Where you would modify the "path/to/config/myconfig.yaml" to specify where your 
 
 The third option is to input settings on the command line. These choices are then combined with the default settings and output in a temporary yaml.
 
-> python deepuq/scripts/DeepEnsemble.py --noise_level "low" --n_models 10 --out_dir ./DeepUQResources/results/ --save_final_checkpoint True --savefig True --n_epochs 10
+> python deepuq/scripts/DeepEnsemble.py --noise_level "low" --n_models 10 --out_dir ./DeepUQResources/ --save_final_checkpoint --save_all_checkpoints --plot_savefig --n_epochs 10
 
-This command will train a 10 network, 10 epoch ensemble on the low noise data and will save figures and final checkpoints to the specified directory. Required arguments are the noise setting (low/medium/high), the number of ensembles, and the working directory.
+This command will train a 10 network, 10 epoch ensemble on the low noise data and will save figures and all checkpoints to the specified directory.
 
 For more information on the arguments:
 > python deepuq/scripts/DeepEnsemble.py --help
