@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.6] - 2024-11-05
+### Fixed
+- train.py now identifies if a previous version of the model checkpoints has been saved for both DE and DER
+### Added
+- default.py matches defaults used in experiments
+- train.py modified with names of flags made more explicit
+
 ## [0.1.5] - 2024-11-01
 ### Fixed
 - verbosity in data.py and analyze.py
