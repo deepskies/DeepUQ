@@ -164,9 +164,9 @@ def create_test_config(
             "n_epochs": n_epochs,
             "save_all_checkpoints": False,
             "save_final_checkpoint": True,
-            "overwrite_final_checkpoint": True,
-            "plot": False,
-            "savefig": True,
+            "overwrite_model": True,
+            "plot_inline": False,
+            "plot_savefig": True,
             "save_chk_random_seed_init": False,
             "rs": 42,
             "save_n_hidden": False,
@@ -242,7 +242,7 @@ class TestDER:
             "--n_epochs",
             str(n_epochs),
             "--save_final_checkpoint",
-            "--savefig",
+            "--plot_savefig",
             "--generatedata",
             "--save_all_checkpoints",
             "--save_final_checkpoint"
@@ -299,7 +299,7 @@ class TestDER:
             "--n_epochs",
             str(n_epochs),
             "--save_final_checkpoint",
-            "--savefig",
+            "--plot_savefig",
             "--generatedata",
             "--save_final_checkpoint"
         ]

@@ -78,7 +78,6 @@ class AggregateCheckpoints:
             dict: The loaded checkpoint containing model weights and
             additional data.
         """
-        print(model_name)
         if model_name[0:3] == "DER":
             file_name = (
                 str(path)

@@ -171,9 +171,9 @@ def create_test_config(
             "n_epochs": n_epochs,
             "save_all_checkpoints": False,
             "save_final_checkpoint": True,
-            "overwrite_final_checkpoint": True,
-            "plot": False,
-            "savefig": True,
+            "overwrite_model": True,
+            "plot_inline": False,
+            "plot_savefig": True,
             "save_chk_random_seed_init": False,
             "rs_list": [41, 42],
             "save_n_hidden": False,
@@ -207,6 +207,174 @@ class TestDE:
     training process, including checkpoint and image generation during
     training.
     """
+    def test_DE_overwrite_false(
+        self, temp_directory, temp_data, noise_level="low", size_df=100
+    ):
+        """Test that the correct number of checkpoints and animations are
+        saved during DE model training.
+
+        Runs the DE model training as a subprocess and verifies that
+        checkpoints and animations corresponding to each epoch are saved in
+        the appropriate folders.
+
+        Args:
+            temp_directory (str): Path to the temporary directory where
+                                  outputs are saved.
+            temp_data (str): Path to the generated data for testing.
+            noise_level (str, optional): Noise level for data generation,
+                                         default is "low".
+            size_df (int, optional): Size of the dataset used for testing,
+                                     default is 10.
+        """
+        n_models = 1
+        n_epochs = 2
+        subprocess_args = [
+            "python",
+            "deepuq/scripts/DeepEnsemble.py",
+            "--data_path",
+            str(temp_data),
+            "--size_df",
+            str(size_df),
+            "--noise_level",
+            noise_level,
+            "--n_models",
+            str(n_models),
+            "--out_dir",
+            str(temp_directory) + "/",
+            "--n_epochs",
+            str(n_epochs),
+            "--save_final_checkpoint",
+        ]
+        # now run the subprocess
+        subprocess.run(subprocess_args, check=True)
+        # check if the right number of checkpoints are saved
+        models_folder = os.path.join(temp_directory, "checkpoints")
+        # list all files in the "models" folder
+        files_in_models_folder = os.listdir(models_folder)
+        # assert that the number of files is equal to 10
+        assert (
+            len(files_in_models_folder) == n_models
+        ), f"Expected {n_models} files in the 'checkpoints' folder"
+        f"What is in there {files_in_models_folder}"
+
+        # Get the initial modification time
+        initial_mtime = os.path.getmtime(
+            str(models_folder) + '/' + str(files_in_models_folder[0]))
+
+        # run it again but this time set overwrite_model
+        subprocess_args = [
+            "python",
+            "deepuq/scripts/DeepEnsemble.py",
+            "--data_path",
+            str(temp_data),
+            "--size_df",
+            str(size_df),
+            "--noise_level",
+            noise_level,
+            "--n_models",
+            str(n_models),
+            "--out_dir",
+            str(temp_directory) + "/",
+            "--n_epochs",
+            str(n_epochs),
+            "--save_final_checkpoint",
+        ]
+        # now run the subprocess
+        subprocess.run(subprocess_args, check=True)
+        # check if the right number of checkpoints are saved
+        final_mtime = os.path.getmtime(
+            str(models_folder) + '/' + str(files_in_models_folder[0]))
+        # Assert that the file was overwritten
+        # (modification time not be the same)
+        assert initial_mtime == final_mtime
+
+    def test_DE_overwrite_true(
+        self, temp_directory, temp_data, noise_level="low", size_df=100
+    ):
+        """Test that the correct number of checkpoints and animations are
+        saved during DE model training.
+
+        Runs the DE model training as a subprocess and verifies that
+        checkpoints and animations corresponding to each epoch are saved in
+        the appropriate folders.
+
+        Args:
+            temp_directory (str): Path to the temporary directory where
+                                  outputs are saved.
+            temp_data (str): Path to the generated data for testing.
+            noise_level (str, optional): Noise level for data generation,
+                                         default is "low".
+            size_df (int, optional): Size of the dataset used for testing,
+                                     default is 10.
+        """
+        n_models = 2
+        n_epochs = 2
+        subprocess_args = [
+            "python",
+            "deepuq/scripts/DeepEnsemble.py",
+            "--data_path",
+            str(temp_data),
+            "--size_df",
+            str(size_df),
+            "--noise_level",
+            noise_level,
+            "--n_models",
+            str(n_models),
+            "--out_dir",
+            str(temp_directory) + "/",
+            "--n_epochs",
+            str(n_epochs),
+            "--save_final_checkpoint",
+        ]
+        # now run the subprocess
+        subprocess.run(subprocess_args, check=True)
+        # check if the right number of checkpoints are saved
+        models_folder = os.path.join(temp_directory, "checkpoints")
+        # list all files in the "models" folder
+        files_in_models_folder = os.listdir(models_folder)
+        initial_mtime = os.path.getmtime(
+            str(models_folder) + '/' + str(files_in_models_folder[0]))
+        # assert that the number of files is equal to 10
+        assert (
+            len(files_in_models_folder) == n_models
+        ), f"Expected {n_models} files in the 'checkpoints' folder"
+        f"What is in there {files_in_models_folder}"
+
+        # Get the initial modification time
+        initial_mtime = os.path.getmtime(
+            str(models_folder) + '/' + str(files_in_models_folder[0]))
+
+        # run it again but this time set overwrite_model
+        subprocess_args = [
+            "python",
+            "deepuq/scripts/DeepEnsemble.py",
+            "--data_path",
+            str(temp_data),
+            "--size_df",
+            str(size_df),
+            "--noise_level",
+            noise_level,
+            "--n_models",
+            str(n_models),
+            "--out_dir",
+            str(temp_directory) + "/",
+            "--n_epochs",
+            str(n_epochs),
+            "--save_final_checkpoint",
+            "--overwrite_model"
+        ]
+        # now run the subprocess
+        subprocess.run(subprocess_args, check=True)
+        # check if the right number of checkpoints are saved
+        models_folder = os.path.join(temp_directory, "checkpoints")
+        # list all files in the "models" folder
+        files_in_models_folder = os.listdir(models_folder)
+        # Get the modification time after running the code
+        final_mtime = os.path.getmtime(
+            str(models_folder) + '/' + str(files_in_models_folder[0]))
+        # Assert that the file was overwritten
+        # (modification time not be the same)
+        assert initial_mtime < final_mtime
 
     def test_DE_from_saved_data(
         self, temp_directory, temp_data, noise_level="low", size_df=100
@@ -245,7 +413,7 @@ class TestDE:
             "--n_epochs",
             str(n_epochs),
             "--save_final_checkpoint",
-            "--savefig",
+            "--plot_savefig",
         ]
         # now run the subprocess
         subprocess.run(subprocess_args, check=True)
@@ -317,7 +485,7 @@ class TestDE:
             "--n_epochs",
             str(n_epochs),
             "--save_final_checkpoint",
-            "--savefig",
+            "--plot_savefig",
             "--generatedata",
         ]
         # now run the subprocess
