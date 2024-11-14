@@ -5,7 +5,10 @@ DeepUQ is a package for injecting and measuring different types of uncertainty i
 [![License](https://img.shields.io/badge/License-MIT-lightgrey)](https://opensource.org/licenses/MIT)
 [![Downloads](https://static.pepy.tech/personalized-badge/deepuq?period=month&units=international_system&left_color=black&right_color=brightgreen&left_text=Total%20Downloads)](https://pepy.tech/project/deepuq)
 
+For the accompanying paper, accepted to the ML4PS Workshop at NeurIPS 2024, see the arXiv link: ["DeepUQ: Assessing the Aleatoric Uncertainties from two Deep Learning Methods
+"](https://arxiv.org/abs/2411.08587)
 
+Repo for the paper: [DeepUQ-neurIPS-WS-2024](https://github.com/deepskies/DeepUQ-neurIPS-WS-2024)
 
 ## Installation
 
